@@ -7,47 +7,54 @@ from spotipy import SpotifyOAuth, Spotify
 from benedict import benedict
 from typing import Callable, Any, Literal, TypeAlias
 
-from src.spotify.operators import get_artist, get_album, is_different_artists, is_different_albums, is_different_tracks, get_track
+from src.remote.operators import (
+    get_artist,
+    get_album,
+    is_different_artists,
+    is_different_albums,
+    is_different_tracks,
+    get_track,
+)
 
 scopes = [
-    'user-library-read',
-    'user-read-playback-state',
-    'user-modify-playback-state',
-    'user-library-modify',
-    'user-follow-modify',
-    'user-read-currently-playing',
-    'user-read-recently-played',
+    "user-library-read",
+    "user-read-playback-state",
+    "user-modify-playback-state",
+    "user-library-modify",
+    "user-follow-modify",
+    "user-read-currently-playing",
+    "user-read-recently-played",
     # 'user-follow-read',
     # 'user-top-read',
     # 'user-read-playback-position',
-    'playlist-read-private',
+    "playlist-read-private",
     # 'playlist-read-collaborative',
-    'playlist-modify-private',
+    "playlist-modify-private",
     # 'app-remote-control'
 ]
 
 
-MusicType: TypeAlias = Literal['album', 'artist', 'all', 'track']
+MusicType: TypeAlias = Literal["album", "artist", "all", "track"]
 
 
 def pick_dif_function(what: MusicType):
     match what:
-        case 'album':
+        case "album":
             return is_different_albums
-        case 'artist':
+        case "artist":
             return is_different_artists
-        case 'track':
+        case "track":
             return is_different_tracks
-        case 'all':
+        case "all":
             return lambda x, y: False
         case _:
-            raise Exception(f'Expected {what} to be a valid start type')
+            raise Exception(f"Expected {what} to be a valid start type")
 
 
 def is_muted(obj: benedict):
-    if obj.get('device.volume_percent') != 0:
+    if obj.get("device.volume_percent") != 0:
         return False
-    if not path.isfile('./vol.txt'):
+    if not path.isfile("./vol.txt"):
         return False
     return True
 
@@ -62,12 +69,14 @@ class SpotifyInterface:
 
     def __init__(self):
         start = time.time()
-        self._spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(
-            client_id='b996e2c82b574509bec24fbd11eda035',
-            client_secret='2370df9b5a7840a183f44bbd795483fa',
-            scope=",".join(scopes),
-            redirect_uri='http://localhost:12000'
-        ))
+        self._spotify = spotipy.Spotify(
+            auth_manager=SpotifyOAuth(
+                client_id="b996e2c82b574509bec24fbd11eda035",
+                client_secret="2370df9b5a7840a183f44bbd795483fa",
+                scope=",".join(scopes),
+                redirect_uri="http://localhost:12000",
+            )
+        )
         self._spotify._session.trust_env = False
         print(json.dumps(self.hist()))
 
@@ -91,13 +100,13 @@ class SpotifyInterface:
             op()
             time.sleep(0.25)
             playback = self._get_current()
-            cur_ts = playback.get('timestamp')
+            cur_ts = playback.get("timestamp")
             if prev_ts == cur_ts:
                 time.sleep(0.25)
                 playback = self._get_current()
             prev_ts = cur_ts
             yield [playback, i]
-            if playback.get('actions.disallows.skipping_prev', False):
+            if playback.get("actions.disallows.skipping_prev", False):
                 return
 
     def hist(self):
@@ -115,50 +124,47 @@ class SpotifyInterface:
 
     def toggle_pause(self):
         current = self._get_current()
-        if current.get('is_playing'):
+        if current.get("is_playing"):
             self._spotify.pause_playback()
         else:
             self._spotify.start_playback()
 
     def restart_thing(self):
         initial = self._get_current()
-        old_repeat = initial.get('repeat_state')
-        if old_repeat != 'off':
-            self._spotify.repeat('off')
-        for [current, count] in self._skim_while(lambda: self._spotify.previous_track()):
+        old_repeat = initial.get("repeat_state")
+        if old_repeat != "off":
+            self._spotify.repeat("off")
+        for [current, count] in self._skim_while(
+            lambda: self._spotify.previous_track()
+        ):
             pass
-        if old_repeat != 'off':
+        if old_repeat != "off":
             self._spotify.repeat(old_repeat)
 
     def set_repeat(self, mode):
         self._spotify.repeat(mode)
 
     def rename_playlist(self, playlist: str, new_name: str, new_desc: str):
-        self._spotify.playlist_change_details(playlist_id=playlist, name=new_name, description=new_desc)
+        self._spotify.playlist_change_details(
+            playlist_id=playlist, name=new_name, description=new_desc
+        )
 
     def start_playlist(self, playlist: str):
-        pl = self._spotify.playlist(
-            playlist_id=playlist
-        )
-        self._spotify.start_playback(
-            context_uri=pl['uri'],
-            offset={
-                'position': 0
-            }
-        )
+        pl = self._spotify.playlist(playlist_id=playlist)
+        self._spotify.start_playback(context_uri=pl["uri"], offset={"position": 0})
 
     def skip_album(self):
         initial = self._get_current()
-        old_repeat = initial.get('repeat_state')
-        if old_repeat != 'off':
-            self._spotify.repeat('off')
+        old_repeat = initial.get("repeat_state")
+        if old_repeat != "off":
+            self._spotify.repeat("off")
 
         for [current, count] in self._skim_while(lambda: self._spotify.next_track()):
             if is_different_albums(initial, current):
                 break
 
-        if old_repeat != 'off':
-            self._spotify.repeat('off')
+        if old_repeat != "off":
+            self._spotify.repeat("off")
 
     def heart_track(self):
         current = self._get_current()
@@ -182,13 +188,15 @@ class SpotifyInterface:
     def clean_playlist(self, target_plid: str):
         my_playlist = self.find_automated_playlist()
         result = self._spotify.playlist_items(playlist_id=target_plid)
-        all_uris = [track.get('track').get('id') for track in result.get('items')]
-        self._spotify.playlist_remove_all_occurrences_of_items(playlist_id=my_playlist, items=all_uris)
+        all_uris = [track.get("track").get("id") for track in result.get("items")]
+        self._spotify.playlist_remove_all_occurrences_of_items(
+            playlist_id=my_playlist, items=all_uris
+        )
 
     def find_automated_playlist(self):
         all_playlists = self._spotify.current_user_playlists()
-        for playlist in all_playlists.get('items'):
-            if "⚙️" in playlist.get('item.name'):
+        for playlist in all_playlists.get("items"):
+            if "⚙️" in playlist.get("item.name"):
                 return playlist
 
     def spin_song(self):
@@ -198,9 +206,9 @@ class SpotifyInterface:
         generated_for = f"⚙️ LIKE « {artist_name} - {track_name} »"
         my_playlist = self.find_automated_playlist()
         self.rename_playlist(my_playlist, generated_for, "Generated automatically.")
-        uri = playback.get('item.uri')
+        uri = playback.get("item.uri")
         recs = benedict(self._spotify.recommendations(seed_tracks=[uri]))
-        tracks = [track.get('id') for track in recs.get('tracks')]
+        tracks = [track.get("id") for track in recs.get("tracks")]
         self.clean_playlist(my_playlist)
         self._spotify.playlist_add_items(my_playlist, tracks)
         time.sleep(1)
@@ -208,12 +216,10 @@ class SpotifyInterface:
 
     def spin_album(self):
         playback = self._get_current()
-        album_uri = playback.get('item.album.uri')
-        self._spotify.start_playback(context_uri=album_uri, offset={
-            'position': 0
-        })
+        album_uri = playback.get("item.album.uri")
+        self._spotify.start_playback(context_uri=album_uri, offset={"position": 0})
 
     def spin_artist(self):
         playback = self._get_current()
-        artist_uri = playback.get('item.artists[0].uri')
+        artist_uri = playback.get("item.artists[0].uri")
         self._spotify.start_playback(context_uri=artist_uri)

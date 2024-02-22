@@ -1,58 +1,108 @@
-from typing import Literal
+from datetime import datetime
+from typing import Literal, Tuple
 
 Code = Literal[
-    "next",
-    "prev",
-    "play/pause",
-    "restart_track",
+    "show_status",
+    "hide_status",
+    "next_track",
+    "prev_track",
+    "play_pause",
+    "loop_track",
+    "seek_fwd",
+    "seek_back",
     "rewind_context",
+    "repeat_track",
     "love",
-    "spin_this",
+    "spin_this_in_last",
+    "spin_this_in_new",
     "volume_up",
     "volume_down",
-    "mute",
-    "power_next",
-    "power_prev",
-    "super_next",
-    "super_prev",
+    "volume_max",
+    "volume_mute",
+    "redo",
+    "undo",
     "cancel",
-    "seek_prev",
-    "seek_next",
+    "rewind_this",
+    "next_multi",
+    "prev_multi",
 ]
 
-key_labels = {
-    "0": "🄌",
-    "1": "➊",
-    "2": "➋",
-    "3": "➌",
-    "4": "➍",
-    "5": "➎",
-    "6": "➏",
-    "7": "➐",
-    "8": "➑",
-    "9": "➒",
-    "*": "⊛",
-    "+": "⊞",
-    "-": "⊟",
-    "/": "⊘",
-    "enter": "⏎",
+code_labels: dict[Code, str] = {
+    "next_track": "⏩",
+    "prev_track": "⏪",
+    "play_pause": "⏯️",
+    "loop_track": "🔂",
+    "seek_fwd": "⬅️",
+    "seek_back": "➡️",
+    "love": "❤️",
+    "spin_this_in_last": "🔄",
+    "spin_this_in_new": "🔄*",
+    "cancel": "❌",
+    "volume_up": "🔉",
+    "volume_down": "🔈",
+    "volume_max": "🔊",
+    "volume_mute": "🔇",
+    "undo": "↩️",
+    "redo": "↪️",
+    "next_multi": "⏭️",
+    "prev_multi": "⏮️",
+    "rewind_context": "⏫",
+    "show_status": "📊",
+    "hide_status": "🌫️",
+}
+
+type Hotkey = str | Tuple[str, str]
+
+key_labels: dict[str, str] = {
+    "0": "0️⃣",
+    "1": "1️⃣",
+    "2": "2️⃣",
+    "3": "3️⃣",
+    "4": "4️⃣",
+    "5": "5️⃣",
+    "6": "6️⃣",
+    "7": "7️⃣",
+    "8": "8️⃣",
+    "9": "9️⃣",
+    "*": "*️⃣️",
+    "+": "➕",
+    "-": "➖",
+    "/": "➗",
+    "enter": "↩️",
+    ".": "●",
 }
 
 
 class Command:
     code: Code
-    hotkey: str | [str, str]
 
-    def __init__(self, command: Code, hotkey: str):
+    def __init__(self, command: Code):
         self.code = command
-        self.hotkey = hotkey
+
+    @property
+    def cmd_label(self):
+        return code_labels[self.code]
 
     def __str__(self):
-        return f"{format_key(self.hotkey)} {self.code}"
+        return f"{self.cmd_label}"
+
+    def to_received(self, key: Hotkey):
+        return ReceivedCommand(self, key)
 
 
-def format_key(key: str | [str, str]) -> str:
-    if isinstance(key, str):
-        return key
-    else:
-        return f"{key[0]} ⋈ {key[1]}"
+class ReceivedCommand(Command):
+    def __init__(self, command: Command, key: Hotkey):
+        super().__init__(command.code)
+        self.key = key
+        self.received = datetime.now()
+
+    @property
+    def key_label(self):
+        def get_label(k):
+            return key_labels[k.replace("num ", "")]
+
+        keys = self.key if isinstance(self.key, tuple) else (self.key,)
+        return "➿".join(get_label(k) for k in keys)
+
+    def __str__(self):
+        return f"{self.cmd_label} {self.key_label}"

@@ -2,9 +2,9 @@ from typing import List
 
 from spotipy import Spotify
 
-from src.spotify.model.track import Track
-from src.spotify.model.resource import SpotifyResource
-from src.spotify.model.artist import Artist
+from src.remote.model.track import Track
+from src.remote.model.resource import SpotifyResource
+from src.remote.model.artist import Artist
 from benedict import BeneDict as benedict
 
 

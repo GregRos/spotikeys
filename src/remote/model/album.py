@@ -1,5 +1,5 @@
-from src.spotify.track import artists_list
-from src.spotify.model.resource import SpotifyResource
+from src.remote.track import artists_list
+from src.remote.model.resource import SpotifyResource
 
 
 class Album(SpotifyResource):

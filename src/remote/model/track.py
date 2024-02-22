@@ -2,10 +2,10 @@ from typing import List
 
 from spotipy import Spotify
 
-from src.spotify.track import artists_list
-from src.spotify.model.resource import SpotifyResource
-from src.spotify.model.artist import Artist
-from src.spotify.model.album import Album
+from src.remote.track import artists_list
+from src.remote.model.resource import SpotifyResource
+from src.remote.model.artist import Artist
+from src.remote.model.album import Album
 
 
 class Track(SpotifyResource):

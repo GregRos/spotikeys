@@ -1,4 +1,4 @@
-from src.spotify.model.resource import SpotifyResource
+from src.remote.model.resource import SpotifyResource
 
 
 class Artist(SpotifyResource):
