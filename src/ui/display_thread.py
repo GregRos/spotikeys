@@ -2,19 +2,19 @@ from threading import Thread
 from tkinter import Tk
 from typing import Callable
 
-from src.ui.floating_tooltip import FloatingTooltip
+from src.ui.floating_tooltip import MediaTooltip
 
 
 class UiThread:
     _thread: Thread
     _tk: Tk
-    _tooltip: FloatingTooltip
-    _last_event: Callable[[FloatingTooltip], None]
+    _tooltip: MediaTooltip
+    _last_event: Callable[[MediaTooltip], None]
 
     def __init__(self):
         def ui_thread():
             self._tk = Tk()
-            self._tooltip = FloatingTooltip(self._tk)
+            self._tooltip = MediaTooltip(self._tk)
             self._tk.mainloop()
 
         self._thread = Thread(target=ui_thread)
@@ -22,5 +22,5 @@ class UiThread:
     def start(self):
         self._thread.start()
 
-    def execute(self, func: Callable[[FloatingTooltip], None], elapsed: int = 0):
+    def execute(self, func: Callable[[MediaTooltip], None], elapsed: int = 0):
         self._tk.after(0, func, self._tooltip)

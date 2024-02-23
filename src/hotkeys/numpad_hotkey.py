@@ -17,8 +17,9 @@ class NumpadHotkey(Hotkey):
         default_command: Command,
         alt_command: Command | None = None,
     ):
-        self._send = send
         super().__init__(key, self._on_down)
+        self._send = send
+
         self.default_command = default_command
         self.alt_command = alt_command
 
@@ -28,5 +29,5 @@ class NumpadHotkey(Hotkey):
                 self._send(self.alt_command.to_received(self.key))
         else:
             self._send(
-                self.default_command.to_received(ModifiedKey(self.key, num0_modifier))
+                self.default_command.to_received(self.key.modifier(num0_modifier))
             )

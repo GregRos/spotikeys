@@ -12,6 +12,9 @@ class Key:
     def __str__(self):
         return f"{self.label} ({self.id})"
 
+    def modified(self, modifier: Key):
+        return ModifiedKey(self, modifier)
+
 
 class ModifiedKey:
     def __init__(self, base: Key, modifier: Key):
