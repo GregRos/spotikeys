@@ -2,14 +2,16 @@ from threading import Thread
 from tkinter import Tk
 from typing import Callable
 
-from src.ui.floating_tooltip import MediaTooltip
+from commanding import ReceivedCommand
+from ui.commands import UiCommand
+from ui.floating_tooltip import MediaTooltip
 
 
-class UiThread:
+class ActivityDisplay:
     _thread: Thread
     _tk: Tk
     _tooltip: MediaTooltip
-    _last_event: Callable[[MediaTooltip], None]
+    _last_ui_command: object
 
     def __init__(self):
         def ui_thread():
@@ -18,6 +20,13 @@ class UiThread:
             self._tk.mainloop()
 
         self._thread = Thread(target=ui_thread)
+
+    def command_start(self, command: ReceivedCommand):
+        def start_timeout():
+
+        self._last_ui_command = command
+        self._tk.after(0, self._tooltip.command_sent, command)
+
 
     def start(self):
         self._thread.start()

@@ -1,7 +1,10 @@
 from tkinter import Tk, Label, SOLID, LEFT, CENTER
 from typing import Tuple
 
+from commanding import ReceivedCommand
 from src.ui.make_clickthrough import make_clickthrough
+from ui.commands import FinishedCommand, ErroredCommand
+from ui.now_playing import MediaStatus
 
 
 def format_duration(seconds):
@@ -75,9 +78,9 @@ class MediaTooltip:
             pos_y = screen_height + pos_y
         return pos_x, pos_y
 
-    def _set_command_header(self, command: ReceivedCommand):
+    def _set_command_header(self, text: str):
         command_line = self._command_line
-        command_line.config(text=command.command.title)
+        command_line.config(text=text)
         command_line.place(x=0, y=0, width=200)
         command_line.pack(ipadx=15, fill="x", expand=True)
         make_clickthrough(command_line)
@@ -104,16 +107,24 @@ class MediaTooltip:
         self._tk.wm_geometry("+%d+%d" % self._pos)
         self._tk.update_idletasks()
 
+    def command_error(self, errored: ErroredCommand):
+        self._set_command_header(errored.command.label)
+        self._set_first_line(f"{errored.error}")
+        for label in (self._song_artist_line, self._song_progress_line):
+            label.pack_forget()
+        self._place_window()
+
     def command_sent(self, command: ReceivedCommand):
-        self._set_command_header(command)
+        self._set_command_header(command.__str__())
         self._set_first_line("⋯ sent ⋯")
         for label in (self._song_artist_line, self._song_progress_line):
             label.pack_forget()
         self._place_window()
 
-    def command_finished(self, command: ReceivedCommand, status: MediaStatus):
-        self._set_command_header(command)
-        self._show_media(status)
+    def command_finished(self, finished: FinishedCommand):
+        text = f"{finished.command.label} {finished.duration}"
+        self._set_command_header(text)
+        self._show_media(finished.state)
 
     def show_progress(self, status: MediaStatus):
         self._command_line.pack_forget()
@@ -130,4 +141,3 @@ class MediaTooltip:
         self._set_artist_line(artist_line)
         self._set_progress_line(progress_line)
         self._place_window()
-
