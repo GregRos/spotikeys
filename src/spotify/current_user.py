@@ -1,9 +1,9 @@
 from spotipy import Spotify
 
-from src.remote.model.playlist import Playlist
+from src.remote.spotify.playlist import Playlist
 from benedict import BeneDict as benedict
 
-from src.remote.model.resource import SpotifyResource
+from src.remote.spotify.resource import SpotifyResource
 
 
 class CurrentUser(SpotifyResource):

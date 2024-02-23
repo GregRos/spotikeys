@@ -3,9 +3,9 @@ from typing import List
 from spotipy import Spotify
 
 from src.remote.track import artists_list
-from src.remote.model.resource import SpotifyResource
-from src.remote.model.artist import Artist
-from src.remote.model.album import Album
+from src.remote.spotify.resource import SpotifyResource
+from src.remote.spotify.artist import Artist
+from src.remote.spotify.album import Album
 
 
 class Track(SpotifyResource):

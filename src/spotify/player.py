@@ -1,8 +1,8 @@
 import benedict
 from spotipy import Spotify
 
-from src.remote.model.base import SpotifyBase
-from src.remote.model.track import Track
+from src.remote.spotify.base import SpotifyBase
+from src.remote.spotify.track import Track
 
 
 class Player(SpotifyBase):

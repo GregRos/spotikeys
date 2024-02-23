@@ -1,4 +1,3 @@
-from threading import Thread
 from tkinter import Tk, Label, SOLID, LEFT, CENTER
 from typing import Tuple
 
@@ -10,41 +9,35 @@ class FloatingTooltip:
     _title: Label
     _body: Label
     _pos: Tuple[int, int]
-    _thread: Thread
 
-    def __init__(self):
-        def start():
-            tk = self._tk = Tk()
-            tk.attributes("-topmost", 1, "-transparentcolor", "black")
-            tk.wm_attributes("-topmost", True)
-            tk.config(bg="black")
-            tk.overrideredirect(True)
-            self._title = title = Label(
-                tk,
-                text="xd",
-                justify=CENTER,
-                relief=SOLID,
-                borderwidth=0,
-                background="#000000",
-                foreground="#ffffff",
-                font=("Segoe UI Emoji", "18", "bold"),
-            )
+    def __init__(self, tk: Tk):
+        self._tk = tk
+        tk.attributes("-topmost", 1, "-transparentcolor", "black")
+        tk.wm_attributes("-topmost", True)
+        tk.config(bg="black")
+        tk.overrideredirect(True)
+        self._title = title = Label(
+            tk,
+            text="xd",
+            justify=CENTER,
+            relief=SOLID,
+            borderwidth=0,
+            background="#000000",
+            foreground="#ffffff",
+            font=("Segoe UI Emoji", "18", "bold"),
+        )
 
-            self._body = body = Label(
-                tk,
-                text="xd",
-                justify=LEFT,
-                relief=SOLID,
-                borderwidth=0,
-                background="#000000",
-                foreground="#ffffff",
-                font=("Segoe UI Emoji", "14", "normal"),
-            )
-            self._tk.update_idletasks()
-            self._tk.mainloop()
-
-        self._thread = Thread(target=start)
-        self._thread.start()
+        self._body = body = Label(
+            tk,
+            text="xd",
+            justify=LEFT,
+            relief=SOLID,
+            borderwidth=0,
+            background="#000000",
+            foreground="#ffffff",
+            font=("Segoe UI Emoji", "14", "normal"),
+        )
+        self._tk.update_idletasks()
 
     def _normalize_pos(self, pos: Tuple[int, int]) -> Tuple[int, int]:
         pos_x, pos_y = pos
@@ -56,41 +49,32 @@ class FloatingTooltip:
             pos_y = screen_height + pos_y
         return pos_x, pos_y
 
-    def set_position(self, pos: Tuple[int, int], after: int = 0):
+    def set_position(self, pos: Tuple[int, int]):
         pos = self._normalize_pos(pos)
         self._pos = pos
         self._tk.wm_geometry("+%d+%d" % pos)
 
-    def set_text(self, title: str, body: str, after: float = 0):
-        def do():
-            self._title.config(text=title)
-            self._body.config(text=body)
+    def set_text(self, title: str, body: str):
+        self._title.config(text=title)
+        self._body.config(text=body)
 
-        self._tk.after(int(after * 1000), do)
+    def show(self, pos: Tuple[int, int]):
+        if pos is None:
+            pos = self._pos
+        pos = self._normalize_pos(pos)
+        title = self._title
+        body = self._body
+        self._tk.wm_geometry("+%d+%d" % pos)
+        title.place(x=0, y=0, width=200)
+        body.place(x=0, y=100, width=200)
+        title.pack(ipadx=15, fill="x", expand=True)
+        body.pack(ipadx=15, fill="x", expand=True)
+        make_clickthrough(title)
+        make_clickthrough(body)
+        self._pos = pos
+        self._tk.update_idletasks()
 
-    def show(self, pos: Tuple[int, int], after: float = 0):
-        def do(pos):
-            if pos is None:
-                pos = self._pos
-            pos = self._normalize_pos(pos)
-            title = self._title
-            body = self._body
-            self._tk.wm_geometry("+%d+%d" % pos)
-            title.place(x=0, y=0, width=200)
-            body.place(x=0, y=100, width=200)
-            title.pack(ipadx=15, fill="x", expand=True)
-            body.pack(ipadx=15, fill="x", expand=True)
-            make_clickthrough(title)
-            make_clickthrough(body)
-            self._pos = pos
-            self._tk.update_idletasks()
-
-        self._tk.after(int(after * 1000), do, pos)
-
-    def hide(self, after: float = 0):
-        def do():
-            self._title.pack_forget()
-            self._body.pack_forget()
-            self._tk.update_idletasks()
-
-        self._tk.after(int(after * 1000), do)
+    def hide(self):
+        self._title.pack_forget()
+        self._body.pack_forget()
+        self._tk.update_idletasks()

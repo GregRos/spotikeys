@@ -49,5 +49,3 @@ code_labels: dict[Code, str] = {
     "show_status": "📊",
     "hide_status": "🌫️",
 }
-
-type Hotkey = str | Tuple[str, str]

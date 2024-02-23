@@ -1,6 +1,6 @@
 from spotipy import Spotify, SpotifyOAuth
 
-from src.remote.model import Player, Artist, Track, Playlist, Album, CurrentUser
+from src.remote.spotify import Player, Artist, Track, Playlist, Album, CurrentUser
 
 
 class Root:

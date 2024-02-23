@@ -4,7 +4,7 @@ A spotify track
 
 from spotipy import Spotify
 
-from src.remote.model.artist import Artist
+from src.remote.spotify.artist import Artist
 
 
 def artists_list(artists: list, spotify: Spotify):

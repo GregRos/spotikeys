@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Literal
 
-from src.commands import code_labels, Hotkey, key_labels
+from src.commands import code_labels
+from src.hotkeys import Hotkey
 
 
 class Command[Code: str]:
@@ -22,18 +23,10 @@ class Command[Code: str]:
 
 
 class ReceivedCommand[Code: Literal](Command):
-    def __init__(self, command: Command, key: Hotkey):
+    def __init__(self, command: Command, hotkey: Hotkey):
         super().__init__(command.code)
-        self.key = key
+        self.hotkey = hotkey
         self.received = datetime.now()
 
-    @property
-    def key_label(self):
-        def get_label(k):
-            return key_labels[k.replace("num ", "")]
-
-        keys = self.key if isinstance(self.key, tuple) else (self.key,)
-        return "➿".join(get_label(k) for k in keys)
-
     def __str__(self):
-        return f"{self.cmd_label} {self.key_label}"
+        return f"{self.cmd_label} {self.hotkey.label}"
