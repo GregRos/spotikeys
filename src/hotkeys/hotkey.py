@@ -4,7 +4,7 @@ from typing import Callable
 import keyboard
 from keyboard import KeyboardEvent
 
-from src.hotkeys import Key
+from src.hotkeys.key import Key
 
 
 class Hotkey:
@@ -40,15 +40,11 @@ class Hotkey:
     def __str__(self):
         return self.key.__str__()
 
-    @property
-    def hook_key(self):
-        return "enter" if self.key == "num enter" else self.key
-
     def __enter__(self):
         if self._registered:
             return
         self._registered = keyboard.hook_key(
-            self.hook_key,
+            self.key.hook_id,
             suppress=True,
             callback=self.on_key,
         )

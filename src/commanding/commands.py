@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from src.hotkeys import Hotkey, Key, ModifiedKey
+from src.hotkeys.key import Key, ModifiedKey
 
 
 class Command[Code: str]:

@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Callable
+from typing import TYPE_CHECKING
 
-from keyboard import KeyboardEvent
 
-from commanding import Command
-from hotkeys import Hotkey
-from hotkeys.numpad_hotkey import NumpadHotkey
+if TYPE_CHECKING:
+    from commanding import Command
+
 from src.hotkeys.labels import key_labels
 
 
@@ -18,6 +17,14 @@ class Key:
     def label(self):
         return key_labels.get(self.id, self.id)
 
+    @property
+    def hook_id(self):
+        return (
+            self.id.replace("num ", "")
+            if self.id == "num enter" or self.id == "num ."
+            else self.id
+        )
+
     def __str__(self):
         return f"{self.label} ({self.id})"
 
@@ -25,56 +32,19 @@ class Key:
         return ModifiedKey(self, modifier)
 
     def bind_numpad(self, command: Command, alt: Command | None = None):
+        from src.hotkeys.bindings import NumpadBinding
+
         return NumpadBinding(self, command, alt)
 
     def bind_off(self):
+        from src.hotkeys.bindings import OffBinding
+
         return OffBinding(self)
 
     def bind_up_down(self, down: Command, up: Command):
+        from src.hotkeys.bindings import UpDownBinding
+
         return UpDownBinding(self, down, up)
-
-    def hotkey(
-        self,
-        on_down: Callable[[KeyboardEvent], None],
-        on_up: Callable[[KeyboardEvent], None],
-    ):
-        return Hotkey(self, on_down, on_up)
-
-
-class OffBinding:
-    def __init__(self, key: Key):
-        self.key = key
-        pass
-
-
-class UpDownBinding:
-    def __init__(self, key: Key, down: Command, up: Command):
-        self.key = key
-        self.command_down = down
-        self.command_up = up
-
-    def __str__(self):
-        return f"{self.key} -- {self.command_down}"
-
-    def __repr__(self):
-        return f"{self.key} -- {self.command_down}"
-
-
-class NumpadBinding:
-    def __init__(self, key: Key, command: Command, alt: Command | None = None):
-        self.key = key
-        self.command = command
-        self.alt_command = alt
-
-    def alt(self, command: Command):
-        self.alt_command = command
-        return self
-
-    def __str__(self):
-        return f"{self.key} -- {self.command}"
-
-    def __repr__(self):
-        return f"{self.key} -- {self.command}"
 
 
 class ModifiedKey:
