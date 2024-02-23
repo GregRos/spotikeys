@@ -4,7 +4,7 @@ import keyboard
 from keyboard import KeyboardEvent
 
 from src.commanding import Command, ReceivedCommand
-from src.shortcuts import Hotkey
+from src.hotkeys import Hotkey
 
 
 class NumpadHotkey(Hotkey):

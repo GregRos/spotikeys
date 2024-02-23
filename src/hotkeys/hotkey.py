@@ -4,7 +4,7 @@ from typing import Callable
 import keyboard
 from keyboard import KeyboardEvent
 
-from src.shortcuts.labels import key_labels
+from src.hotkeys.labels import key_labels
 
 
 class Hotkey:

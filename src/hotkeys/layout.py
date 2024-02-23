@@ -3,7 +3,7 @@ from typing import Callable
 import keyboard
 
 from src.commanding.commands import Command, ReceivedCommand
-from src.shortcuts import Hotkey
+from src.hotkeys import Hotkey
 
 
 class Layout:

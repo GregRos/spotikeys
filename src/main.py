@@ -5,7 +5,7 @@ from time import sleep
 import keyboard
 
 from src.commanding.commands import Command, ReceivedCommand
-from src.shortcuts.buttons import create_layout
+from src.hotkeys.buttons import create_layout
 from ui.floating_tooltip import FloatingTooltip
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
