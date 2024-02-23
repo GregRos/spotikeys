@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from src.hotkeys.labels import key_labels
 
 

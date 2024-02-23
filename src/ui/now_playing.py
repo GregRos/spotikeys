@@ -4,6 +4,7 @@ class MediaStatus:
     ):
         self.title = title
         self.artist = artist
+        self.album = album
         self.position = position
         self.duration = duration
 

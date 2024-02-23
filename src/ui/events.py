@@ -2,7 +2,7 @@ from commanding import ReceivedCommand
 from ui.now_playing import MediaStatus
 
 
-class FinishedCommand:
+class CommandDone:
     def __init__(self, command: ReceivedCommand, elapsed: float, state: MediaStatus):
         self.command = command
         self.elapsed = elapsed
@@ -13,7 +13,7 @@ class FinishedCommand:
         return f"{self.elapsed * 1000:.0f}ms"
 
 
-class ErroredCommand:
+class CommandError:
     def __init__(
         self,
         command: ReceivedCommand,

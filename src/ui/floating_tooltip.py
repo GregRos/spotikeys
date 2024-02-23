@@ -3,7 +3,7 @@ from typing import Tuple
 
 from commanding import ReceivedCommand
 from src.ui.make_clickthrough import make_clickthrough
-from ui.commands import FinishedCommand, ErroredCommand
+from ui.events import CommandDone, CommandError
 from ui.now_playing import MediaStatus
 
 
@@ -107,21 +107,21 @@ class MediaTooltip:
         self._tk.wm_geometry("+%d+%d" % self._pos)
         self._tk.update_idletasks()
 
-    def command_error(self, errored: ErroredCommand):
+    def notify_command_errored(self, errored: CommandError):
         self._set_command_header(errored.command.label)
         self._set_first_line(f"{errored.error}")
         for label in (self._song_artist_line, self._song_progress_line):
             label.pack_forget()
         self._place_window()
 
-    def command_sent(self, command: ReceivedCommand):
+    def notify_command_start(self, command: ReceivedCommand):
         self._set_command_header(command.__str__())
         self._set_first_line("⋯ sent ⋯")
         for label in (self._song_artist_line, self._song_progress_line):
             label.pack_forget()
         self._place_window()
 
-    def command_finished(self, finished: FinishedCommand):
+    def notify_command_done(self, finished: CommandDone):
         text = f"{finished.command.label} {finished.duration}"
         self._set_command_header(text)
         self._show_media(finished.state)
@@ -141,3 +141,7 @@ class MediaTooltip:
         self._set_artist_line(artist_line)
         self._set_progress_line(progress_line)
         self._place_window()
+
+    def hide(self):
+        self._tk.withdraw()
+        self._tk.update_idletasks()
