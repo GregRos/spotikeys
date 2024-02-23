@@ -2,20 +2,20 @@ from typing import List
 
 from spotipy import Spotify
 
-from src.remote.track import artists_list
-from src.remote.spotify.resource import SpotifyResource
-from src.remote.spotify.artist import Artist
-from src.remote.spotify.album import Album
+from src.spotify import SpotifyResource
+from src.spotify import Artist
+from src.spotify import Album
+from src.spotify.utils import not_none
 
 
 class Track(SpotifyResource):
 
     @staticmethod
     def from_id(spotify: Spotify, id: str):
-        return Track(spotify, spotify.track(id))
+        return Track(spotify, not_none(spotify.track(id)))
 
     def __init__(self, spotify: Spotify, data: dict):
-        super().__init__(spotify, lambda: spotify.track(self.id), data)
+        super().__init__(spotify, lambda: not_none(spotify.track(self.id)), data)
 
     def play(self):
         self._spotify.start_playback(uris=[self.uri])
@@ -44,9 +44,6 @@ class Track(SpotifyResource):
     def save(self):
         self._spotify.current_user_saved_tracks_add([self.id])
 
-    @property
-    def popularity(self) -> int:
-        return self._data.get("popularity")
 
     @property
     def _artists_string(self):

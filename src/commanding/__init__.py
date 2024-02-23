@@ -1,1 +1,1 @@
-from commands import Command, ReceivedCommand
+from .commands import Command, ReceivedCommand

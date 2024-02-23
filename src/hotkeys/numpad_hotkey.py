@@ -4,14 +4,16 @@ import keyboard
 from keyboard import KeyboardEvent
 
 from src.commanding import Command, ReceivedCommand
-from src.hotkeys import Hotkey
+from src.hotkeys import Hotkey, Key, ModifiedKey
+
+num0_modifier = Key("num 0")
 
 
 class NumpadHotkey(Hotkey):
     def __init__(
         self,
         send: Callable[[ReceivedCommand], None],
-        key: str,
+        key: Key,
         default_command: Command,
         alt_command: Command | None = None,
     ):
@@ -25,4 +27,6 @@ class NumpadHotkey(Hotkey):
             if self.alt_command:
                 self._send(self.alt_command.to_received(self.key))
         else:
-            self._send(self.default_command.to_received(self.key))
+            self._send(
+                self.default_command.to_received(ModifiedKey(self.key, num0_modifier))
+            )

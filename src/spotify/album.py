@@ -1,10 +1,12 @@
-from src.remote.track import artists_list
-from src.remote.spotify.resource import SpotifyResource
+from spotipy import Spotify
+
+from spotify import Artist
+from spotify.resource import SpotifyResource
 
 
 class Album(SpotifyResource):
     @staticmethod
-    def from_id(spotify, id):
+    def from_id(spotify: Spotify, id):
         return Album(spotify, spotify.album(id))
 
     def __init__(self, spotify, data: dict):
@@ -12,7 +14,7 @@ class Album(SpotifyResource):
 
     @property
     def artists(self):
-        return artists_list(self._data.get("artists"), self._spotify)
+        return [Artist(self._spotify, artist) for artist in self._data.get("artists")]
 
     @property
     def release_date(self):

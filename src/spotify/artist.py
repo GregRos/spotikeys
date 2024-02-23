@@ -1,9 +1,11 @@
-from src.remote.spotify.resource import SpotifyResource
+from spotipy import Spotify
+
+from src.spotify.resource import SpotifyResource
 
 
 class Artist(SpotifyResource):
     @staticmethod
-    def from_id(spotify, id):
+    def from_id(spotify: Spotify, id):
         return Artist(spotify, spotify.artist(id))
 
     def __init__(self, spotify, data: dict):

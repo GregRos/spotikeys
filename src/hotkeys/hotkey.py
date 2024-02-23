@@ -4,7 +4,7 @@ from typing import Callable
 import keyboard
 from keyboard import KeyboardEvent
 
-from src.hotkeys.labels import key_labels
+from src.hotkeys import Key
 
 
 class Hotkey:
@@ -14,7 +14,7 @@ class Hotkey:
 
     def __init__(
         self,
-        key: str,
+        key: Key,
         on_down: Callable[[KeyboardEvent], None],
         on_up: Callable[[KeyboardEvent], None] | None = None,
     ):
@@ -22,13 +22,9 @@ class Hotkey:
         self.on_down = on_down
         self.on_up = on_up
 
-    @property
-    def label(self):
-        return key_labels.get(self.key, self.key)
-
     def on_key(self, e: KeyboardEvent):
         with self._lock:
-            if (e.is_keypad) != ("num" in self.key):
+            if (e.is_keypad) != ("num" in self.key.id):
                 return True
             if e.event_type == "up":
                 self.last_emitted = None
@@ -40,6 +36,9 @@ class Hotkey:
                 self.last_emitted = e
                 self.on_down(e)
             return False
+
+    def __str__(self):
+        return self.key.__str__()
 
     @property
     def hook_key(self):

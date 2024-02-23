@@ -3,7 +3,7 @@ from typing import Callable
 from benedict import BeneDict as benedict
 from spotipy import Spotify
 
-from src.remote.spotify.base import SpotifyBase
+from src.spotify import SpotifyBase
 
 
 class SpotifyResource(SpotifyBase):
@@ -11,16 +11,16 @@ class SpotifyResource(SpotifyBase):
         super().__init__(spotify, reload, data)
 
     @property
-    def name(self):
-        return self._data.get("name") or self._data.get("display_name")
+    def name(self) -> str:
+        return str(self._data.get("name") or self._data.get("display_name"))
 
     @property
-    def id(self):
-        return self._data.get("id")
+    def id(self) -> str:
+        return str(self._data.get("id"))
 
     @property
     def uri(self):
-        return self._data.get("uri")
+        return str(self._data.get("uri"))
 
     def __str__(self):
         return f"{self.__class__.name}({self.name})"

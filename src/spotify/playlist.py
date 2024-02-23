@@ -2,19 +2,21 @@ from typing import List
 
 from spotipy import Spotify
 
-from src.remote.spotify.track import Track
-from src.remote.spotify.resource import SpotifyResource
-from src.remote.spotify.artist import Artist
+from src.spotify import Track
+from src.spotify import SpotifyResource
+from src.spotify import Artist
 from benedict import BeneDict as benedict
+
+from src.spotify.utils import not_none
 
 
 class Playlist(SpotifyResource):
     @staticmethod
     def from_id(spotify: Spotify, id: str):
-        return Playlist(spotify, spotify.playlist(id))
+        return Playlist(spotify, not_none(spotify.playlist(id)))
 
     def __init__(self, spotify: Spotify, data: dict):
-        super().__init__(spotify, lambda: spotify.playlist(self.id), data)
+        super().__init__(spotify, lambda: not_none(spotify.playlist(self.id)), data)
 
     def play(self):
         self._spotify.start_playback(context_uri=self.uri)
@@ -29,14 +31,14 @@ class Playlist(SpotifyResource):
     def unfollow(self):
         self._spotify.current_user_unfollow_playlist(self.id)
 
-    @SpotifyResource.name.setter
+    @name.setter
     def name(self, name):
         self._spotify.playlist_change_details(self.id, name=name)
         self._data["name"] = name
 
     @property
     def images(self) -> List[dict]:
-        return self._data.get("images")
+        return not_none(self._data.get("images"))
 
     def reload(self):
         self._data = benedict(self._spotify.playlist(self.id))
@@ -61,18 +63,18 @@ class Playlist(SpotifyResource):
 
     @property
     def owner(self) -> Artist:
-        return Artist(self._spotify, self._data.get("owner"))
+        return Artist(self._spotify, not_none(self._data.get("owner")))
 
     @property
     def tracks(self) -> List[Track]:
         return [
-            Track(track.get("track"), self._spotify)
+            Track(self._spotify, track.get("track"))
             for track in self._data.get("tracks").get("items")
         ]
 
     @property
     def total_tracks(self) -> int:
-        return self._data.get("tracks").get("total")
+        return not_none(self._data.get("tracks").get("total"))
 
     @property
     def public(self):
