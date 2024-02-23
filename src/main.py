@@ -4,7 +4,7 @@ from time import sleep
 
 import keyboard
 
-from src.commands import Command, ReceivedCommand
+from src.commanding.commands import Command, ReceivedCommand
 from src.shortcuts.buttons import create_layout
 from ui.floating_tooltip import FloatingTooltip
 
