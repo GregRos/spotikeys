@@ -2,9 +2,9 @@ from typing import List
 
 from spotipy import Spotify
 
-from src.spotify import Track
-from src.spotify import SpotifyResource
-from src.spotify import Artist
+from src.spotify.track import Track
+from src.spotify.resource import SpotifyResource
+from src.spotify.artist import Artist
 from benedict import BeneDict as benedict
 
 from src.spotify.utils import not_none

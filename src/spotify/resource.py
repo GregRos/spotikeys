@@ -3,7 +3,7 @@ from typing import Callable
 from benedict import BeneDict as benedict
 from spotipy import Spotify
 
-from src.spotify import SpotifyBase
+from src.spotify.base import SpotifyBase
 
 
 class SpotifyResource(SpotifyBase):

@@ -1,6 +1,6 @@
 from spotipy import Spotify
 
-from src.spotify import Playlist
+from src.spotify.playlist import Playlist
 from src.spotify.resource import SpotifyResource
 
 

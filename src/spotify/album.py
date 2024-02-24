@@ -1,7 +1,7 @@
 from spotipy import Spotify
 
-from spotify import Artist
-from spotify.resource import SpotifyResource
+from src.spotify.artist import Artist
+from src.spotify.resource import SpotifyResource
 
 
 class Album(SpotifyResource):
