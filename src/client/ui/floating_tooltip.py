@@ -1,7 +1,7 @@
 from tkinter import Tk, Label, SOLID, LEFT, CENTER
 from typing import Tuple
 
-from commanding import ReceivedCommand
+from client.received_command import ReceivedCommand
 from src.ui.make_clickthrough import make_clickthrough
 from ui.events import CommandDone, CommandError
 from ui.now_playing import MediaStatus

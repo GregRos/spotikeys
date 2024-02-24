@@ -5,7 +5,8 @@ import keyboard
 from src.hotkeys.key import Key, ModifiedKey
 from src.hotkeys.bindings import Binding, OffBinding, UpDownBinding, NumpadBinding
 from src.hotkeys.numpad_hotkey import NumpadHotkey
-from src.commanding.commands import Command, ReceivedCommand
+from src.commanding.commands import Command
+from client.received_command import ReceivedCommand
 from src.hotkeys import Hotkey
 
 

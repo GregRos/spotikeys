@@ -1,4 +1,4 @@
-from commanding import ReceivedCommand
+from client.received_command import ReceivedCommand
 from ui.now_playing import MediaStatus
 
 

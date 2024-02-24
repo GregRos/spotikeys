@@ -3,7 +3,7 @@ from time import sleep
 from tkinter import Tk
 from typing import Callable
 
-from commanding import ReceivedCommand
+from client.received_command import ReceivedCommand
 from ui.floating_tooltip import MediaTooltip
 
 

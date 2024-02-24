@@ -10,7 +10,8 @@ class Root:
             client_secret="2370df9b5a7840a183f44bbd795483fa",
             scope=",".join(scopes),
             redirect_uri="http://localhost:12000",
-        )
+            open_browser=False,
+        ).open_browser
         self._spotify = Spotify(auth_manager=auth_manager)
         self._spotify._session.trust_env = False
 
