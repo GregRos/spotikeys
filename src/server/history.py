@@ -2,13 +2,14 @@ from io import FileIO
 from os import PathLike
 from typing import BinaryIO
 
-from commanding import Command, CommandSet
+from commanding import Command
 
+def _command_entries()
 
 class PersistentCommandHistory:
     file: BinaryIO
 
-    def __init__(self, filename: PathLike, commands: CommandSet):
+    def __init__(self, filename: PathLike, commands: object):
         self.filename = filename
         self.commands = commands
 

@@ -1,6 +1,6 @@
 from typing import Any, Literal, Tuple, Protocol
 
-from commanding import Command, CommandSet
+from commanding import Command
 from commanding.commands import command
 from src.server.errors import NoHandlerError
 
@@ -29,8 +29,6 @@ Code = Literal[
     "next_multi",
     "prev_multi",
 ]
-
-commands = CommandSet()
 
 
 class MediaCommands(Protocol):
@@ -63,9 +61,6 @@ class MediaCommands(Protocol):
 
     @command("⏩")
     def next_track(self) -> None: ...
-
-    @command("🔂")
-    def repeat_track(self) -> None: ...
 
     @command("❤️")
     def love(self) -> None: ...
@@ -102,31 +97,3 @@ class MediaCommands(Protocol):
 
     @command("📊")
     def hide_status(self) -> None: ...
-
-
-
-
-
-cmd_volume_down = commands.define("volume_down", "🔈")
-cmd_volume_mute = commands.define("volume_mute", "🔇")
-cmd_volume_up = commands.define("volume_up", "🔊")
-cmd_volume_max = commands.define("volume_max", "🔊")
-cmd_seek_bwd = commands.define("seek_back", "⬅️")
-cmd_loop_track = commands.define("loop_track", "🔂")
-cmd_seek_fwd = commands.define("seek_fwd", "➡️")
-cmd_prev_track = commands.define("prev_track", "⏪")
-cmd_play_pause = commands.define("play_pause", "⏯️")
-cmd_next_track = commands.define("next_track", "⏩")
-cmd_undo = commands.define("undo", "↩️")
-cmd_love = commands.define("love", "❤️")
-cmd_redo = commands.define("redo", "↪️")
-cmd_cancel = commands.define("cancel", "❌️")
-cmd_spin_this_in_last = commands.define("spin_this_in_last", "🔄")
-
-cmd_spin_this_in_new = commands.define("spin_this_in_new", "🔄*")
-cmd_prev_multi = commands.define("prev_multi", "⏮️")
-cmd_next_multi = commands.define("next_multi", "⏭️")
-
-cmd_show_status = commands.define("show_status", "📊")
-cmd_get_status = commands.define("get_status", "📊")
-cmd_hide_status = commands.define("hide_status", "📊")

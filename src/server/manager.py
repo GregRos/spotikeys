@@ -11,7 +11,7 @@ from src.commands import *
 from src.server.spotify import Root
 
 
-class MediaControlServer(MediaCommands, CommandHandler):
+class MediaCommandHandler(MediaCommands, CommandHandler):
     root: Root
     cancel_flag = Event()
 
@@ -53,6 +53,10 @@ class MediaControlServer(MediaCommands, CommandHandler):
     @override
     def volume_mute(self):
         print("Mute")
+
+    @override
+    def volume_max(self):
+        self.root.player.volume = 100
 
     @override
     def cancel(self):
@@ -97,6 +101,26 @@ class MediaControlServer(MediaCommands, CommandHandler):
     @override
     def get_status(self):
         print(self.root.player.track)
+
+    @override
+    def rewind_this(self):
+        print("Rewind this")
+
+    @override
+    def next_multi(self):
+        print("Next multi")
+
+    @override
+    def prev_multi(self):
+        print("Prev multi")
+
+    @override
+    def show_status(self):
+        print(self.root.player.track)
+
+    @override
+    def hide_status(self):
+        print("Hide status")
 
     @override
     def __call__(self, command: Command):

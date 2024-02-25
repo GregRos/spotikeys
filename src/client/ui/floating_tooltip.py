@@ -2,7 +2,7 @@ from tkinter import Tk, Label, SOLID, LEFT, CENTER
 from typing import Tuple
 
 from client.received_command import ReceivedCommand
-from src.ui.make_clickthrough import make_clickthrough
+from .make_clickthrough import make_clickthrough
 from ui.events import CommandDone, CommandError
 from ui.now_playing import MediaStatus
 
@@ -30,7 +30,7 @@ class MediaTooltip:
             borderwidth=0,
             background="#000000",
             foreground="#ffffff",
-            font=("Segoe UI Emoji", "18", "bold"),
+            font=("Segoe UI Emoji", 18, "bold"),
         )
 
         self._song_title_line = Label(
@@ -41,7 +41,7 @@ class MediaTooltip:
             borderwidth=0,
             background="#000000",
             foreground="#ffffff",
-            font=("Segoe UI Emoji", "12"),
+            font=("Segoe UI Emoji", 12),
         )
 
         self._song_artist_line = Label(
@@ -52,7 +52,7 @@ class MediaTooltip:
             borderwidth=0,
             background="#000000",
             foreground="#ff0000",
-            font=("Segoe UI Emoji", "12"),
+            font=("Segoe UI Emoji", 12),
         )
 
         self._song_progress_line = Label(
@@ -63,7 +63,7 @@ class MediaTooltip:
             borderwidth=0,
             background="#000000",
             foreground="#ff0000",
-            font=("Segoe UI Emoji", "12"),
+            font=("Segoe UI Emoji", 12),
         )
 
         self._tk.update_idletasks()
@@ -108,7 +108,7 @@ class MediaTooltip:
         self._tk.update_idletasks()
 
     def notify_command_errored(self, errored: CommandError):
-        self._set_command_header(errored.define.label)
+        self._set_command_header(errored.command.command.__str__())
         self._set_first_line(f"{errored.error}")
         for label in (self._song_artist_line, self._song_progress_line):
             label.pack_forget()
@@ -121,10 +121,10 @@ class MediaTooltip:
             label.pack_forget()
         self._place_window()
 
-    def notify_command_done(self, finished: CommandDone):
-        text = f"{finished.define.label} {finished.duration}"
+    def notify_command_done(self, finished: ReceivedCommand, duration: float, state: MediaStatus):
+        text = f"{finished.command.label} {duration}"
         self._set_command_header(text)
-        self._show_media(finished.state)
+        self._show_media(state)
 
     def show_progress(self, status: MediaStatus):
         self._command_line.pack_forget()

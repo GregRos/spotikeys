@@ -30,7 +30,8 @@ class ActivityDisplay:
 
         Thread(target=on_timeout).start()
 
-    def run(self, action: Callable[[MediaTooltip], None]):
+    def run(self, action: Callable[[MediaTooltip], None], auto_hide: bool = True):
         self._last_ui_action = action
         self._tk.after(0, action, self._tooltip)
-        self.add_auto_hide_timer(action)
+        if auto_hide:
+            self.add_auto_hide_timer(action)

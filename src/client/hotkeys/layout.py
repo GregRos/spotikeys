@@ -2,15 +2,16 @@ from typing import Callable
 
 import keyboard
 
-from src.hotkeys.key import Key, ModifiedKey
-from src.hotkeys.bindings import Binding, OffBinding, UpDownBinding, NumpadBinding
-from src.hotkeys.numpad_hotkey import NumpadHotkey
+from .key import Key, ModifiedKey
+from .bindings import Binding, OffBinding, UpDownBinding, NumpadBinding
+from .numpad_hotkey import NumpadHotkey
 from src.commanding.commands import Command
 from client.received_command import ReceivedCommand
-from src.hotkeys import Hotkey
+from .hotkey import Hotkey
 
 
 class Layout:
+
     def __init__(self, name: str, send: Callable[[ReceivedCommand], None]):
         self._hotkeys = []
         self.name = name
@@ -25,7 +26,9 @@ class Layout:
                 return lambda e: None
 
             def send(e: keyboard.KeyboardEvent):
-                self._send(command.to_received(binding.key))
+                if not self._send:
+                    raise ValueError("No send function set")
+                self._send(ReceivedCommand(command, binding.key))
 
             return send
 
@@ -41,9 +44,6 @@ class Layout:
 
     def add_bindings(self, *bindings: Binding):
         self._hotkeys += (self._binding_to_hotkey(binding) for binding in bindings)
-
-    def send(self, key: Key | ModifiedKey, command: Command):
-        self._send(command.to_received(key))
 
     def __enter__(self):
         for hotkey in self._hotkeys:

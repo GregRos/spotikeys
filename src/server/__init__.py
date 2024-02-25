@@ -1,2 +1,2 @@
 from .errors import BusyError, NoHandlerError, LocalCommandError
-from .manager import MediaControlServer
+from .manager import MediaCommandHandler
