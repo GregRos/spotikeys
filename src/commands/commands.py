@@ -2,7 +2,6 @@ from typing import Any, Literal, Tuple, Protocol
 
 from commanding import Command
 from commanding.commands import command
-from src.server.errors import NoHandlerError
 
 Code = Literal[
     "show_status",

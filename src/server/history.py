@@ -4,7 +4,6 @@ from typing import BinaryIO
 
 from commanding import Command
 
-def _command_entries()
 
 class PersistentCommandHistory:
     file: BinaryIO
