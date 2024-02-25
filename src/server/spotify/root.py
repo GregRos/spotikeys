@@ -1,17 +1,16 @@
 from spotipy import Spotify, SpotifyOAuth
 
-from src.spotify import Player, Artist, Track, Playlist, Album, CurrentUser
+from src.server.spotify import Player, Artist, Track, Playlist, Album, CurrentUser
 
 
 class Root:
-    def __init__(self):
+    def __init__(self, client_id: str, client_secret: str, redirect_uri: str):
         auth_manager = SpotifyOAuth(
-            client_id="b996e2c82b574509bec24fbd11eda035",
-            client_secret="2370df9b5a7840a183f44bbd795483fa",
-            scope=",".join(scopes),
-            redirect_uri="http://localhost:12000",
-            open_browser=False,
-        ).open_browser
+            client_id=client_id,
+            client_secret=client_secret,
+            redirect_uri=redirect_uri,
+            scope=" ".join(scopes),
+        )
         self._spotify = Spotify(auth_manager=auth_manager)
         self._spotify._session.trust_env = False
 
