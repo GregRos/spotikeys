@@ -108,7 +108,7 @@ class MediaTooltip:
         self._tk.update_idletasks()
 
     def notify_command_errored(self, errored: CommandError):
-        self._set_command_header(errored.command.label)
+        self._set_command_header(errored.define.label)
         self._set_first_line(f"{errored.error}")
         for label in (self._song_artist_line, self._song_progress_line):
             label.pack_forget()
@@ -122,7 +122,7 @@ class MediaTooltip:
         self._place_window()
 
     def notify_command_done(self, finished: CommandDone):
-        text = f"{finished.command.label} {finished.duration}"
+        text = f"{finished.define.label} {finished.duration}"
         self._set_command_header(text)
         self._show_media(finished.state)
 

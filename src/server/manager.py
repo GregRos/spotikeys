@@ -1,100 +1,103 @@
+from os import PathLike
+from pathlib import Path
 from threading import Event
 from typing import override
 
-from commanding.handler import CommandHandler
+from src.commanding import Command
+from src.commanding.handler import CommandHandler
+from src.server.history import PersistentCommandHistory
 
 from src.commands import *
-from spotify.root import Root
+from src.server.spotify import Root
 
 
-class MediaControlServer(CommandHandler[Code]):
-    _root: Root
-    _cancel_flag = Event()
+class MediaControlServer(MediaCommands, CommandHandler):
+    root: Root
+    cancel_flag = Event()
+
+    def __init__(self, root: Root, history_file: PathLike):
+        self.root = root
+        self.history = PersistentCommandHistory(history_file, commands)
+
+    def exec(self, command: Command):
+        self.history.push(command)
 
     def pop_cancel(self):
-        is_set = self._cancel_flag.is_set()
-        self._cancel_flag.clear()
+        is_set = self.cancel_flag.is_set()
+        self.cancel_flag.clear()
         return is_set
 
-    def __init__(self, root: Root):
-
-        self._root = root
-
-    def _get_media(self):
+    def get_media(self):
         return "x"
 
-    @override(super().default_response)
-    def default_response(self):
-        return self._get_media()
+    @override
+    def seek_fwd(self):
+        self.root.player.progress += 30
 
-    @super().register(cmd_seek_fwd)
-    def _seek_fwd(self):
-        self._root.player.progress += 30
+    @override
+    def seek_bwd(self):
+        self.root.player.progress -= 30
 
-    @super().register(cmd_seek_bwd)
-    def _seek_bwd(self):
-        self._root.player.progress -= 30
+    @override
+    def play_pause(self):
+        self.root.player.play_pause()
 
-    @super().register(cmd_play_pause)
-    def _play_pause(self):
-        self._root.player.play_pause()
+    @override
+    def volume_up(self):
+        self.root.player.volume += 10
 
-    @super().register(cmd_volume_up)
-    def _volume_up(self):
-        self._root.player.volume += 10
+    @override
+    def volume_down(self):
+        self.root.player.volume -= 10
 
-    @super().register(cmd_volume_down)
-    def _volume_down(self):
-        self._root.player.volume -= 10
-
-    @super().register(cmd_volume_mute)
-    def _volume_mute(self):
+    @override
+    def volume_mute(self):
         print("Mute")
 
-    @super().register(cmd_cancel)
-    def _cancel(self):
-        self._root.player.cancel()
+    @override
+    def cancel(self):
+        self.root.player.cancel()
 
-    @super().register(cmd_love)
-    def _love(self):
-        track = self._root.player.track
+    @override
+    def love(self):
+        track = self.root.player.track
         track.save()
         track.album.save()
         track.artists[0].save()
 
-    @super().register(cmd_prev_track)
-    def _prev_track(self):
-        self._root.player.prev_track()
+    @override
+    def prev_track(self):
+        self.root.player.prev_track()
 
-    @super().register(cmd_next_track)
-    def _next_track(self):
-        self._root.player.next_track()
+    @override
+    def next_track(self):
+        self.root.player.next_track()
 
-    @super().register(cmd_loop_track)
-    def _loop_track(self):
-        self._root.player.repeat = "track"
-        self._root.player.progress = 0
+    @override
+    def loop_track(self):
+        self.root.player.repeat = "track"
+        self.root.player.progress = 0
 
-    @super().register(cmd_get_status)
-    def _get_status(self):
-        print(self._root.player.track)
-
-    @super().register(cmd_undo)
-    def _undo(self):
+    @override
+    def undo(self):
         print("Undo")
 
-    @super().register(cmd_redo)
-    def _redo(self):
+    @override
+    def redo(self):
         print("Redo")
 
-    @super().register(cmd_spin_this_in_last)
-    def _spin_this_in_last(self):
+    @override
+    def spin_this_in_last(self):
         print("Spin this in last")
 
-    @super().register(cmd_spin_this_in_new)
-    def _spin_this_in_new(self):
+    @override
+    def spin_this_in_new(self):
         print("Spin this in new")
 
-    @super().register(cmd_get_status)
-    def _get_status(self):
-        print(self._root.player.track)
+    @override
+    def get_status(self):
+        print(self.root.player.track)
+
+    @override
+    def __call__(self, command: Command):
+        return super().__call__(command) or self.get_media()

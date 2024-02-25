@@ -5,26 +5,14 @@ from commanding import Command
 from server import LocalCommandError, NoHandlerError, BusyError
 
 
-class CommandHandler[Code: str]:
-    _current: Command[Code] | None = None
-    _handlers: dict[Code, Callable[[Command[Code]], Any]] = {}
+class CommandHandler:
+    _current: Command | None = None
 
-    @abstractmethod
-    def default_response(self):
-        pass
+    def __init__(self, command_set: str):
+        self._command_set = command_set
 
-    def register(self, command: Command):
-        def decorator(callback: Callable[[Command[Code]], Any]):
-            if command.code in self._handlers:
-                raise ValueError(f"Handler for {command} already exists")
-
-            self._handlers[command.code] = callback
-            return callback
-
-        return decorator
-
-    def receive(self, command: Command[Code]):
-        handler = self._handlers.get(command.code)
+    def __call__(self, command: Command):
+        handler = getattr(self, command.code, None)
         if command.is_local:
             raise LocalCommandError(command)
         if not handler:
@@ -36,4 +24,4 @@ class CommandHandler[Code: str]:
         self._current = command
         return_value = handler(command)
         self._current = None
-        return return_value or self.default_response()
+        return return_value
