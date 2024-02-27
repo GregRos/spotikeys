@@ -3,8 +3,8 @@ from time import sleep
 from tkinter import Tk
 from typing import Callable
 
-from client.received_command import ReceivedCommand
-from ui.floating_tooltip import MediaTooltip
+from src.client.received_command import ReceivedCommand
+from src.client.ui.floating_tooltip import MediaTooltip
 
 
 class ActivityDisplay:

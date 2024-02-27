@@ -3,10 +3,9 @@ from typing import Callable
 import keyboard
 from keyboard import KeyboardEvent
 
-from commands.commands import Code
+from src.commands.commands import Code
 from src.commanding import Command
-from client.received_command import ReceivedCommand
-from src.hotkeys import Hotkey, Key, ModifiedKey
+from src.client.hotkeys import Hotkey, Key, ModifiedKey
 
 num0_modifier = Key("num 0")
 

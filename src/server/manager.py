@@ -32,23 +32,23 @@ class MediaCommandHandler(MediaCommands, CommandHandler):
 
     @override
     def seek_fwd(self):
-        self.root.player.progress += 30
+        self.root.playback.progress += 30
 
     @override
     def seek_bwd(self):
-        self.root.player.progress -= 30
+        self.root.playback.progress -= 30
 
     @override
     def play_pause(self):
-        self.root.player.play_pause()
+        self.root.playback.play_pause()
 
     @override
     def volume_up(self):
-        self.root.player.volume += 10
+        self.root.playback.volume += 10
 
     @override
     def volume_down(self):
-        self.root.player.volume -= 10
+        self.root.playback.volume -= 10
 
     @override
     def volume_mute(self):
@@ -56,31 +56,31 @@ class MediaCommandHandler(MediaCommands, CommandHandler):
 
     @override
     def volume_max(self):
-        self.root.player.volume = 100
+        self.root.playback.volume = 100
 
     @override
     def cancel(self):
-        self.root.player.cancel()
+        self.root.playback.cancel()
 
     @override
     def love(self):
-        track = self.root.player.track
+        track = self.root.playback.track
         track.save()
         track.album.save()
         track.artists[0].save()
 
     @override
     def prev_track(self):
-        self.root.player.prev_track()
+        self.root.playback.prev_track()
 
     @override
     def next_track(self):
-        self.root.player.next_track()
+        self.root.playback.next_track()
 
     @override
     def loop_track(self):
-        self.root.player.repeat = "track"
-        self.root.player.progress = 0
+        self.root.playback.repeat = "track"
+        self.root.playback.progress = 0
 
     @override
     def undo(self):
@@ -100,7 +100,7 @@ class MediaCommandHandler(MediaCommands, CommandHandler):
 
     @override
     def get_status(self):
-        print(self.root.player.track)
+        print(self.root.playback.track)
 
     @override
     def rewind_this(self):
@@ -116,7 +116,7 @@ class MediaCommandHandler(MediaCommands, CommandHandler):
 
     @override
     def show_status(self):
-        print(self.root.player.track)
+        print(self.root.playback.track)
 
     @override
     def hide_status(self):

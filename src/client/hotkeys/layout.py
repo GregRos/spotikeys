@@ -6,7 +6,7 @@ from .key import Key, ModifiedKey
 from .bindings import Binding, OffBinding, UpDownBinding, NumpadBinding
 from .numpad_hotkey import NumpadHotkey
 from src.commanding.commands import Command
-from client.received_command import ReceivedCommand
+from src.client.received_command import ReceivedCommand
 from .hotkey import Hotkey
 
 
@@ -26,6 +26,7 @@ class Layout:
                 return lambda e: None
 
             def send(e: keyboard.KeyboardEvent):
+                print(f"Sending {command} for {e}")
                 if not self._send:
                     raise ValueError("No send function set")
                 self._send(ReceivedCommand(command, binding.key))

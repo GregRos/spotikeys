@@ -8,15 +8,14 @@ type Reload = Callable[[], dict]
 
 
 class SpotifyBase:
-    _data: benedict
+    _data: benedict | None
     _spotify: Spotify
-    _reload: Reload
     _retrieved: datetime
 
-    def __init__(self, spotify: Spotify, reload: Callable[[], dict], data: dict):
+    def __init__(self, spotify: Spotify, reload: Callable[[], dict | None], data: dict | None):
         self._reload = reload
         self._spotify = spotify
-        self._data = benedict(data)
+        self._data = data if data is None else benedict(data)
         self._retrieved = datetime.now()
 
     def reload(self):

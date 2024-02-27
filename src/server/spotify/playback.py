@@ -3,23 +3,22 @@ from typing import Literal
 import benedict
 from spotipy import Spotify
 
-from src.spotify.base import SpotifyBase
-from src.spotify.track import Track
+from src.server.spotify.base import SpotifyBase
+from src.server.spotify.track import Track
 
 
-class Player(SpotifyBase):
-    def __init__(self, spotify: Spotify):
-        def current_playback():
-            return spotify.current_playback()
-
-        super().__init__(spotify, current_playback, current_playback())
+class Playback(SpotifyBase):
 
     @property
     def track(self):
+        if not self._data:
+            return None
         return Track(self._spotify, self._data.get("item"))
 
     @property
     def is_playing(self) -> bool:
+        if not self._data:
+            return False
         return self._data.get("is_playing")
 
     @property

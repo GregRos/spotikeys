@@ -2,10 +2,10 @@ from typing import List
 
 from spotipy import Spotify
 
-from src.spotify import SpotifyResource
-from src.spotify import Artist
-from src.spotify import Album
-from src.spotify.utils import not_none
+from src.server.spotify import SpotifyResource
+from src.server.spotify import Artist
+from src.server.spotify import Album
+from src.server.spotify.utils import not_none
 
 
 class Track(SpotifyResource):
@@ -43,7 +43,6 @@ class Track(SpotifyResource):
 
     def save(self):
         self._spotify.current_user_saved_tracks_add([self.id])
-
 
     @property
     def _artists_string(self):

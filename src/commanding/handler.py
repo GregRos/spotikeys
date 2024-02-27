@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from typing import Callable, Any
 
-from commanding import Command
-from server import LocalCommandError, NoHandlerError, BusyError
+from src.commanding import Command
+from src.server.errors import LocalCommandError, NoHandlerError, BusyError
 
 
 class CommandHandler:
@@ -22,6 +22,6 @@ class CommandHandler:
             raise BusyError(self._current)
 
         self._current = command
-        return_value = handler(command)
+        return_value = handler()
         self._current = None
         return return_value

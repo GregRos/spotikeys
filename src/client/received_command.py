@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from client.hotkeys import Key, ModifiedKey
-from commanding import Command
+from src.client.hotkeys.key import Key, ModifiedKey
+from src.commanding import Command
 
 
 class ReceivedCommand[Code: str]:

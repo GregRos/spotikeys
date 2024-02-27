@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from src.commanding import Command
-from src.hotkeys.key import Key
+from src.client.hotkeys.key import Key
 
 
 class OffBinding:

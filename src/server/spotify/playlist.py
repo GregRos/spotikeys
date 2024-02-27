@@ -2,12 +2,12 @@ from typing import List
 
 from spotipy import Spotify
 
-from src.spotify.track import Track
-from src.spotify.resource import SpotifyResource
-from src.spotify.artist import Artist
+from src.server.spotify.track import Track
+from src.server.spotify.resource import SpotifyResource
+from src.server.spotify.artist import Artist
 from benedict import BeneDict as benedict
 
-from src.spotify.utils import not_none
+from src.server.spotify.utils import not_none
 
 
 class Playlist(SpotifyResource):

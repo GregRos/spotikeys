@@ -1,1 +1,1 @@
-from .commands import Command, CommandSet
+from .commands import Command

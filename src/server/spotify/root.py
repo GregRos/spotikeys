@@ -1,6 +1,6 @@
 from spotipy import Spotify, SpotifyOAuth
 
-from src.server.spotify import Player, Artist, Track, Playlist, Album, CurrentUser
+from src.server.spotify import Playback, Artist, Track, Playlist, Album, CurrentUser
 
 
 class Root:
@@ -9,14 +9,19 @@ class Root:
             client_id=client_id,
             client_secret=client_secret,
             redirect_uri=redirect_uri,
-            scope=" ".join(scopes),
+            scope=",".join(scopes),
         )
         self._spotify = Spotify(auth_manager=auth_manager)
         self._spotify._session.trust_env = False
 
     @property
-    def player(self):
-        return Player(self._spotify)
+    def playback(self):
+        def reload():
+            return self._spotify.current_playback()
+        current = reload()
+        if not current:
+            return None
+        return Playback(self._spotify, reload, current)
 
     @property
     def current_user(self):

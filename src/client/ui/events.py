@@ -1,5 +1,5 @@
-from client.received_command import ReceivedCommand
-from ui.now_playing import MediaStatus
+from src.client.received_command import ReceivedCommand
+from src.client.ui.now_playing import MediaStatus
 
 
 class CommandDone:

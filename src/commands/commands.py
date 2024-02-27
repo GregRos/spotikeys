@@ -1,7 +1,7 @@
 from typing import Any, Literal, Tuple, Protocol
 
-from commanding import Command
-from commanding.commands import command
+from src.commanding import Command
+from src.commanding.commands import command
 
 Code = Literal[
     "show_status",

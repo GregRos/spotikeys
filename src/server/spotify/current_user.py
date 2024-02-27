@@ -1,7 +1,7 @@
 from spotipy import Spotify
 
-from src.spotify.playlist import Playlist
-from src.spotify.resource import SpotifyResource
+from src.server.spotify.playlist import Playlist
+from src.server.spotify.resource import SpotifyResource
 
 
 class CurrentUser(SpotifyResource):

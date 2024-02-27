@@ -1,10 +1,10 @@
 from tkinter import Tk, Label, SOLID, LEFT, CENTER
 from typing import Tuple
 
-from client.received_command import ReceivedCommand
+from src.client.received_command import ReceivedCommand
 from .make_clickthrough import make_clickthrough
-from ui.events import CommandDone, CommandError
-from ui.now_playing import MediaStatus
+from src.client.ui.events import CommandDone, CommandError
+from src.client.ui.now_playing import MediaStatus
 
 
 def format_duration(seconds):
@@ -18,6 +18,7 @@ class MediaTooltip:
 
     def __init__(self, tk: Tk):
         self._tk = tk
+        self._pos = (-250, -250)
         tk.attributes("-topmost", 1, "-transparentcolor", "black")
         tk.wm_attributes("-topmost", True)
         tk.config(bg="black")
@@ -121,7 +122,9 @@ class MediaTooltip:
             label.pack_forget()
         self._place_window()
 
-    def notify_command_done(self, finished: ReceivedCommand, duration: float, state: MediaStatus):
+    def notify_command_done(
+        self, finished: ReceivedCommand, duration: float, state: MediaStatus
+    ):
         text = f"{finished.command.label} {duration}"
         self._set_command_header(text)
         self._show_media(state)

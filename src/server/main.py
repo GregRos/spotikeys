@@ -1,7 +1,8 @@
 # entrypoint check
 from pathlib import Path
 from src.server.manager import MediaCommandHandler
-from src.server.spotify.root import Root
+from src.server.spotify import Root
+from flask import Flask, request, redirect, session
 
 
 _root = Root(

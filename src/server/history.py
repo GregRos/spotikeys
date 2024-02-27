@@ -2,7 +2,7 @@ from io import FileIO
 from os import PathLike
 from typing import BinaryIO
 
-from commanding import Command
+from src.commanding import Command
 
 
 class PersistentCommandHistory:
@@ -10,7 +10,9 @@ class PersistentCommandHistory:
 
     def __init__(self, filename: PathLike, commands: object):
         self.filename = filename
-        self.commands = commands
+        self.commands = {
+            k: v for k, v in commands.__dict__.items() if isinstance(v, Command)
+        }
 
     def __enter__(self):
         self.file = open(self.filename, "ab+", buffering=0)

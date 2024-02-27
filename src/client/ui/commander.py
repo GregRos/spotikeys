@@ -1,4 +1,5 @@
 import time
+import traceback
 from typing import Callable
 
 
@@ -20,8 +21,9 @@ class Commander:
             start = time.time()
             result = self._send(r_command.command)
             elapsed = time.time() - start
-            self._display.run(lambda tt: tt.notify_command_done(r_command, elapsed, result))
+            self._display.run(
+                lambda tt: tt.notify_command_done(r_command, elapsed, result)
+            )
 
         except Exception as e:
-            print(e)
-        
+            traceback.print_exc()

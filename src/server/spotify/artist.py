@@ -1,6 +1,6 @@
 from spotipy import Spotify
 
-from src.spotify.resource import SpotifyResource
+from src.server.spotify.resource import SpotifyResource
 
 
 class Artist(SpotifyResource):
