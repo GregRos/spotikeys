@@ -6,8 +6,11 @@ from src.server.spotify.resource import SpotifyResource
 
 class Album(SpotifyResource):
     @staticmethod
-    def from_id(spotify: Spotify, id):
-        return Album(spotify, spotify.album(id))
+    def from_id(spotify: Spotify, id: str):
+        data = spotify.album(id)
+        if not data:
+            raise ValueError(f"Album with id {id} not found!")
+        return Album(spotify, data)
 
     def __init__(self, spotify, data: dict):
         super().__init__(spotify, lambda: spotify.album(self.id), data)

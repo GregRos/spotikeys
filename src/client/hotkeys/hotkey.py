@@ -30,12 +30,17 @@ class Hotkey:
                 self.last_emitted = None
                 if self.on_up:
                     self.on_up(e)
-            elif self.last_emitted and e.time - self.last_emitted.time < 1:
+            elif (
+                self.last_emitted
+                and e.time
+                and self.last_emitted.time
+                and e.time - self.last_emitted.time < 1
+            ):
                 return False
             else:
                 self.last_emitted = e
                 self.on_down(e)
-            return False
+        return False
 
     def __str__(self):
         return self.key.__str__()

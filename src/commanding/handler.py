@@ -22,6 +22,8 @@ class CommandHandler:
             raise BusyError(self._current)
 
         self._current = command
-        return_value = handler()
-        self._current = None
+        try: 
+            return_value = handler()
+        finally:
+            self._current = None
         return return_value

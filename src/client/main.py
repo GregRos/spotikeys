@@ -11,8 +11,9 @@ from src.client.ui.now_playing import MediaStatus
 from src.commands import *
 from src.client.hotkeys import Layout
 
+ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
-def create_client(send: Callable[[Command], MediaStatus]):
+def create_client(send: Callable[[Command], MediaStatus | None]):
     cmd = Commander(send)
     layout = Layout("media_keys", cmd)
     layout.add_bindings(

@@ -13,4 +13,4 @@ class ReceivedCommand[Code: str]:
         self.received = datetime.now()
 
     def __str__(self):
-        return f"{self.received}: {self.key} -- {self.command}"
+        return f"{self.key.label} ➜ {self.command}"

@@ -11,7 +11,7 @@ from src.commanding.commands import Command
 
 class Commander:
 
-    def __init__(self, send: Callable[[Command], MediaStatus]):
+    def __init__(self, send: Callable[[Command], MediaStatus | None]):
         self._send = send
         self._display = ActivityDisplay()
 
@@ -19,11 +19,19 @@ class Commander:
         try:
             self._display.run(lambda tt: tt.notify_command_start(r_command), False)
             start = time.time()
-            result = self._send(r_command.command)
-            elapsed = time.time() - start
-            self._display.run(
-                lambda tt: tt.notify_command_done(r_command, elapsed, result)
-            )
+            try:
+                result = self._send(r_command.command)
+            except Exception as e:
+                traceback.print_exc()
+                self._display.run(lambda tt: tt.notify_command_errored(r_command.command, x))
+            else:
+                elapsed = time.time() - start
+                if not result:
+                    print(f"Command {r_command.command} returned None")
+                    raise ValueError(f"Command {r_command.command} returned None")
+                self._display.run(
+                    lambda tt: tt.notify_command_done(r_command, elapsed, result)
+                )
 
         except Exception as e:
             traceback.print_exc()

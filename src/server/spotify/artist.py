@@ -8,7 +8,7 @@ class Artist(SpotifyResource):
     def from_id(spotify: Spotify, id):
         return Artist(spotify, spotify.artist(id))
 
-    def __init__(self, spotify, data: dict):
+    def __init__(self, spotify, data: dict| None):
         super().__init__(spotify, lambda: spotify.artist(self.id), data)
 
     @property
@@ -24,3 +24,6 @@ class Artist(SpotifyResource):
 
     def play(self):
         self._spotify.start_playback(context_uri=self.uri)
+
+    def save(self):
+        self._spotify.user_follow_artists([self.id])

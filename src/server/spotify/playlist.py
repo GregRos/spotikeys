@@ -16,7 +16,7 @@ class Playlist(SpotifyResource):
         return Playlist(spotify, not_none(spotify.playlist(id)))
 
     def __init__(self, spotify: Spotify, data: dict):
-        super().__init__(spotify, lambda: not_none(spotify.playlist(self.id)), data)
+        super().__init__(spotify, lambda: spotify.playlist(self.id), data)
 
     def play(self):
         self._spotify.start_playback(context_uri=self.uri)

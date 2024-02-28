@@ -10,19 +10,21 @@ from src.server.spotify.utils import not_none
 
 class Track(SpotifyResource):
 
+    def __init__(self, spotify: Spotify, data: dict):
+        super().__init__(spotify, lambda: spotify.track(self.id), data)
+
     @staticmethod
     def from_id(spotify: Spotify, id: str):
         return Track(spotify, not_none(spotify.track(id)))
-
-    def __init__(self, spotify: Spotify, data: dict):
-        super().__init__(spotify, lambda: not_none(spotify.track(self.id)), data)
 
     def play(self):
         self._spotify.start_playback(uris=[self.uri])
 
     @property
     def album(self):
-        return Album(self._spotify, self._data.get("album"))
+        if not self._data.get("album"):
+            return None
+        return Album(self._spotify, self.get("album"))
 
     @property
     def tracks(self):
@@ -38,8 +40,8 @@ class Track(SpotifyResource):
         ]
 
     @property
-    def duration(self) -> int:
-        return self._data.get("duration_ms") * 1000
+    def duration(self) -> float:
+        return float(self.get("duration_ms")) / 1000
 
     def save(self):
         self._spotify.current_user_saved_tracks_add([self.id])

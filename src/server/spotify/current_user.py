@@ -6,11 +6,10 @@ from src.server.spotify.resource import SpotifyResource
 
 class CurrentUser(SpotifyResource):
     def __init__(self, spotify: Spotify):
-        def data():
+        def reload():
             return spotify.current_user()
 
-        super().__init__(spotify, data, data())
-        self._spotify = spotify
+        super().__init__(spotify, reload, reload())
 
     @property
     def display_name(self):

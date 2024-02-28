@@ -1,6 +1,7 @@
 from spotipy import Spotify, SpotifyOAuth
 
 from src.server.spotify import Playback, Artist, Track, Playlist, Album, CurrentUser
+from src.server.spotify.playback import NothingPlayingError
 
 
 class Root:
@@ -18,6 +19,7 @@ class Root:
     def playback(self):
         def reload():
             return self._spotify.current_playback()
+
         current = reload()
         if not current:
             return None

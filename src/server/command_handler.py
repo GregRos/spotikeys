@@ -3,6 +3,7 @@ from pathlib import Path
 from threading import Event
 from typing import override
 
+from src.client.ui.now_playing import MediaStatus
 from src.commanding import Command
 from src.commanding.handler import CommandHandler
 from src.server.history import PersistentCommandHistory
@@ -10,8 +11,11 @@ from src.server.history import PersistentCommandHistory
 from src.commands import *
 from src.server.spotify import Root
 
+class NoPlaybackError(Exception):
+    def __init__(self):
+        super().__init__("Nothing is playing right now.")
 
-class MediaCommandHandler(MediaCommands, CommandHandler):
+class CommandHandler(MediaCommands, CommandHandler):
     root: Root
     cancel_flag = Event()
 
@@ -27,28 +31,37 @@ class MediaCommandHandler(MediaCommands, CommandHandler):
         self.cancel_flag.clear()
         return is_set
 
-    def get_media(self):
-        return "x"
+    @property
+    def expect_playback(self):
+        match self.root.playback:
+            case None:
+                raise NoPlaybackError()
+            case playback:
+                return playback
 
     @override
     def seek_fwd(self):
-        self.root.playback.progress += 30
+        self.expect_playback.progress += 30
 
     @override
     def seek_bwd(self):
-        self.root.playback.progress -= 30
+        self.expect_playback.progress -= 30
 
     @override
     def play_pause(self):
-        self.root.playback.play_pause()
+        if playback := self.root.playback:
+            if playback.is_playing:
+                playback.pause()
+            else:
+                playback.play()
 
     @override
     def volume_up(self):
-        self.root.playback.volume += 10
+        self.expect_playback.volume += 10
 
     @override
     def volume_down(self):
-        self.root.playback.volume -= 10
+        self.expect_playback.volume -= 10
 
     @override
     def volume_mute(self):
@@ -56,31 +69,36 @@ class MediaCommandHandler(MediaCommands, CommandHandler):
 
     @override
     def volume_max(self):
-        self.root.playback.volume = 100
+        self.expect_playback.volume = 100
 
     @override
     def cancel(self):
-        self.root.playback.cancel()
+        print("Cancel")
 
     @override
     def love(self):
-        track = self.root.playback.track
+        track = self.expect_playback.track
         track.save()
-        track.album.save()
-        track.artists[0].save()
+        if album := track.album:
+            album.save()
+        for artist in track.artists:
+            artist.save()
 
     @override
     def prev_track(self):
-        self.root.playback.prev_track()
+        self.expect_playback.prev_track()
 
     @override
     def next_track(self):
-        self.root.playback.next_track()
+        self.expect_playback.next_track()
+        
 
     @override
     def loop_track(self):
-        self.root.playback.repeat = "track"
-        self.root.playback.progress = 0
+        match self.root:
+            case None:
+                self.expect_playback.repeat = "track"
+                self.expect_playback.progress = 0
 
     @override
     def undo(self):
@@ -100,7 +118,7 @@ class MediaCommandHandler(MediaCommands, CommandHandler):
 
     @override
     def get_status(self):
-        print(self.root.playback.track)
+        print(self.expect_playback.track)
 
     @override
     def rewind_this(self):
@@ -116,12 +134,21 @@ class MediaCommandHandler(MediaCommands, CommandHandler):
 
     @override
     def show_status(self):
-        print(self.root.playback.track)
+        print(self.expect_playback.track)
 
     @override
     def hide_status(self):
         print("Hide status")
 
+    def get_media(self):
+        if playback := self.root.playback:
+            return MediaStatus(
+                title=playback.track.name,
+                artist=playback.track.artists[0].name,
+                album=playback.track.album.name,
+                duration=playback.track.duration,
+                position=playback.progress,
+            )
     @override
     def __call__(self, command: Command):
         return super().__call__(command) or self.get_media()
