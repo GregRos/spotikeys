@@ -1,3 +1,4 @@
+import ctypes
 from math import trunc
 from tkinter import RIGHT, Tk, Label, SOLID, LEFT, CENTER
 from typing import Tuple
@@ -8,6 +9,8 @@ from .make_clickthrough import make_clickthrough
 from src.client.ui.events import CommandDone, CommandError
 from src.client.ui.now_playing import MediaStatus
 
+ctypes.windll.shcore.SetProcessDpiAwareness(1)
+
 
 def format_duration(seconds):
     minutes, seconds = divmod(seconds, 60)
@@ -16,13 +19,14 @@ def format_duration(seconds):
 
 def truncate_text(text: str, max_length: int) -> str:
     if len(text) > max_length:
-        return text[: max_length - 1] + "…"
+        return text[: max_length - 1] + "⋯"
     return text
 
 
 class MediaTooltip:
     _tk: Tk
     _pos: Tuple[int, int]
+    _status: MediaStatus
 
     def __init__(self, tk: Tk):
         self._tk = tk
@@ -85,18 +89,7 @@ class MediaTooltip:
             foreground="#ff0000",
             font=("Segoe UI Emoji", 12),
         )
-        command_line.place(x=0, y=0, width=100)
-        command_line.pack(ipadx=20, fill="both", ipady=5, expand=True)
-        make_clickthrough(command_line)
-        song_title_line.place(x=0, y=20, width=200)
-        song_title_line.pack(ipadx=15, fill="both", expand=True)
-        make_clickthrough(song_title_line)
-        song_artist_line.place(x=0, y=100, width=200)
-        song_artist_line.pack(ipadx=15, fill="x", expand=True)
-        make_clickthrough(song_artist_line)
-        progress_line.place(x=0, y=150, width=200)
-        progress_line.pack(ipadx=20, fill="both", ipady=15, expand=True)
-        make_clickthrough(progress_line)
+
         self._tk.update_idletasks()
 
     def _normalize_pos(self, pos: Tuple[int, int]) -> Tuple[int, int]:
@@ -112,56 +105,82 @@ class MediaTooltip:
     def _set_album_line(self, line: str):
         pass
 
-    def _set_command_part(self, text: str, duration: str, bg: str = "#000000"):
+    def _set_command_part(
+        self, text: str, duration: str, bg: str = "#000000", place=True
+    ):
         typeset = f"{text.ljust(33)}{str(duration).ljust(6)}"
         command_line = self._command_line
         command_line.config(text=typeset, background=bg)
-
-        make_clickthrough(command_line)
+        if place:
+            command_line.place(relx=0, rely=0, width=100)
+            command_line.pack(ipadx=20, fill="both", ipady=5, expand=True)
+            make_clickthrough(command_line)
 
     def _set_first_line(self, line: str):
-        self._song_title_line.config(text=truncate_text(line, 20))
-
-        make_clickthrough(self._song_title_line)
+        song_title_line = self._song_title_line
+        song_title_line.config(text=truncate_text(line, 20))
+        song_title_line.place(x=0, y=20, width=200)
+        song_title_line.pack(ipadx=15, fill="both", expand=True)
+        make_clickthrough(song_title_line)
 
     def _set_artist_line(self, line: str):
-        self._song_artist_line.config(text=truncate_text(line, 20))
-
+        song_artist_line = self._song_artist_line
+        song_artist_line.config(text=truncate_text(line, 20))
+        song_artist_line.place(x=0, y=100, width=200)
+        song_artist_line.pack(ipadx=15, fill="x", expand=True)
         make_clickthrough(self._song_artist_line)
 
     def _set_progress_line(self, line: str):
-        self._song_progress_line.config(text=line)
+        progress_line = self._song_progress_line
+        progress_line.config(text=line)
+        progress_line.place(x=0, y=150, width=200)
+        progress_line.pack(ipadx=20, fill="both", ipady=15, expand=True)
+        make_clickthrough(progress_line)
+
+    def show(self):
+        self._place_window()
 
     def _place_window(self):
         self._tk.wm_geometry("420x190+%d+%d" % self._normalize_pos(self._pos))
         self._tk.deiconify()
+        self._tk.update_idletasks()
 
     def notify_command_errored(self, command: Command, error: Exception):
-        self._set_command_part(command.__str__(), "", "red")
+        self._set_command_part(command.__str__(), "", "red", False)
         self._set_first_line(f"{error}")
         for label in (self._song_artist_line, self._song_progress_line):
             label.pack_forget()
         self._place_window()
 
     def notify_command_start(self, command: ReceivedCommand):
-        self._set_command_part(command.__str__(), "⌛", "darkblue")
+        self._set_command_part(command.__str__(), "⌛", "darkblue", False)
         self._place_window()
+        self._tk.update_idletasks()
+
+    def notify_show_status(self, status: MediaStatus | None = None):
+        self._set_command_part("status", "⌛", "darkblue", False)
+        if status:
+            self._status = status
+            self._show_media(status)
+        self._place_window()
+        self._tk.update_idletasks()
 
     def notify_command_done(
         self, finished: ReceivedCommand, duration: float, state: MediaStatus
     ):
+        self._status = state
         text = f"{finished.key.label} ➜ {finished.command} {duration * 1000:.0f}ms"
         self._set_command_part(str(finished), f"{duration * 1000:.0f}ms", "green")
         self._show_media(state)
         self._place_window()
-
+        self._tk.update_idletasks()
 
     def show_progress(self, status: MediaStatus):
         self._command_line.pack_forget()
         self._show_media(status)
 
     def _show_media(self, status: MediaStatus):
-        
+
         remaining_time = format_duration(status.duration - status.position)
         full_blocks = int(status.percent / 10)
         progress_line = (

@@ -1,4 +1,5 @@
 from abc import ABC
+from enum import auto
 import threading
 import time
 import traceback
@@ -20,7 +21,6 @@ def handles(*commands: Command) -> Any:
 
 
 class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
-    _thread: ActivityDisplay
     _current: ReceivedCommand | None = None
     _lock = threading.Lock()
     _display = ActivityDisplay()
@@ -43,9 +43,13 @@ class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
 
     @handles(MediaCommands.show_status)
     def _show_status(self, r_command: ReceivedCommand) -> None:
-        status = self._downstream(MediaCommands.get_status)
         try:
-            self._display.run(lambda tt: tt.notify_command_done(r_command, 0, status))
+            self._display.run(lambda tt: tt.notify_show_status(), auto_hide=False)
+            result = self._downstream(MediaCommands.get_status)
+            if self._current:
+                self._display.run(
+                    lambda tt: tt.notify_show_status(result), auto_hide=True
+                )
         except Exception as e:
             self._handle_error(r_command, e)
 
@@ -59,26 +63,41 @@ class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
         traceback.print_exc()
         self._display.run(lambda tt: tt.notify_command_errored(command.command, error))
 
-    def _exec_in_thread(self, command: ReceivedCommand) -> None:
-        local_handler = self._mapping.get(command.command.code, None)
-        if local_handler:
-            return local_handler(command)
+    def _wrap_downstream(self, received: ReceivedCommand, command: Command):
         try:
-            self._display.run(lambda tt: tt.notify_command_start(command), False)
+            self._display.run(lambda tt: tt.notify_command_start(received), False)
             start = time.time()
-            result = self._downstream(command.command)
+            result = self._downstream(command)
             elapsed = time.time() - start
             self._display.run(
-                lambda tt: tt.notify_command_done(command, elapsed, result)
+                lambda tt: tt.notify_command_done(received, elapsed, result)
             )
         except Exception as e:
-            self._handle_error(command, e)
+            self._handle_error(received, e)
+
+    def _exec_in_thread(self, command: ReceivedCommand) -> None:
+        local_handler = self._mapping.get(command.command.code, None)
+        try:
+            self._current = command
+            if local_handler:
+                return local_handler(command)
+            self._wrap_downstream(command, command.command)
         finally:
             self._current = None
 
     def __call__(self, command: ReceivedCommand) -> None:
+        if (
+            self._current
+            and self._current.code == MediaCommands.show_status.code
+            and command.code == MediaCommands.hide_status.code
+        ):
+            self._current = None
+            self._display.run(lambda tt: tt.hide())
+            return
         if self._current:
             return self.busy(command)
         with self._lock:
-            self._current = command
-            threading.Thread(target=self._exec_in_thread, args=(command,)).start()
+            threading.Thread(
+                target=self._exec_in_thread,
+                args=(command,),
+            ).start()
