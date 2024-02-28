@@ -4,17 +4,20 @@ from time import sleep
 from typing import Callable
 
 import keyboard
+
+from src.client.client_command_handler import ClientCommandHandler
+from src.commanding.handler import CommandHandler
 from .keys import *
 from src.client.received_command import ReceivedCommand
-from src.client.ui.commander import Commander
 from src.client.ui.now_playing import MediaStatus
 from src.commands import *
-from src.client.hotkeys import Layout
+from src.client.hotkeys.layout import Layout
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
-def create_client(send: Callable[[Command], MediaStatus | None]):
-    cmd = Commander(send)
+
+def create_client(send: CommandHandler[Command, MediaStatus]):
+    cmd = ClientCommandHandler(send)
     layout = Layout("media_keys", cmd)
     layout.add_bindings(
         num_dot.bind_off(),

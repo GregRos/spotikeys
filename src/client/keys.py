@@ -1,4 +1,4 @@
-from .hotkeys import Key
+from .hotkeys.key import Key
 
 num_1 = Key("num 1")
 num_2 = Key("num 2")

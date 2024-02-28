@@ -2,11 +2,16 @@ from typing import Callable
 
 import keyboard
 
-from .key import Key, ModifiedKey
-from .bindings import Binding, OffBinding, UpDownBinding, NumpadBinding
-from .numpad_hotkey import NumpadHotkey
+from src.client.hotkeys.key import Key, ModifiedKey
+from src.client.hotkeys.bindings import (
+    Binding,
+    OffBinding,
+    UpDownBinding,
+    NumpadBinding,
+)
+from src.client.hotkeys.numpad_hotkey import NumpadHotkey
 from src.commanding.commands import Command
-from src.client.received_command import ReceivedCommand
+from ..received_command import ReceivedCommand
 from .hotkey import Hotkey
 
 

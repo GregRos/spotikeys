@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from commanding import Command
+    from src.commanding import Command
 
 from src.client.hotkeys.labels import key_labels
 

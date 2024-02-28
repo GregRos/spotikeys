@@ -13,7 +13,7 @@ class Root:
             scope=",".join(scopes),
         )
         self._spotify = Spotify(auth_manager=auth_manager)
-        self._spotify._session.trust_env = False
+        self._spotify._session.trust_env = False # type: ignore
 
     @property
     def playback(self):

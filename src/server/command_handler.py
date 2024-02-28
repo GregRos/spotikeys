@@ -5,21 +5,24 @@ from typing import override
 
 from src.client.ui.now_playing import MediaStatus
 from src.commanding import Command
-from src.commanding.handler import CommandHandler
+from src.commanding.handler import PropertyBasedCommandHandler
 from src.server.history import PersistentCommandHistory
 
 from src.commands import *
 from src.server.spotify import Root
 
+
 class NoPlaybackError(Exception):
     def __init__(self):
         super().__init__("Nothing is playing right now.")
 
-class CommandHandler(MediaCommands, CommandHandler):
+
+class MediaCommandHandler(MediaCommands, PropertyBasedCommandHandler):
     root: Root
     cancel_flag = Event()
 
     def __init__(self, root: Root, history_file: PathLike):
+        super().__init__("media")
         self.root = root
         self.history = PersistentCommandHistory(history_file, commands)
 
@@ -91,7 +94,6 @@ class CommandHandler(MediaCommands, CommandHandler):
     @override
     def next_track(self):
         self.expect_playback.next_track()
-        
 
     @override
     def loop_track(self):
@@ -149,6 +151,7 @@ class CommandHandler(MediaCommands, CommandHandler):
                 duration=playback.track.duration,
                 position=playback.progress,
             )
+
     @override
     def __call__(self, command: Command):
         return super().__call__(command) or self.get_media()

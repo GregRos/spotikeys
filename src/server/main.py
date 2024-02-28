@@ -1,6 +1,6 @@
 # entrypoint check
 from pathlib import Path
-from src.server.command_handler import CommandHandler
+from src.server.command_handler import MediaCommandHandler
 from src.server.spotify import Root
 from flask import Flask, request, redirect, session
 
@@ -10,4 +10,4 @@ _root = Root(
     client_secret="2370df9b5a7840a183f44bbd795483fa",
     redirect_uri="http://localhost:12000",
 )
-handler = CommandHandler(_root, Path("./history.state"))
+handler = MediaCommandHandler(_root, Path("./history.state"))

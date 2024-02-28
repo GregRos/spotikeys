@@ -1,20 +1,26 @@
 from abc import abstractmethod
-from typing import Callable, Any
+from turtle import down
+from typing import Callable, Any, Protocol
 
-from src.commanding import Command
+from src.commanding.commands import CommandLike, Command
 from src.server.errors import LocalCommandError, NoHandlerError, BusyError
 
 
-class CommandHandler:
+class CommandHandler[CommandType: CommandLike, ReturnType](Protocol):
+    def __call__(self, command: CommandType) -> ReturnType: ...
+
+
+class PropertyBasedCommandHandler[Command: Command, ReturnType](
+    CommandHandler[Command, ReturnType]
+):
     _current: Command | None = None
 
-    def __init__(self, command_set: str):
-        self._command_set = command_set
+    def __init__(self, name: str):
+        self._name = name
 
     def __call__(self, command: Command):
         handler = getattr(self, command.code, None)
-        if command.is_local:
-            raise LocalCommandError(command)
+
         if not handler:
             raise NoHandlerError(command)
 
@@ -22,7 +28,7 @@ class CommandHandler:
             raise BusyError(self._current)
 
         self._current = command
-        try: 
+        try:
             return_value = handler()
         finally:
             self._current = None

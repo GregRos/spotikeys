@@ -3,16 +3,20 @@ from __future__ import annotations
 from typing import Protocol, Callable, Any
 
 
-class Command:
+class CommandLike(Protocol):
+    code: str
+    label: str
+
+
+class Command(CommandLike):
     code: str
 
-    def __init__(self, command: str, label: str, is_local: bool = False):
+    def __init__(self, command: str, label: str):
         self.code = command
         self.label = label
-        self.is_local = is_local
 
     def local(self, is_local: bool = True):
-        return Command(self.code, self.label, is_local)
+        return Command(self.code, self.label)
 
     def is_command(self, command: Command):
         return self.code == command.code
