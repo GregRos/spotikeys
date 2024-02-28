@@ -6,7 +6,7 @@ import traceback
 from typing import Any, Callable
 from src.client.received_command import ReceivedCommand
 from src.client.ui.display_thread import ActivityDisplay
-from src.client.ui.now_playing import MediaStatus
+from src.now_playing import MediaStatus
 from src.commanding.commands import Command
 from src.commanding.handler import CommandHandler
 from src.commands.commands import MediaCommands

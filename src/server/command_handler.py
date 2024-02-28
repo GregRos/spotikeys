@@ -3,7 +3,7 @@ from pathlib import Path
 from threading import Event
 from typing import override
 
-from src.client.ui.now_playing import MediaStatus
+from src.now_playing import MediaStatus
 from src.commanding import Command
 from src.commanding.handler import PropertyBasedCommandHandler
 from src.server.history import PersistentCommandHistory

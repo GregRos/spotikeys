@@ -5,7 +5,8 @@ from keyboard import KeyboardEvent
 
 from src.commands.commands import Code
 from src.commanding import Command
-from src.client.hotkeys import Hotkey, Key, ModifiedKey
+from src.client.kb import Key, ModifiedKey
+from src.client.hotkeys.hotkey import Hotkey
 
 num0_modifier = Key("num 0")
 

@@ -9,7 +9,7 @@ from src.client.client_command_handler import ClientCommandHandler
 from src.commanding.handler import CommandHandler
 from .keys import *
 from src.client.received_command import ReceivedCommand
-from src.client.ui.now_playing import MediaStatus
+from src.now_playing import MediaStatus
 from src.commands import *
 from src.client.hotkeys.layout import Layout
 

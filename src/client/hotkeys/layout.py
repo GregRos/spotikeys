@@ -2,8 +2,8 @@ from typing import Callable
 
 import keyboard
 
-from src.client.hotkeys.key import Key, ModifiedKey
-from src.client.hotkeys.bindings import (
+from src.client.kb.key import Key, ModifiedKey
+from src.client.kb.bindings import (
     Binding,
     OffBinding,
     UpDownBinding,

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from src.commanding import Command
 
-from src.client.hotkeys.labels import key_labels
+from src.client.kb.labels import key_labels
 
 
 class Key:
@@ -32,17 +32,17 @@ class Key:
         return ModifiedKey(self, modifier)
 
     def bind_numpad(self, command: Command, alt: Command | None = None):
-        from src.client.hotkeys.bindings import NumpadBinding
+        from src.client.kb.bindings import NumpadBinding
 
         return NumpadBinding(self, command, alt)
 
     def bind_off(self):
-        from src.client.hotkeys.bindings import OffBinding
+        from src.client.kb.bindings import OffBinding
 
         return OffBinding(self)
 
     def bind_up_down(self, down: Command, up: Command):
-        from src.client.hotkeys.bindings import UpDownBinding
+        from src.client.kb.bindings import UpDownBinding
 
         return UpDownBinding(self, down, up)
 

@@ -6,8 +6,7 @@ from typing import Tuple
 
 from src.client.received_command import ReceivedCommand, Command
 from .make_clickthrough import make_clickthrough
-from src.client.ui.events import CommandDone, CommandError
-from src.client.ui.now_playing import MediaStatus
+from src.now_playing import MediaStatus
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 

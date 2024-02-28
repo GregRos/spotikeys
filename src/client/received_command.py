@@ -2,7 +2,7 @@ from datetime import datetime
 
 from src.commanding import Command
 from src.commanding.commands import CommandLike
-from src.client.hotkeys.key import Key, ModifiedKey
+from src.client.kb.key import Key, ModifiedKey
 
 
 class ReceivedCommand(CommandLike):
