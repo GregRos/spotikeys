@@ -11,8 +11,12 @@ class ReceivedCommand(CommandLike):
         self.key = key
         self.received = datetime.now()
 
+    @property
+    def pretty(self):
+        return f"{self.key.label} ➜  {self.command.label}"
+
     def __str__(self):
-        return f"{self.key.label} ➜ {self.command}"
+        return f"{self.key.id} ➜  {self.command.code}"
 
     @property
     def code(self):

@@ -1,8 +1,11 @@
 import ctypes
 from datetime import datetime
+import logging
 from time import sleep
+from turtle import setup
 from typing import Callable
 
+from colorama import init
 import keyboard
 
 from src.client.client_command_handler import ClientCommandHandler
@@ -13,7 +16,9 @@ from src.now_playing import MediaStatus
 from src.commands import *
 from src.client.hotkeys.layout import Layout
 
-ctypes.windll.shcore.SetProcessDpiAwareness(1)
+from src.log_config import setup_logging
+
+setup_logging()
 
 
 def create_client(send: CommandHandler[Command, MediaStatus]):

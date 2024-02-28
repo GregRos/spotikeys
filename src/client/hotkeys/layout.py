@@ -1,3 +1,5 @@
+from logging import getLogger
+import logging
 from typing import Callable
 
 import keyboard
@@ -14,16 +16,16 @@ from src.commanding.commands import Command
 from ..received_command import ReceivedCommand
 from .hotkey import Hotkey
 
+logger = getLogger("keyboard")
+
 
 class Layout:
+    _hotkeys: dict[Binding, Hotkey]
 
     def __init__(self, name: str, send: Callable[[ReceivedCommand], None]):
-        self._hotkeys = []
+        self._hotkeys = {}
         self.name = name
         self._send = send
-
-    def add_hotkey(self, hotkey: Hotkey):
-        self._hotkeys.append(hotkey)
 
     def _binding_to_hotkey(self, binding: Binding):
         def send_command(command: Command | None):
@@ -31,7 +33,6 @@ class Layout:
                 return lambda e: None
 
             def send(e: keyboard.KeyboardEvent):
-                print(f"Sending {command} for {e}")
                 if not self._send:
                     raise ValueError("No send function set")
                 self._send(ReceivedCommand(command, binding.key))
@@ -49,13 +50,19 @@ class Layout:
                 raise ValueError(f"Binding type not supported: {binding}")
 
     def add_bindings(self, *bindings: Binding):
-        self._hotkeys += (self._binding_to_hotkey(binding) for binding in bindings)
+        for binding in bindings:
+            self._hotkeys[binding] = self._binding_to_hotkey(binding)
 
     def __enter__(self):
-        for hotkey in self._hotkeys:
+        logger.info(f"Entering layout {self.name} with {len(self._hotkeys)} hotkeys")
+
+        # rounded arrow:
+        for binding, hotkey in self._hotkeys.items():
+            logger.info(f"Registering {binding}")
             hotkey.__enter__()
         return self
 
     def __exit__(self, *args):
-        for hotkey in self._hotkeys:
+        logger.info(f"Exiting layout {self.name}")
+        for hotkey in self._hotkeys.values():
             hotkey.__exit__()

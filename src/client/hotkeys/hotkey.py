@@ -1,3 +1,5 @@
+from logging import getLogger
+from math import log
 import threading
 from typing import Callable
 
@@ -5,6 +7,8 @@ import keyboard
 from keyboard import KeyboardEvent
 
 from src.client.kb.key import Key
+
+logger = getLogger("keyboard")
 
 
 class Hotkey:
@@ -29,7 +33,9 @@ class Hotkey:
             if e.event_type == "up":
                 self.last_emitted = None
                 if self.on_up:
+                    logger.info(f"Processing event {e}")
                     self.on_up(e)
+
             elif (
                 self.last_emitted
                 and e.time
@@ -39,6 +45,7 @@ class Hotkey:
                 return False
             else:
                 self.last_emitted = e
+                logger.info(f"Processing event {e}")
                 self.on_down(e)
         return False
 

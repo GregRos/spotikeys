@@ -1,6 +1,8 @@
+from logging import getLogger
 from os import PathLike
 from pathlib import Path
 from threading import Event
+import time
 from typing import override
 
 from src.now_playing import MediaStatus
@@ -12,6 +14,9 @@ from src.commands import *
 from src.server.spotify import Root
 
 
+logger = getLogger("server")
+
+
 class NoPlaybackError(Exception):
     def __init__(self):
         super().__init__("Nothing is playing right now.")
@@ -20,6 +25,7 @@ class NoPlaybackError(Exception):
 class MediaCommandHandler(MediaCommands, PropertyBasedCommandHandler):
     root: Root
     cancel_flag = Event()
+    _last_volume = 0
 
     def __init__(self, root: Root, history_file: PathLike):
         super().__init__("media")
@@ -60,15 +66,20 @@ class MediaCommandHandler(MediaCommands, PropertyBasedCommandHandler):
 
     @override
     def volume_up(self):
-        self.expect_playback.volume += 10
+        self.expect_playback.volume += 20
 
     @override
     def volume_down(self):
-        self.expect_playback.volume -= 10
+        self.expect_playback.volume -= 20
 
     @override
     def volume_mute(self):
-        print("Mute")
+        cur_volume = self.expect_playback.volume
+        if cur_volume == 0:
+            self.expect_playback.volume = self._last_volume
+        else:
+            self._last_volume = self.expect_playback.volume
+            self.expect_playback.volume = 0
 
     @override
     def volume_max(self):
@@ -120,7 +131,7 @@ class MediaCommandHandler(MediaCommands, PropertyBasedCommandHandler):
 
     @override
     def get_status(self):
-        print(self.expect_playback.track)
+        pass
 
     @override
     def rewind_this(self):
@@ -150,8 +161,14 @@ class MediaCommandHandler(MediaCommands, PropertyBasedCommandHandler):
                 album=playback.track.album.name,
                 duration=playback.track.duration,
                 position=playback.progress,
+                is_playing=playback.is_playing,
             )
 
     @override
     def __call__(self, command: Command):
-        return super().__call__(command) or self.get_media()
+        logger.info(f"Received command: {command}")
+        start = time.time()
+        result = super().__call__(command) or self.get_media()
+        elapsed = time.time() - start
+        logger.info(f"Command {command} took {elapsed:.3f} seconds")
+        return result

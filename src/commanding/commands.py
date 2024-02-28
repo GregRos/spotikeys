@@ -28,7 +28,7 @@ class Command(CommandLike):
         return hash(self.code)
 
     def __str__(self):
-        return f"{self.label} ({self.code})"
+        return f"{self.code}"
 
 
 def command(label: str):

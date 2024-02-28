@@ -11,6 +11,9 @@ class OffBinding:
         self.key = key
         pass
 
+    def __str__(self) -> str:
+        return f"{self.key.id} ➜  ∅"
+
 
 class UpDownBinding:
     __match_args__ = ("key", "command_down", "command_up")
@@ -21,10 +24,10 @@ class UpDownBinding:
         self.command_up = up
 
     def __str__(self):
-        return f"{self.key} -- {self.command_down}"
+        return f"{self.key} ➜  {self.command_down}"
 
     def __repr__(self):
-        return f"{self.key} -- {self.command_down}"
+        return f"{self.key} ➜  {self.command_down}"
 
 
 class NumpadBinding:
@@ -40,10 +43,8 @@ class NumpadBinding:
         return self
 
     def __str__(self):
-        return f"{self.key} -- {self.command}"
-
-    def __repr__(self):
-        return f"{self.key} -- {self.command}"
+        maybe_alt = f" [{self.alt_command.code}]" if self.alt_command else ""
+        return f"{self.key.id} ➜  {self.command.code} {maybe_alt}"
 
 
 type Binding = OffBinding | UpDownBinding | NumpadBinding

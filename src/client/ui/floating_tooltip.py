@@ -104,13 +104,17 @@ class MediaTooltip:
     def _set_album_line(self, line: str):
         pass
 
+    _command_part_placed = False
+
     def _set_command_part(
         self, text: str, duration: str, bg: str = "#000000", place=True
     ):
-        typeset = f"{text.ljust(33)}{str(duration).ljust(6)}"
+        typeset = f"{text.ljust(32)}{str(duration)}"
         command_line = self._command_line
         command_line.config(text=typeset, background=bg)
-        if place:
+        # either place is true or the command line is not placed:
+        if place or not self._command_part_placed:
+            self._command_part_placed = True
             command_line.place(relx=0, rely=0, width=100)
             command_line.pack(ipadx=20, fill="both", ipady=5, expand=True)
             make_clickthrough(command_line)
@@ -145,6 +149,7 @@ class MediaTooltip:
         self._tk.update_idletasks()
 
     def notify_command_errored(self, command: Command, error: Exception):
+        self._tk.attributes("-alpha", 1)
         self._set_command_part(command.__str__(), "", "red", False)
         self._set_first_line(f"{error}")
         for label in (self._song_artist_line, self._song_progress_line):
@@ -152,12 +157,15 @@ class MediaTooltip:
         self._place_window()
 
     def notify_command_start(self, command: ReceivedCommand):
-        self._set_command_part(command.__str__(), "⌛", "darkblue", False)
+        self._set_command_part("⌛ " + command.pretty, "⌛⌛", "darkblue", False)
         self._place_window()
+        self._tk.attributes("-alpha", 0.85)
         self._tk.update_idletasks()
 
     def notify_show_status(self, status: MediaStatus | None = None):
-        self._set_command_part("status", "⌛", "darkblue", False)
+        self._tk.attributes("-alpha", 1)
+
+        self._set_command_part("status", "💡", "grey", False)
         if status:
             self._status = status
             self._show_media(status)
@@ -167,9 +175,11 @@ class MediaTooltip:
     def notify_command_done(
         self, finished: ReceivedCommand, duration: float, state: MediaStatus
     ):
+        self._tk.attributes("-alpha", 1)
         self._status = state
-        text = f"{finished.key.label} ➜ {finished.command} {duration * 1000:.0f}ms"
-        self._set_command_part(str(finished), f"{duration * 1000:.0f}ms", "green")
+        self._set_command_part(
+            "✅ " + finished.pretty, f"{duration * 1000:.0f}ms", "green"
+        )
         self._show_media(state)
         self._place_window()
         self._tk.update_idletasks()
@@ -181,10 +191,8 @@ class MediaTooltip:
     def _show_media(self, status: MediaStatus):
 
         remaining_time = format_duration(status.duration - status.position)
-        full_blocks = int(status.percent / 10)
-        progress_line = (
-            f"{'█' * full_blocks}{'░' * (10 - full_blocks)} {remaining_time}"
-        )
+        full_blocks = int(status.percent / 9)
+        progress_line = f"{ '▶' if status.is_playing else '⏸' } {'█' * full_blocks}{'░' * (9 - full_blocks)} {remaining_time}"
         self._set_first_line(status.title)
         self._set_artist_line(status.artist)
         self._set_progress_line(progress_line)

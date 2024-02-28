@@ -1,5 +1,6 @@
 from abc import ABC
 from enum import auto
+from logging import getLogger
 import threading
 import time
 import traceback
@@ -10,6 +11,8 @@ from src.now_playing import MediaStatus
 from src.commanding.commands import Command
 from src.commanding.handler import CommandHandler
 from src.commands.commands import MediaCommands
+
+logger = getLogger("client")
 
 
 def handles(*commands: Command) -> Any:
@@ -27,7 +30,11 @@ class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
     _mapping: dict[str, CommandHandler[ReceivedCommand, None]] = {}
 
     def __init__(self, downstream: CommandHandler[Command, MediaStatus]) -> None:
-        self._downstream = downstream
+        def with_logging(x):
+            logger.info(f"Sending {x} to server")
+            return downstream(x)
+
+        self._downstream = with_logging
         for name in dir(self):
             handler = getattr(self, name)
             if not hasattr(handler, "handles"):
@@ -93,8 +100,10 @@ class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
         ):
             self._current = None
             self._display.run(lambda tt: tt.hide())
+            logger.info(f"Processed {command} locally.")
             return
         if self._current:
+            logger.error(f"Busy with {self._current}.")
             return self.busy(command)
         with self._lock:
             threading.Thread(

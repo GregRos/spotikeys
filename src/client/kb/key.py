@@ -19,14 +19,20 @@ class Key:
 
     @property
     def hook_id(self):
-        return (
-            self.id.replace("num ", "")
-            if self.id == "num enter" or self.id == "num ."
-            else self.id
-        )
+        match self.id:
+            case "num enter":
+                return "enter"
+            case "num dot" | "num .":
+                return "."
+            case "num slash" | "num /":
+                return "/"
+            case "num star" | "num *" | "num multiply":
+                return "*"
+            case _:
+                return self.id
 
     def __str__(self):
-        return f"{self.label} ({self.id})"
+        return f"{self.id}"
 
     def modified(self, modifier: Key):
         return ModifiedKey(self, modifier)
@@ -51,6 +57,10 @@ class ModifiedKey:
     def __init__(self, base: Key, modifier: Key):
         self.base = base
         self.modifier = modifier
+
+    @property
+    def id(self):
+        return f"{self.modifier.id} + {self.base.id}"
 
     @property
     def label(self):
