@@ -6,12 +6,17 @@ from typing import Callable
 from benedict import BeneDict as benedict
 from spotipy import Spotify
 
+from src.server.spotify.asyncify import asyncify
+
 type Reload = Callable[[], dict]
 
 
 class SpotifyBacked:
     _spotify: Spotify
     _retrieved: datetime
+
+    def asyncily[R](self, func: Callable[[Spotify], R]):
+        return asyncify(func)(self._spotify)
 
     def __init__(self, spotify: Spotify):
         self._spotify = spotify
@@ -22,6 +27,8 @@ class SpotifyBase(SpotifyBacked):
     _data: benedict
     _spotify: Spotify
     _retrieved: datetime
+
+    is_dirty: bool = False
 
     def __init__(
         self, spotify: Spotify, reload: Callable[[], dict | None], data: dict | None
@@ -50,3 +57,4 @@ class SpotifyBase(SpotifyBacked):
         self._data = benedict(self._verify_data(result))
 
         self._retrieved = datetime.now()
+        self.is_dirty = False

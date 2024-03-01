@@ -1,15 +1,21 @@
+import asyncio
 import ctypes
 from datetime import datetime
 import logging
+from pathlib import Path
+from threading import Thread
 from time import sleep
 from turtle import setup
 from typing import Callable
+from venv import logger
 
 from colorama import init
 import keyboard
 
 from src.client.client_command_handler import ClientCommandHandler
-from src.commanding.handler import CommandHandler
+from src.commanding.handler import AsyncCommandHandler
+from src.server.command_handler import MediaCommandHandler
+from src.server.spotify.root import Root, SpotifyAuth
 from .keys import *
 from src.client.received_command import ReceivedCommand
 from src.now_playing import MediaStatus
@@ -20,9 +26,15 @@ from src.log_config import setup_logging
 
 setup_logging()
 
+client_loop = asyncio.new_event_loop()
+server_loop = asyncio.new_event_loop()
+Thread(target=server_loop.run_forever, daemon=True).start()
 
-def create_client(send: CommandHandler[Command, MediaStatus]):
-    cmd = ClientCommandHandler(send)
+
+def create_client(send: AsyncCommandHandler[Command, MediaStatus]):
+    logger = logging.getLogger("client")
+    logger.info("Starting up...")
+    cmd = ClientCommandHandler(client_loop, send)
     layout = Layout("media_keys", cmd)
     layout.add_bindings(
         num_dot.bind_off(),
@@ -45,7 +57,16 @@ def create_client(send: CommandHandler[Command, MediaStatus]):
     return layout
 
 
-from src.server.main import handler
+logger = logging.getLogger("server")
+logger.info("Starting up...")
+handler = MediaCommandHandler(
+    {
+        "client_id": "b996e2c82b574509bec24fbd11eda035",
+        "client_secret": "2370df9b5a7840a183f44bbd795483fa",
+        "redirect_uri": "http://localhost:12000",
+    },
+    Path("./history.state"),
+)
 
 with create_client(handler):
     keyboard.wait("esc")

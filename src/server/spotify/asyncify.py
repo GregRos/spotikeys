@@ -1,0 +1,13 @@
+import asyncio
+from typing import Any, Callable, Coroutine, ParamSpec, TypeVar, overload
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def asyncify(func: Callable[P, R]) -> Callable[P, Coroutine[Any, Any, R]]:
+    async def async_wrapper(*args, **kwargs):
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, func, *args, **kwargs)
+
+    return async_wrapper  # type: ignore

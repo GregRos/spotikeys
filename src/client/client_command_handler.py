@@ -1,16 +1,19 @@
 from abc import ABC
 from ast import Tuple
+from asyncio import AbstractEventLoop, ensure_future, get_event_loop, new_event_loop
+import code
+from concurrent.futures import thread
 from enum import auto
 from logging import getLogger
 import threading
 import time
 import traceback
-from typing import Any, Callable
+from typing import Any, Awaitable, Callable, Coroutine
 from src.client.received_command import ReceivedCommand
 from src.client.ui.display_thread import ActivityDisplay
 from src.now_playing import MediaStatus
 from src.commanding.commands import Command
-from src.commanding.handler import CommandHandler
+from src.commanding.handler import AsyncCommandHandler
 from src.commands.commands import MediaCommands
 
 logger = getLogger("client")
@@ -24,13 +27,19 @@ def handles(*commands: Command) -> Any:
     return decorator
 
 
-class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
+class ClientCommandHandler(AsyncCommandHandler[ReceivedCommand, None]):
     _current: ReceivedCommand | None = None
     _lock = threading.Lock()
     _display = ActivityDisplay()
-    _mapping: dict[str, CommandHandler[ReceivedCommand, None]] = {}
+    _mapping: dict[str, AsyncCommandHandler[ReceivedCommand, None]] = {}
 
-    def __init__(self, downstream: CommandHandler[Command, MediaStatus]) -> None:
+    def __init__(
+        self,
+        loop: AbstractEventLoop,
+        downstream: AsyncCommandHandler[Command, MediaStatus],
+    ) -> None:
+        self._loop = loop
+
         def with_logging(x):
             logger.info(f"Sending {x} to server")
             return downstream(x)
@@ -50,10 +59,10 @@ class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
         pass
 
     @handles(MediaCommands.show_status)
-    def _show_status(self, r_command: ReceivedCommand) -> None:
+    async def _show_status(self, r_command: ReceivedCommand) -> None:
         try:
             self._display.run(lambda tt: tt.notify_show_status(), auto_hide=False)
-            result = self._downstream(MediaCommands.get_status)
+            result = await self._downstream(MediaCommands.get_status)
             if self._current:
                 self._display.run(
                     lambda tt: tt.notify_show_status(result), auto_hide=True
@@ -62,7 +71,7 @@ class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
             self._handle_error(r_command, e)
 
     @handles(MediaCommands.hide_status)
-    def _hide_status(self, r_command: ReceivedCommand) -> None:
+    async def _hide_status(self, r_command: ReceivedCommand) -> None:
         self._display.run(lambda tt: tt.hide())
 
     def _diagnose(self, exception: Exception) -> tuple[str, str]:
@@ -80,11 +89,11 @@ class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
             lambda tt: tt.notify_command_errored(command.command, message, emoji)
         )
 
-    def _wrap_downstream(self, received: ReceivedCommand, command: Command):
+    async def _wrap_downstream(self, received: ReceivedCommand, command: Command):
         try:
             self._display.run(lambda tt: tt.notify_command_start(received), False)
             start = time.time()
-            result = self._downstream(command)
+            result = await self._downstream(command)
             elapsed = time.time() - start
             self._display.run(
                 lambda tt: tt.notify_command_done(received, elapsed, result)
@@ -92,31 +101,48 @@ class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
         except Exception as e:
             self._handle_error(received, e)
 
-    def _exec_in_thread(self, command: ReceivedCommand) -> None:
+    def _get_handler(self, command: ReceivedCommand) -> Awaitable[None]:
         local_handler = self._mapping.get(command.command.code, None)
+        if local_handler:
+            return local_handler(command)
+        return self._wrap_downstream(command, command.command)
+
+    def _exec(self, command: ReceivedCommand) -> None:
+        loop = self._loop
         try:
-            self._current = command
-            if local_handler:
-                return local_handler(command)
-            self._wrap_downstream(command, command.command)
-        finally:
+            handler = self._get_handler(command)
+            loop.run_until_complete(handler)
+
+        except RuntimeError as e:
+            if "Event loop stopped before Future completed" in str(e):
+                logger.warn(f"Event loop stopped before {command} completed.")
+                loop.close()
+                return
+
+            raise
+        else:
             self._current = None
 
     def __call__(self, command: ReceivedCommand) -> None:
-        if (
-            self._current
-            and self._current.code == MediaCommands.show_status.code
-            and command.code == MediaCommands.hide_status.code
-        ):
-            self._current = None
-            self._display.run(lambda tt: tt.hide())
-            logger.info(f"Processed {command} locally.")
-            return
-        if self._current and self._current.code != "show_status":
-            logger.error(f"Busy with {self._current}.")
-            return self.busy(command)
         with self._lock:
-            threading.Thread(
-                target=self._exec_in_thread,
-                args=(command,),
-            ).start()
+            match self._current and self._current.command:
+                case Command(code="show_status"):
+                    match command.command:
+                        case Command(code="show_status"):
+                            logger.warn("Already showing status. Ignoring.")
+                            return
+                        case _:
+                            logger.info(
+                                f"Received {command} while showing status. Cancelling display."
+                            )
+                            self._loop.stop()
+                            self._loop = new_event_loop()
+                            self._current = None
+                case None:
+                    pass
+                case _:
+                    logger.error(f"Busy with {self._current}.")
+                    return self.busy(command)
+
+            self._current = command
+            threading.Thread(target=self._exec, args=(command,)).start()

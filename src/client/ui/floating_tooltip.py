@@ -26,6 +26,7 @@ class MediaTooltip:
     _tk: Tk
     _pos: Tuple[int, int]
     _status: MediaStatus
+    _error = False
 
     def __init__(self, tk: Tk):
         self._tk = tk
@@ -153,6 +154,7 @@ class MediaTooltip:
         self._tk.update_idletasks()
 
     def notify_command_errored(self, command: Command, error: str, fate_emoji: str):
+        self._error = True
         self._tk.attributes("-alpha", 1)
         self._set_command_part(f"{fate_emoji} {command.code}", "", "darkred", False, 18)
         self._set_first_line(error, 15)
@@ -161,6 +163,10 @@ class MediaTooltip:
         self._place_window()
 
     def notify_command_start(self, command: ReceivedCommand):
+        if self._error:
+            self._error = False
+            self._command_line.pack_forget()
+            self._set_first_line(" ")
         self._set_command_part("⌛ " + command.pretty, "⌛⌛", "darkblue", False)
         self._place_window()
         self._tk.attributes("-alpha", 0.85)

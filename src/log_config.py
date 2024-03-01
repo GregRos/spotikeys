@@ -56,3 +56,4 @@ def setup_logging():
 
     # Add the console handler to the logger
     logging.basicConfig(handlers=[ch], level=logging.INFO)
+    logging.getLogger("server").setLevel(logging.DEBUG)

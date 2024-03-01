@@ -1,4 +1,4 @@
-from typing import Any, Literal, Tuple, Protocol
+from typing import Any, Literal, Tuple, Protocol, TypedDict
 
 from keyboard import play
 
@@ -32,6 +32,20 @@ Code = Literal[
 ]
 
 
+class LoveStateArgs(TypedDict):
+    id: str
+    track_love: bool
+    album_love: bool
+    artist_love: bool
+
+
+class SetPlaylistArgs(TypedDict):
+    id: str
+    name: str
+    tracks: list[str]
+    description: str
+
+
 class MediaCommands(Protocol):
 
     @parameterized_command("🔊")
@@ -41,19 +55,16 @@ class MediaCommands(Protocol):
     def seek_to(self, position: float) -> None: ...
 
     @parameterized_command("🔂")
-    def repeat_to(self, repeat: Literal["track", "context", "off"]) -> None: ...
+    def repeat_to(self, repeat: Literal["track", "context", "off", False]) -> None: ...
 
     @parameterized_command("🗑️")
     def delete_playlist(self, playlist_id: str) -> None: ...
 
     @parameterized_command("📝")
-    def set_playlist_tracks(self, tracks: dict) -> None: ...
+    def set_playlist(self, tracks: SetPlaylistArgs) -> None: ...
 
-    @parameterized_command("⏮️")
-    def skip_prev_n(self, n: int) -> None: ...
-
-    @parameterized_command("⏭️")
-    def skip_next_n(self, n: int) -> None: ...
+    @parameterized_command("💔")
+    def set_love_state(self, args: LoveStateArgs) -> None: ...
     @command("▶️")
     def play(self) -> None: ...
 
@@ -92,9 +103,6 @@ class MediaCommands(Protocol):
 
     @command("❤️")
     def love(self) -> None: ...
-
-    @parameterized_command("💔")
-    def unlove(self, track_id: str) -> None: ...
 
     @command("🔄")
     def spin_this_in_last(self) -> None: ...

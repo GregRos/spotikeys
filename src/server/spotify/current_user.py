@@ -1,5 +1,6 @@
 from spotipy import Spotify
 
+from src.server.spotify.asyncify import asyncify
 from src.server.spotify.playlist import Playlist
 from src.server.spotify.resource import SpotifyResource
 
@@ -15,12 +16,7 @@ class CurrentUser(SpotifyResource):
     def playlists(self):
         from src.server.spotify.playlists import Playlists
 
-        def reload():
-            return self._spotify.current_user_playlists().get("items")
-
-        return Playlists(
-            self._spotify, self, [Playlist(self._spotify, p) for p in reload()]
-        )
+        return Playlists(self._spotify, self)
 
     @property
     def display_name(self):

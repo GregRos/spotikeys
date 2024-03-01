@@ -1,14 +1,18 @@
 from dataclasses import dataclass, field
 import re
+from tkinter.ttk import Progressbar
 from typing import Literal
 
 import benedict
 from spotipy import Spotify
 
 
+from src.now_playing import MediaStatus
+from src.server.spotify.asyncify import asyncify
 from src.server.spotify.base import SpotifyBase
 from src.server.spotify.track import Track
 
+Repeat = Literal["track", "context", "off", None, False]
 allowable_actions = (
     "interrupting_playback",
     "pausing",
@@ -56,34 +60,49 @@ class Playback(SpotifyBase):
     def progress(self) -> float:
         return self.get("progress_ms") / 1000
 
-    @progress.setter
-    def progress(self, progress: float):
-        progress = max(0.0, min(progress, self.track.duration))
-        self._spotify.seek_track(int(progress * 1000))
-        self.reload()
+    def get_status(self) -> MediaStatus:
+        if self.is_dirty:
+            self.reload()
+        return MediaStatus(
+            title=self.track.name,
+            artist=self.track.artists[0].name,
+            album=self.track.album.name,
+            duration=self.track.duration,
+            is_playing=self.is_playing,
+            position=self.progress,
+        )
 
+    async def set_progress(self, progress: float):
+        progress = int(max(0.0, min(progress, self.track.duration)) * 1000)
+        self._spotify.seek_track(progress)
+        self._data["progress_ms"] = int(progress)
+
+    @asyncify
     def next_track(self):
         self._spotify.next_track()
-        self.reload()
+        self.is_dirty = True
 
+    @asyncify
     def prev_track(self):
         self._spotify.previous_track()
-        self.reload()
+        self.is_dirty = True
 
     @property
     def volume(self) -> int:
         return self._data["device"]["volume_percent"]
 
-    @volume.setter
-    def volume(self, volume: int):
+    @asyncify
+    def set_volume(self, volume: int):
         volume = max(0, min(volume, 100))
         self._spotify.volume(volume)
         self._data["device"]["volume_percent"] = volume
 
+    @asyncify
     def play(self):
         self._spotify.start_playback()
         self.set("is_playing", True)
 
+    @asyncify
     def pause(self):
         self._spotify.pause_playback()
         self.set("is_playing", False)
@@ -105,8 +124,8 @@ class Playback(SpotifyBase):
             case repeat:
                 return repeat
 
-    @repeat.setter
-    def repeat(self, repeat: Literal["track", "context", "off", None, False]):
+    @asyncify
+    def set_repeat(self, repeat: Repeat):
         normalized = repeat if repeat else "off"
         self._spotify.repeat(normalized)
         self.set("repeat_state", normalized)

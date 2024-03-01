@@ -1,35 +1,20 @@
 from abc import abstractmethod
 from turtle import down
-from typing import Callable, Any, Protocol
+from typing import Awaitable, Callable, Any, Generic, Protocol, TypeVar
 
 from src.commanding.commands import CommandLike, Command
 from src.server.errors import LocalCommandError, NoHandlerError, BusyError
 
+CommandType = TypeVar("CommandType", bound=CommandLike, contravariant=True)
+ReturnType = TypeVar("ReturnType", covariant=True)
 
-class CommandHandler[CommandType: CommandLike, ReturnType](Protocol):
-    def __call__(self, command: CommandType) -> ReturnType: ...
+
+class AsyncCommandHandler(Protocol, Generic[CommandType, ReturnType]):
+    def __call__(self, command: CommandType) -> Awaitable[ReturnType]: ...
 
 
-class PropertyBasedCommandHandler[Command: Command, ReturnType](
-    CommandHandler[Command, ReturnType]
-):
+class PropertyBasedCommandHandler(AsyncCommandHandler[CommandType, ReturnType]):
     _current: Command | None = None
 
     def __init__(self, name: str):
         self._name = name
-
-    def __call__(self, command: Command):
-        handler = getattr(self, command.code, None)
-
-        if not handler:
-            raise NoHandlerError(command)
-
-        if self._current:
-            raise BusyError(self._current)
-
-        self._current = command
-        try:
-            return_value = handler()
-        finally:
-            self._current = None
-        return return_value

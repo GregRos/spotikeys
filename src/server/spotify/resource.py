@@ -7,7 +7,9 @@ from src.server.spotify.base import SpotifyBase
 
 
 class SpotifyResource(SpotifyBase):
-    def __init__(self, spotify: Spotify, reload: Callable[[], dict | None], data: dict | None):
+    def __init__(
+        self, spotify: Spotify, reload: Callable[[], dict | None], data: dict | None
+    ):
         super().__init__(spotify, reload, data)
 
     @property
@@ -27,12 +29,3 @@ class SpotifyResource(SpotifyBase):
 
     def __repr__(self):
         return f"{self.__class__.name}({self.name})"
-
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.id == other.id
-        return False
-
-    def __hash__(self):
-        return hash(self.uri)
- 

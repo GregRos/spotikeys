@@ -1,11 +1,16 @@
-from typing import List
+import asyncio
+from logging import getLogger
+from typing import Callable, List
 
 from spotipy import Spotify
 
 from src.server.spotify import SpotifyResource
 from src.server.spotify import Artist
 from src.server.spotify import Album
+from src.server.spotify.asyncify import asyncify
 from src.server.spotify.utils import not_none
+
+logger = getLogger("server")
 
 
 class Track(SpotifyResource):
@@ -32,13 +37,16 @@ class Track(SpotifyResource):
             Track(self._spotify, track_data) for track_data in self._data.get("tracks")
         ]
 
+    @asyncify
     def recommend(self):
-        return [
+        result = [
             Track(self._spotify, track_data)
             for track_data in self._spotify.recommendations(seed_tracks=[self.id]).get(
                 "tracks"
             )
         ]
+        logger.info(f"Recommended {len(result)} tracks for {self.name}")
+        return result
 
     @property
     def artists(self) -> List[Artist]:
@@ -51,11 +59,30 @@ class Track(SpotifyResource):
     def duration(self) -> float:
         return float(self.get("duration_ms")) / 1000
 
-    def save(self):
-        self._spotify.current_user_saved_tracks_add([self.id])
+    async def set_saved(self, saved: bool):
+        if saved:
+            await self.save()
+        else:
+            await self.unsave()
 
-    def unsave(self):
-        self._spotify.current_user_saved_tracks_delete([self.id])
+    async def save(self):
+        if await self.is_saved:
+            return False
+        await self.asyncily(lambda spot: spot.current_user_saved_tracks_add([self.id]))
+        return True
+
+    @property
+    @asyncify
+    def is_saved(self):
+        return self._spotify.current_user_saved_tracks_contains([self.id])[0]
+
+    async def unsave(self):
+        if await self.is_saved:
+            return False
+        await self.asyncily(
+            lambda spot: spot.current_user_saved_tracks_delete([self.id])
+        )
+        return True
 
     @property
     def artists_string(self):
