@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from spotipy import Spotify, SpotifyOAuth
 
 from src.server.spotify import Playback, Artist, Track, Playlist, Album, CurrentUser
@@ -13,7 +14,8 @@ class Root:
             scope=",".join(scopes),
         )
         self._spotify = Spotify(auth_manager=auth_manager)
-        self._spotify._session.trust_env = False # type: ignore
+        self._spotify._session.trust_env = False  # type: ignore
+        self.current_user = CurrentUser(self._spotify)
 
     @property
     def playback(self):
@@ -24,10 +26,6 @@ class Root:
         if not current:
             return None
         return Playback(self._spotify, reload, current)
-
-    @property
-    def current_user(self):
-        return CurrentUser(self._spotify)
 
     def track(self, id: str):
         return Track.from_id(self._spotify, id)
@@ -56,5 +54,6 @@ scopes = [
     "playlist-read-private",
     # 'playlist-read-collaborative',
     "playlist-modify-private",
+    "playlist-modify-public",
     # 'app-remote-control'
 ]

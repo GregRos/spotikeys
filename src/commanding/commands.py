@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ast import Call
 from typing import Protocol, Callable, Any
 
 
@@ -31,9 +32,30 @@ class Command(CommandLike):
         return f"{self.code}"
 
 
+class ParamterizedCommand[T](Command):
+    def __init__(self, command: str, label: str, arg: T):
+        super().__init__(command, label)
+        self.arg = arg
+
+    def __str__(self):
+        return f"{self.code}({self.arg})"
+
+    @property
+    def label(self):
+        return f"{self.label} ⟵ {self.arg}"
+
+
 def command(label: str):
 
     def decorator(func: Callable[[Any], None]):
-        return Command(func.__name__, label)  # type: ignore
+        return Command(func.__name__, label)
+
+    return decorator
+
+
+def parameterized_command(label: str):
+
+    def decorator[T](func: Callable[[Any, T], None]):
+        return lambda arg: ParamterizedCommand(func.__name__, label, arg)
 
     return decorator

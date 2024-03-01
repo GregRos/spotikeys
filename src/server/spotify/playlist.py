@@ -43,8 +43,11 @@ class Playlist(SpotifyResource):
     def reload(self):
         self._data = benedict(self._spotify.playlist(self.id))
 
-    def add_tracks(self, tracks: List[str]):
-        self._spotify.playlist_add_items(self.id, tracks)
+    def add(self, *tracks: str | Track):
+        track_ids = [
+            track.id if isinstance(track, Track) else track for track in tracks
+        ]
+        self._spotify.playlist_add_items(self.id, track_ids)
         self.reload()
 
     def remove_tracks(self, tracks: List[str]):
@@ -69,7 +72,7 @@ class Playlist(SpotifyResource):
     def tracks(self) -> List[Track]:
         return [
             Track(self._spotify, track.get("track"))
-            for track in self._data.get("tracks").get("items")
+            for track in self._spotify.playlist_tracks(self.id).get("items")
         ]
 
     @property

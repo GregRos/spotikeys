@@ -13,6 +13,6 @@ key_labels: dict[str, str] = {
     "num plus": "➕",
     "num minus": "➖",
     "num /": "➗",
-    "num enter": "↩️",
-    "num .": "●",
+    "num enter": "🆗",
+    "num .": "🔴",
 }

@@ -1,11 +1,26 @@
+from dataclasses import dataclass, field
 import re
 from typing import Literal
 
 import benedict
 from spotipy import Spotify
 
+
 from src.server.spotify.base import SpotifyBase
 from src.server.spotify.track import Track
+
+allowable_actions = (
+    "interrupting_playback",
+    "pausing",
+    "resuming",
+    "seeking",
+    "skipping_next",
+    "skipping_prev",
+    "toggling_repeat_context",
+    "toggling_repeat_track",
+    "toggling_shuffle",
+    "toggling_volume",
+)
 
 
 class NothingPlayingError(Exception):
@@ -14,6 +29,20 @@ class NothingPlayingError(Exception):
 
 
 class Playback(SpotifyBase):
+
+    def allows(self, action: str):
+        disallows = self.get("actions").get("disallows").get(action)
+        return not disallows
+
+    def must_allow(self, action: str):
+        if not self._data:
+            raise NothingPlayingError()
+
+        return action
+
+    @property
+    def saved(self):
+        return self.get("is_saved")
 
     @property
     def track(self):
@@ -64,7 +93,7 @@ class Playback(SpotifyBase):
         return self.get("shuffle_state")
 
     @shuffle.setter
-    def shuffle(self, shuffle: bool):
+    def shuffle(self, shuffle=False):
         self._spotify.shuffle(shuffle)
         self.set("shuffle_state", shuffle)
 

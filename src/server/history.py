@@ -10,15 +10,13 @@ class PersistentCommandHistory:
 
     def __init__(self, filename: PathLike, commands: object):
         self.filename = filename
+        self.file = self.file = open(self.filename, "ab+", buffering=0)
+
         self.commands = {
             k: v for k, v in commands.__dict__.items() if isinstance(v, Command)
         }
 
-    def __enter__(self):
-        self.file = open(self.filename, "ab+", buffering=0)
-        return self
-
-    def __exit__(self, *args):
+    def close(self):
         self.file.close()
 
     def _parse(self, line: str):

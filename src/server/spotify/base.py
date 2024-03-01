@@ -9,7 +9,16 @@ from spotipy import Spotify
 type Reload = Callable[[], dict]
 
 
-class SpotifyBase:
+class SpotifyBacked:
+    _spotify: Spotify
+    _retrieved: datetime
+
+    def __init__(self, spotify: Spotify):
+        self._spotify = spotify
+        self._retrieved = datetime.now()
+
+
+class SpotifyBase(SpotifyBacked):
     _data: benedict
     _spotify: Spotify
     _retrieved: datetime
@@ -17,10 +26,9 @@ class SpotifyBase:
     def __init__(
         self, spotify: Spotify, reload: Callable[[], dict | None], data: dict | None
     ):
+        super().__init__(spotify)
         self._reload = reload
-        self._spotify = spotify
         self._data = benedict(data)
-        self._retrieved = datetime.now()
 
     def get(self, key):
         return self._data[key]
@@ -40,5 +48,5 @@ class SpotifyBase:
         result = self._reload()
 
         self._data = benedict(self._verify_data(result))
-        
+
         self._retrieved = datetime.now()

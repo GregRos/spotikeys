@@ -37,7 +37,7 @@ class MediaTooltip:
         self._command_line = command_line = Label(
             tk,
             text=" ",
-            justify=LEFT,
+            justify=CENTER,
             relief=SOLID,
             borderwidth=0,
             background="#000000",
@@ -48,7 +48,7 @@ class MediaTooltip:
         self._song_title_line = song_title_line = Label(
             tk,
             text=" ",
-            justify=LEFT,
+            justify=CENTER,
             relief=SOLID,
             borderwidth=0,
             background="#000000",
@@ -107,11 +107,13 @@ class MediaTooltip:
     _command_part_placed = False
 
     def _set_command_part(
-        self, text: str, duration: str, bg: str = "#000000", place=True
+        self, text: str, duration: str, bg: str = "#000000", place=True, font_size=12
     ):
-        typeset = f"{text.ljust(32)}{str(duration)}"
+        typeset = f"{text.ljust(30)}{str(duration)}"
         command_line = self._command_line
-        command_line.config(text=typeset, background=bg)
+        command_line.config(
+            text=typeset, background=bg, font=("Segoe UI Emoji", font_size)
+        )
         # either place is true or the command line is not placed:
         if place or not self._command_part_placed:
             self._command_part_placed = True
@@ -119,9 +121,11 @@ class MediaTooltip:
             command_line.pack(ipadx=20, fill="both", ipady=5, expand=True)
             make_clickthrough(command_line)
 
-    def _set_first_line(self, line: str):
+    def _set_first_line(self, line: str, font_size=18):
         song_title_line = self._song_title_line
-        song_title_line.config(text=truncate_text(line, 20))
+        song_title_line.config(
+            text=truncate_text(line, 20), font=("Segoe UI Emoji", font_size)
+        )
         song_title_line.place(x=0, y=20, width=200)
         song_title_line.pack(ipadx=15, fill="both", expand=True)
         make_clickthrough(song_title_line)
@@ -148,10 +152,10 @@ class MediaTooltip:
         self._tk.deiconify()
         self._tk.update_idletasks()
 
-    def notify_command_errored(self, command: Command, error: Exception):
+    def notify_command_errored(self, command: Command, error: str, fate_emoji: str):
         self._tk.attributes("-alpha", 1)
-        self._set_command_part(command.__str__(), "", "red", False)
-        self._set_first_line(f"{error}")
+        self._set_command_part(f"{fate_emoji} {command.code}", "", "darkred", False, 18)
+        self._set_first_line(error, 15)
         for label in (self._song_artist_line, self._song_progress_line):
             label.pack_forget()
         self._place_window()

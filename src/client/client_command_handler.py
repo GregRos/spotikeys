@@ -1,4 +1,5 @@
 from abc import ABC
+from ast import Tuple
 from enum import auto
 from logging import getLogger
 import threading
@@ -64,11 +65,20 @@ class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
     def _hide_status(self, r_command: ReceivedCommand) -> None:
         self._display.run(lambda tt: tt.hide())
 
+    def _diagnose(self, exception: Exception) -> tuple[str, str]:
+        stringified = str(exception)
+        if "Restriction violated" in stringified:
+            return ("Restriction violated", "⛔")
+        return (stringified, "❌")
+
     def _handle_error(
         self, command: ReceivedCommand, error: Exception
     ) -> MediaStatus | None:
+        message, emoji = self._diagnose(error)
         traceback.print_exc()
-        self._display.run(lambda tt: tt.notify_command_errored(command.command, error))
+        self._display.run(
+            lambda tt: tt.notify_command_errored(command.command, message, emoji)
+        )
 
     def _wrap_downstream(self, received: ReceivedCommand, command: Command):
         try:
@@ -102,7 +112,7 @@ class ClientCommandHandler(CommandHandler[ReceivedCommand, None]):
             self._display.run(lambda tt: tt.hide())
             logger.info(f"Processed {command} locally.")
             return
-        if self._current:
+        if self._current and self._current.code != "show_status":
             logger.error(f"Busy with {self._current}.")
             return self.busy(command)
         with self._lock:

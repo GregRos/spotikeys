@@ -30,6 +30,9 @@ class Album(SpotifyResource):
     def total_tracks(self):
         return self._data.get("total_tracks")
 
+    def unsave(self):
+        self._spotify.current_user_saved_albums_delete([self.id])
+
     @property
     def popularity(self):
         return self._data.get("popularity")

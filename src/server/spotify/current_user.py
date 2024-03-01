@@ -12,14 +12,19 @@ class CurrentUser(SpotifyResource):
         super().__init__(spotify, reload, reload())
 
     @property
+    def playlists(self):
+        from src.server.spotify.playlists import Playlists
+
+        def reload():
+            return self._spotify.current_user_playlists().get("items")
+
+        return Playlists(
+            self._spotify, self, [Playlist(self._spotify, p) for p in reload()]
+        )
+
+    @property
     def display_name(self):
         return self._data.get("display_name")
-
-    def playlists(self):
-        return [
-            Playlist(self._spotify, playlist)
-            for playlist in self._spotify.current_user_playlists().get("items")
-        ]
 
     @property
     def email(self):

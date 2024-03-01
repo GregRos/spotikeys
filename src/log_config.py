@@ -1,5 +1,6 @@
 import ctypes
 import logging
+import re
 
 from colorama import Fore, Style, init
 
@@ -13,7 +14,7 @@ class CustomFormatter(logging.Formatter):
     green = Fore.GREEN
     bold_red = Style.BRIGHT + Fore.RED
     reset = Style.RESET_ALL
-    _format = "[%(asctime)s] |%(levelname)s| %(name)s – %(message)s"
+    _format = "%(asctime)s %(name)s %(message)s"
 
     @staticmethod
     def get_formatter(string: str):
@@ -30,7 +31,18 @@ class CustomFormatter(logging.Formatter):
         logging.CRITICAL: get_formatter(f"{bold_red}{_format}{reset}"),
     }
 
+    def _get_name_emoji(self, name: str):
+        match name:
+            case "keyboard":
+                return "#️⃣ "
+            case "server":
+                return "⚙️ "
+            case "client":
+                return "🎮"
+        return name
+
     def format(self, record):
+        record.name = self._get_name_emoji(record.name)
         formatter = self.formatters[record.levelno]
         return formatter.format(record)
 

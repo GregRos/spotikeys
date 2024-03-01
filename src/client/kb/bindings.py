@@ -43,8 +43,7 @@ class NumpadBinding:
         return self
 
     def __str__(self):
-        maybe_alt = f" [{self.alt_command.code}]" if self.alt_command else ""
-        return f"{self.key.id} ➜  {self.command.code} {maybe_alt}"
+        return f"{self.key} ➜  {self.command} {self.alt_command}"
 
 
 type Binding = OffBinding | UpDownBinding | NumpadBinding

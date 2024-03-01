@@ -1,7 +1,9 @@
 from typing import Any, Literal, Tuple, Protocol
 
+from keyboard import play
+
 from src.commanding import Command
-from src.commanding.commands import command
+from src.commanding.commands import command, parameterized_command
 
 Code = Literal[
     "show_status",
@@ -31,6 +33,33 @@ Code = Literal[
 
 
 class MediaCommands(Protocol):
+
+    @parameterized_command("🔊")
+    def volume_to(self, volume: int) -> None: ...
+
+    @parameterized_command("🎚️")
+    def seek_to(self, position: float) -> None: ...
+
+    @parameterized_command("🔂")
+    def repeat_to(self, repeat: Literal["track", "context", "off"]) -> None: ...
+
+    @parameterized_command("🗑️")
+    def delete_playlist(self, playlist_id: str) -> None: ...
+
+    @parameterized_command("📝")
+    def set_playlist_tracks(self, tracks: dict) -> None: ...
+
+    @parameterized_command("⏮️")
+    def skip_prev_n(self, n: int) -> None: ...
+
+    @parameterized_command("⏭️")
+    def skip_next_n(self, n: int) -> None: ...
+    @command("▶️")
+    def play(self) -> None: ...
+
+    @command("⏸️")
+    def pause(self) -> None: ...
+
     @command("🔊")
     def volume_up(self) -> None: ...
 
@@ -63,6 +92,9 @@ class MediaCommands(Protocol):
 
     @command("❤️")
     def love(self) -> None: ...
+
+    @parameterized_command("💔")
+    def unlove(self, track_id: str) -> None: ...
 
     @command("🔄")
     def spin_this_in_last(self) -> None: ...

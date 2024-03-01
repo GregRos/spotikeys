@@ -32,6 +32,14 @@ class Track(SpotifyResource):
             Track(self._spotify, track_data) for track_data in self._data.get("tracks")
         ]
 
+    def recommend(self):
+        return [
+            Track(self._spotify, track_data)
+            for track_data in self._spotify.recommendations(seed_tracks=[self.id]).get(
+                "tracks"
+            )
+        ]
+
     @property
     def artists(self) -> List[Artist]:
         return [
@@ -46,9 +54,12 @@ class Track(SpotifyResource):
     def save(self):
         self._spotify.current_user_saved_tracks_add([self.id])
 
+    def unsave(self):
+        self._spotify.current_user_saved_tracks_delete([self.id])
+
     @property
-    def _artists_string(self):
+    def artists_string(self):
         return ", ".join([artist.name for artist in self.artists])
 
     def __str__(self):
-        return f"{self.__class__.name}({self._artists_string} - {self.name})"
+        return f"{self.__class__.name}({self.artists_string} - {self.name})"
