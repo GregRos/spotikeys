@@ -201,7 +201,7 @@ class MediaTooltip:
     def _show_media(self, status: MediaStatus):
 
         remaining_time = format_duration(status.duration - status.position)
-        full_blocks = int(status.percent / 9)
+        full_blocks = round(float(status.percent / 100) * 9)
         progress_line = f"{ '▶' if status.is_playing else '⏸' } {'█' * full_blocks}{'░' * (9 - full_blocks)} {remaining_time}"
         self._set_first_line(status.title)
         self._set_artist_line(status.artist)

@@ -58,7 +58,7 @@ class Playback(SpotifyBase):
 
     @property
     def progress(self) -> float:
-        return self.get("progress_ms") / 1000
+        return float(self.get("progress_ms")) / 1000
 
     def get_status(self) -> MediaStatus:
         if self.is_dirty:
@@ -73,7 +73,7 @@ class Playback(SpotifyBase):
         )
 
     async def set_progress(self, progress: float):
-        progress = int(max(0.0, min(progress, self.track.duration)) * 1000)
+        progress = int(max(0.0, min(progress, self.track.duration)) * 1000.0)
         self._spotify.seek_track(progress)
         self._data["progress_ms"] = int(progress)
 

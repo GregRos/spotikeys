@@ -17,7 +17,7 @@ class MediaStatus:
 
     @property
     def percent(self):
-        return int(100 * self.position / self.duration)
+        return round(100 * self.position / self.duration)
 
     def __str__(self):
         return f"{self.artist} - {self.title} ({self.percent}%)"

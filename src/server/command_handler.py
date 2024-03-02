@@ -96,7 +96,7 @@ class MediaCommandHandler(MediaCommands):
         cur_progress = playing.progress
         with self.undoable(MediaCommands.seek_to(cur_progress)):
             await playing.set_progress(cur_progress + 30)
-            return
+            return playing.get_status()
 
     @override
     async def seek_bwd(self):
@@ -104,6 +104,7 @@ class MediaCommandHandler(MediaCommands):
         cur_progress = playing.progress
         with self.undoable(MediaCommands.seek_to(cur_progress)):
             await playing.set_progress(cur_progress - 30)
+            return playing.get_status()
 
     @override
     async def play(self):
