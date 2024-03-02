@@ -5,6 +5,8 @@ import code
 from concurrent.futures import thread
 from enum import auto
 from logging import getLogger
+import os
+import sys
 import threading
 import time
 import traceback
@@ -69,6 +71,11 @@ class ClientCommandHandler(AsyncCommandHandler[ReceivedCommand, None]):
                 )
         except Exception as e:
             self._handle_error(r_command, e)
+
+    @handles(MediaCommands.exit)
+    async def _exit(self, r_command: ReceivedCommand) -> None:
+        logger.fatal("Exit received! Goodbye.")
+        os._exit(0)
 
     @handles(MediaCommands.hide_status)
     async def _hide_status(self, r_command: ReceivedCommand) -> None:

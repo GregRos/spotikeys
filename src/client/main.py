@@ -27,8 +27,6 @@ from src.log_config import setup_logging
 setup_logging()
 
 client_loop = asyncio.new_event_loop()
-server_loop = asyncio.new_event_loop()
-Thread(target=server_loop.run_forever, daemon=True).start()
 
 
 def create_client(send: AsyncCommandHandler[Command, MediaStatus]):
@@ -45,13 +43,11 @@ def create_client(send: AsyncCommandHandler[Command, MediaStatus]):
         num_4.bind_numpad(MediaCommands.prev_track, MediaCommands.prev_multi),
         num_5.bind_numpad(MediaCommands.play_pause),
         num_6.bind_numpad(MediaCommands.next_track, MediaCommands.next_multi),
-        num_7.bind_numpad(MediaCommands.undo),
         num_8.bind_numpad(MediaCommands.love),
-        num_9.bind_numpad(MediaCommands.redo),
         num_enter.bind_numpad(MediaCommands.cancel, MediaCommands.spin_this_in_last),
         num_plus.bind_numpad(MediaCommands.volume_up, MediaCommands.spin_this_in_new),
         num_minus.bind_numpad(MediaCommands.volume_down),
-        num_asterisk.bind_numpad(MediaCommands.volume_mute),
+        num_asterisk.bind_numpad(MediaCommands.volume_mute, MediaCommands.exit),
         num_slash.bind_numpad(MediaCommands.volume_max),
     )
     return layout
@@ -68,5 +64,4 @@ handler = MediaCommandHandler(
     Path("./history.state"),
 )
 
-with create_client(handler):
-    keyboard.wait("esc")
+create_client(handler).__enter__()

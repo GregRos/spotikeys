@@ -48,6 +48,9 @@ class SetPlaylistArgs(TypedDict):
 
 class MediaCommands(Protocol):
 
+    @command("📴")
+    def exit(self) -> None: ...
+
     @parameterized_command("🔊")
     def volume_to(self, volume: int) -> None: ...
 
@@ -65,6 +68,7 @@ class MediaCommands(Protocol):
 
     @parameterized_command("💔")
     def set_love_state(self, args: LoveStateArgs) -> None: ...
+
     @command("▶️")
     def play(self) -> None: ...
 

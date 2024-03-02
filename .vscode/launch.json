@@ -4,7 +4,7 @@
       "name": "Main",
       "type": "debugpy",
       "request": "launch",
-      "module": "src.client.main",
+      "program": "main.pyw",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}"
     }

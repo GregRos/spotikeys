@@ -12,9 +12,10 @@ class CommandLike(Protocol):
 class Command(CommandLike):
     code: str
 
-    def __init__(self, command: str, label: str):
+    def __init__(self, command: str, label: str, describe: str | None = None):
         self.code = command
         self.label = label
+        self.describe = describe
 
     def local(self, is_local: bool = True):
         return Command(self.code, self.label)

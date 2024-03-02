@@ -53,7 +53,7 @@ def setup_logging():
     ch = logging.StreamHandler()
     # Set a format for the console handler
     ch.setFormatter(CustomFormatter())
-
+    file_handler = logging.FileHandler("log.log", encoding="utf-8")
     # Add the console handler to the logger
-    logging.basicConfig(handlers=[ch], level=logging.INFO)
+    logging.basicConfig(handlers=[ch, file_handler], level=logging.INFO)
     logging.getLogger("server").setLevel(logging.DEBUG)
