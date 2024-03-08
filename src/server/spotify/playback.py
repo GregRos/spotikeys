@@ -8,8 +8,12 @@ from spotipy import Spotify
 
 
 from src.now_playing import MediaStatus
+from src.server.spotify.album import Album
+from src.server.spotify.artist import Artist
 from src.server.spotify.asyncify import asyncify
 from src.server.spotify.base import SpotifyBase
+from src.server.spotify.device import Device
+from src.server.spotify.playlist import Playlist
 from src.server.spotify.track import Track
 
 Repeat = Literal["track", "context", "off", None, False]
@@ -60,6 +64,15 @@ class Playback(SpotifyBase):
     def progress(self) -> float:
         return float(self.get("progress_ms")) / 1000
 
+    @property
+    def device(self):
+        return Device(**self.get("device"))
+
+    @asyncify
+    def start(self, uri: str | Playlist | Track | Album | Artist):
+        uri = uri.uri if isinstance(uri, (Playlist, Track, Album, Artist)) else uri
+        self._spotify.start_playback(context_uri=uri)
+
     def get_status(self) -> MediaStatus:
         if self.is_dirty:
             self.reload()
@@ -94,7 +107,7 @@ class Playback(SpotifyBase):
     @asyncify
     def set_volume(self, volume: int):
         volume = max(0, min(volume, 100))
-        self._spotify.volume(volume)
+        self._spotify.volume(volume, self._data["device"]["id"])
         self._data["device"]["volume_percent"] = volume
 
     @asyncify

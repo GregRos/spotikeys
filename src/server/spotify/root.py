@@ -9,6 +9,7 @@ from spotipy import Spotify, SpotifyOAuth
 from src.server import spotify
 from src.server.spotify import Playback, Artist, Track, Playlist, Album, CurrentUser
 from src.server.spotify.asyncify import asyncify
+from src.server.spotify.device import Device
 from src.server.spotify.playback import NothingPlayingError
 
 
@@ -64,6 +65,11 @@ class Root:
         self._spotify._session.trust_env = False  # type: ignore
         self.me = CurrentUser(self._spotify)
 
+    @asyncify
+    def transfer_playback(self, device: Device | str, force=False):
+        device = device.id if isinstance(device, Device) else device
+        self._spotify.transfer_playback(device, force)
+
     @property
     @asyncify
     def playback(self):
@@ -82,6 +88,10 @@ class Root:
     @asyncify
     def artist(self, id: str):
         return Artist.from_id(self._spotify, id)
+
+    @asyncify
+    def get_devices(self):
+        return [Device(**dev) for dev in self._spotify.devices().get("devices", [])]
 
     @asyncify
     def playlist(self, id: str):

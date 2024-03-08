@@ -60,7 +60,6 @@ class ClientCommandHandler(AsyncCommandHandler[ReceivedCommand, None]):
     def busy(self, command: ReceivedCommand) -> None:
         pass
 
-    @handles(MediaCommands.show_status)
     async def _show_status(self, r_command: ReceivedCommand) -> None:
         try:
             self._display.run(lambda tt: tt.notify_show_status(), auto_hide=False)

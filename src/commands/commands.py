@@ -1,9 +1,11 @@
+from calendar import c
 from typing import Any, Literal, Tuple, Protocol, TypedDict
 
 from keyboard import play
 
 from src.commanding import Command
 from src.commanding.commands import command, parameterized_command
+from src.server.spotify.device import Device
 
 Code = Literal[
     "show_status",
@@ -110,6 +112,17 @@ class MediaCommands(Protocol):
 
     @command("🔄")
     def spin_this_in_last(self) -> None: ...
+
+    @command("🚮")
+    def delete_current_playlist(self) -> None: ...
+
+    @command("🎮")
+    def transfer_to_current(self) -> None: ...
+
+    @parameterized_command("🎮")
+    def transfer_to_device(self, device: str | Device) -> None: ...
+    @command("📱")
+    def transfer_to_phone(self) -> None: ...
 
     @command("🔄*")
     def spin_this_in_new(self) -> None: ...

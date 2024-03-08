@@ -43,10 +43,14 @@ def create_client(send: AsyncCommandHandler[Command, MediaStatus]):
         num_4.bind_numpad(MediaCommands.prev_track, MediaCommands.prev_multi),
         num_5.bind_numpad(MediaCommands.play_pause),
         num_6.bind_numpad(MediaCommands.next_track, MediaCommands.next_multi),
+        num_7.bind_numpad(MediaCommands.undo, MediaCommands.transfer_to_current),
         num_8.bind_numpad(MediaCommands.love),
+        num_9.bind_numpad(MediaCommands.redo, MediaCommands.transfer_to_phone),
         num_enter.bind_numpad(MediaCommands.cancel, MediaCommands.spin_this_in_last),
         num_plus.bind_numpad(MediaCommands.volume_up, MediaCommands.spin_this_in_new),
-        num_minus.bind_numpad(MediaCommands.volume_down),
+        num_minus.bind_numpad(
+            MediaCommands.volume_down, MediaCommands.delete_current_playlist
+        ),
         num_asterisk.bind_numpad(MediaCommands.volume_mute, MediaCommands.exit),
         num_slash.bind_numpad(MediaCommands.volume_max),
     )
