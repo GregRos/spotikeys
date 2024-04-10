@@ -7,7 +7,7 @@ import benedict
 from spotipy import Spotify
 
 
-from src.now_playing import MediaStatus
+from src.client.volume import VolumeInfo
 from src.server.spotify.album import Album
 from src.server.spotify.artist import Artist
 from src.server.spotify.asyncify import asyncify
@@ -73,7 +73,9 @@ class Playback(SpotifyBase):
         uri = uri.uri if isinstance(uri, (Playlist, Track, Album, Artist)) else uri
         self._spotify.start_playback(context_uri=uri)
 
-    def get_status(self) -> MediaStatus:
+    def get_status(self):
+        from src.now_playing import MediaStatus
+
         if self.is_dirty:
             self.reload()
         return MediaStatus(
@@ -83,6 +85,8 @@ class Playback(SpotifyBase):
             duration=self.track.duration,
             is_playing=self.is_playing,
             position=self.progress,
+            volume=VolumeInfo(self.volume, False),
+            device=self.device,
         )
 
     async def set_progress(self, progress: float):

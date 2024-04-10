@@ -5,6 +5,7 @@ from typing import Tuple
 
 
 from src.client.received_command import ReceivedCommand, Command
+from src.client.volume import VolumeInfo
 from .make_clickthrough import make_clickthrough
 from src.now_playing import MediaStatus
 
@@ -90,6 +91,17 @@ class MediaTooltip:
             font=("Segoe UI Emoji", 12),
         )
 
+        self._volume_line = Label(
+            tk,
+            text=" ",
+            justify=CENTER,
+            relief=SOLID,
+            borderwidth=0,
+            background="#111111",
+            foreground="#00ff00",
+            font=("Segoe UI Emoji", 12),
+        )
+
         self._tk.update_idletasks()
 
     def _normalize_pos(self, pos: Tuple[int, int]) -> Tuple[int, int]:
@@ -131,17 +143,24 @@ class MediaTooltip:
         song_title_line.pack(ipadx=15, fill="both", expand=True)
         make_clickthrough(song_title_line)
 
+    def _set_volume_line(self, line: str):
+        volume_line = self._volume_line
+        volume_line.config(text=line)
+        volume_line.place(x=0, y=200, width=20)
+        volume_line.pack(ipadx=40, fill="both", ipady=15, expand=True)
+        make_clickthrough(volume_line)
+
     def _set_artist_line(self, line: str):
         song_artist_line = self._song_artist_line
         song_artist_line.config(text=truncate_text(line, 20))
-        song_artist_line.place(x=0, y=100, width=200)
+        song_artist_line.place(x=0, y=50, width=200)
         song_artist_line.pack(ipadx=15, fill="x", expand=True)
         make_clickthrough(self._song_artist_line)
 
     def _set_progress_line(self, line: str):
         progress_line = self._song_progress_line
         progress_line.config(text=line)
-        progress_line.place(x=0, y=150, width=200)
+        progress_line.place(x=0, y=100, width=200)
         progress_line.pack(ipadx=20, fill="both", ipady=15, expand=True)
         make_clickthrough(progress_line)
 
@@ -149,7 +168,7 @@ class MediaTooltip:
         self._place_window()
 
     def _place_window(self):
-        self._tk.wm_geometry("420x190+%d+%d" % self._normalize_pos(self._pos))
+        self._tk.wm_geometry("420x250+%d+%d" % self._normalize_pos(self._pos))
         self._tk.deiconify()
         self._tk.update_idletasks()
 
@@ -198,15 +217,31 @@ class MediaTooltip:
         self._command_line.pack_forget()
         self._show_media(status)
 
+    def get_volume_line(self, info: VolumeInfo):
+        empty = "◇"
+        full = "◇" if info.mute else "◆"
+        if info.mute:
+            return f"🔇 {empty * 16}"
+        full_boxes = trunc(info.volume / 100 * 16)
+        return f"🔊 {full * full_boxes}{empty * (16 - full_boxes)}"
+
+    def notify_volume_changed(self, info: VolumeInfo):
+        volume_line = self.get_volume_line(info)
+        self._set_volume_line(volume_line)
+        self._place_window()
+        self._tk.update_idletasks()
+
     def _show_media(self, status: MediaStatus):
 
         remaining_time = format_duration(status.duration - status.position)
-        full_blocks = round(float(status.percent / 100) * 9)
+        full_blocks = round(float(status.progress / 100) * 9)
         progress_line = f"{ '▶' if status.is_playing else '⏸' } {'█' * full_blocks}{'░' * (9 - full_blocks)} {remaining_time}"
+        volume_line = self.get_volume_line(status.volume)
         self._set_first_line(status.title)
         self._set_artist_line(status.artist)
         self._set_progress_line(progress_line)
         self._set_album_line(status.album)
+        self._set_volume_line(volume_line)
         self._place_window()
 
     def hide(self):

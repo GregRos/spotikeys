@@ -9,6 +9,7 @@ import socket
 from threading import Event
 import time
 from typing import override
+from src.client.volume import VolumeInfo
 from src.commanding.commands import ParamterizedCommand
 from src.now_playing import MediaStatus
 from src.commanding import Command
@@ -24,12 +25,6 @@ from src.server.history.undo import UndoWaiter
 
 
 logger = getLogger("server")
-def get_system_volume():
-    sessions = AudioUtilities.GetAllSessions()
-    for session in sessions:
-        if session.Process and session.Process.name() == "SystemSounds.exe":
-            volume = session.SimpleAudioVolume
-            return volume.GetMasterVolume() * 100  # Convert to percentage
 
 
 class NoPlaybackError(Exception):
@@ -165,7 +160,11 @@ class MediaCommandHandler(MediaCommands):
             return playing.get_status()
 
     @override
-    async def volume_max(self):
+    def get_volume(self):
+        return self.get_status()
+
+    @override
+    async def volume_reset(self):
         playing = await self.playing
         old_volume = playing.volume
         with self.undoable(MediaCommands.volume_to(old_volume)):
@@ -405,14 +404,7 @@ class MediaCommandHandler(MediaCommands):
 
     async def get_media(self):
         if playback := await self.root.playback:
-            return MediaStatus(
-                title=playback.track.name,
-                artist=playback.track.artists[0].name,
-                album=playback.track.album.name,
-                duration=playback.track.duration,
-                position=playback.progress,
-                is_playing=playback.is_playing,
-            )
+            return playback.get_status()
 
     async def handle(self, command: Command) -> MediaStatus | None:
         handler = getattr(self, command.code, None)
@@ -437,6 +429,7 @@ class MediaCommandHandler(MediaCommands):
 
         start = time.time()
         result = await self.handle(command)
+        result.volume = VolumeInfo(result.volume.volume, False)
         elapsed = time.time() - start
         logger.info(f"Command {command} took {elapsed:.3f} seconds")
         return result  # type: ignore

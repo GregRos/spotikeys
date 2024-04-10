@@ -1,4 +1,5 @@
-from attr import dataclass
+from dataclasses import dataclass
+import re
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
@@ -9,31 +10,49 @@ class ClientVolumeState:
     volume_percent: int
 
 
+devices = AudioUtilities.GetSpeakers()
+interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+audio_interface = interface.QueryInterface(IAudioEndpointVolume)
+
+
+@dataclass
+class VolumeInfo:
+    volume: int
+    mute: bool
+
+
 class ClientVolumeControl:
     def __init__(self):
-        devices = AudioUtilities.GetSpeakers()
-        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        self._audio_endpoint = interface.QueryInterface(IAudioEndpointVolume)
-        self._range = self._audio_endpoint.GetVolumeRange()
+        pass
 
-    def set(self, state: ClientVolumeState):
-        self._audio_endpoint.SetMute(state.mute, None)
-        self._audio_endpoint.SetMasterVolumeLevelScalar(
-            self._from_percent(state.volume_percent), None
-        )
+    @property
+    def audio_endpoint(self):
+        return audio_interface
 
-    def get(self) -> ClientVolumeState:
-        return ClientVolumeState(
-            mute=self._audio_endpoint.GetMute(),
-            volume_percent=self._to_percent(
-                self._audio_endpoint.GetMasterVolumeLevelScalar()
-            ),
-        )
+    @property
+    def info(self) -> VolumeInfo:
+        return VolumeInfo(self.volume, self.mute)
 
     def _to_percent(self, volume: float):
-        return 100 * (volume - self._range[0]) / (self._range[1] - self._range[0])
+        return int(volume * 100)
 
     def _from_percent(self, volume: int):
-        return self._range[0] + (float(volume) / 100) * (
-            self._range[1] - self._range[0]
-        )
+        return volume / 100
+
+    @property
+    def mute(self) -> bool:
+        return self.audio_endpoint.GetMute()
+
+    @mute.setter
+    def mute(self, mute: bool):
+        self.audio_endpoint.SetMute(mute, None)
+
+    @property
+    def volume(self) -> int:
+        return self._to_percent(self.audio_endpoint.GetMasterVolumeLevelScalar())
+
+    @volume.setter
+    def volume(self, volume: int):
+        volume = max(0, min(volume, 100))
+        volume_float = self._from_percent(volume)
+        self.audio_endpoint.SetMasterVolumeLevelScalar(volume_float, None)

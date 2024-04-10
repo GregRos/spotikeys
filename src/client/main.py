@@ -52,7 +52,7 @@ def create_client(send: AsyncCommandHandler[Command, MediaStatus]):
             MediaCommands.volume_down, MediaCommands.delete_current_playlist
         ),
         num_asterisk.bind_numpad(MediaCommands.volume_mute, MediaCommands.exit),
-        num_slash.bind_numpad(MediaCommands.volume_max),
+        num_slash.bind_numpad(MediaCommands.volume_reset),
     )
     return layout
 

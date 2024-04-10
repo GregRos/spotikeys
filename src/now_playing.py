@@ -1,23 +1,23 @@
+from dataclasses import dataclass
+
+from src.client.volume import VolumeInfo
+from src.server.spotify.device import Device
+
+
+@dataclass
 class MediaStatus:
-    def __init__(
-        self,
-        title: str,
-        artist: str,
-        album: str,
-        position: float,
-        duration: float,
-        is_playing: bool,
-    ):
-        self.title = title
-        self.artist = artist
-        self.album = album
-        self.position = position
-        self.duration = duration
-        self.is_playing = is_playing
+    artist: str
+    title: str
+    duration: float
+    position: float
+    is_playing: bool
+    album: str
+    volume: VolumeInfo
+    device: Device
 
     @property
-    def percent(self):
+    def progress(self):
         return round(100 * self.position / self.duration)
 
     def __str__(self):
-        return f"{self.artist} - {self.title} ({self.percent}%)"
+        return f"{self.artist} - {self.title} ({self.progress}%)"
