@@ -1,6 +1,6 @@
 import ctypes
 from math import trunc
-from tkinter import RIGHT, Tk, Label, SOLID, LEFT, CENTER
+from tkinter import Tk, Label, SOLID, LEFT, CENTER
 from typing import Tuple
 
 

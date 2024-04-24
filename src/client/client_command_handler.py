@@ -1,16 +1,10 @@
-from abc import ABC
-from ast import Tuple
-from asyncio import AbstractEventLoop, ensure_future, get_event_loop, new_event_loop
-import code
-from concurrent.futures import thread
-from enum import auto
+from asyncio import AbstractEventLoop, new_event_loop
 from logging import getLogger
 import os
-import sys
 import threading
 import time
 import traceback
-from typing import Any, Awaitable, Callable, Coroutine
+from typing import Any, Awaitable
 
 from src.client.received_command import ReceivedCommand
 from src.client.ui.display_thread import ActivityDisplay

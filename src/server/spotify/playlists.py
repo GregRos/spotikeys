@@ -1,10 +1,8 @@
 from logging import getLogger
-from typing import Callable, List
 from src.server.spotify.asyncify import asyncify
-from src.server.spotify.base import SpotifyBacked, SpotifyBase
+from src.server.spotify.base import SpotifyBacked
 from src.server.spotify.current_user import CurrentUser
 from src.server.spotify.playlist import Playlist
-from src.server.spotify.resource import SpotifyResource
 from spotipy import Spotify
 
 logger = getLogger("server")

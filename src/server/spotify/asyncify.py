@@ -1,6 +1,6 @@
 import asyncio
 from functools import partial
-from typing import Any, Callable, Coroutine, ParamSpec, TypeVar, overload
+from typing import Any, Callable, Coroutine, ParamSpec, TypeVar
 
 P = ParamSpec("P")
 R = TypeVar("R")

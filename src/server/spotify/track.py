@@ -1,6 +1,5 @@
-import asyncio
 from logging import getLogger
-from typing import Callable, List
+from typing import List
 
 from spotipy import Spotify
 

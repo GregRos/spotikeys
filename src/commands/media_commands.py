@@ -1,9 +1,6 @@
-from calendar import c
-from typing import Any, Literal, Tuple, Protocol, TypedDict
+from typing import Literal, Protocol, TypedDict
 
-from keyboard import play
 
-from src.commanding import Command
 from src.commanding.commands import command, parameterized_command
 from src.server.spotify.device import Device
 

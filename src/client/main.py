@@ -1,24 +1,14 @@
 import asyncio
-import ctypes
-from datetime import datetime
 import logging
 from pathlib import Path
-from threading import Thread
-from time import sleep
-from turtle import setup
-from typing import Callable
 from venv import logger
 
-from colorama import init
-import keyboard
 
 from src.client.client_command_handler import ClientCommandHandler
-from src.client.hotkeys.hotkey import Hotkey
+from src.commanding.commands import Command
 from src.commanding.handler import AsyncCommandHandler
 from src.server.command_handler import MediaCommandHandler
-from src.server.spotify.root import Root, SpotifyAuth
 from .keys import *
-from src.client.received_command import ReceivedCommand
 from src.now_playing import MediaStatus
 from src.commands import *
 from src.client.hotkeys.layout import Layout

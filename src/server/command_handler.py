@@ -1,10 +1,7 @@
-from ast import Param
 import asyncio
 from functools import partial
-from logging import getLogger, root
+from logging import getLogger
 from os import PathLike
-import os
-from pathlib import Path
 import socket
 from threading import Event
 import time
@@ -13,13 +10,12 @@ from src.client.volume import VolumeInfo
 from src.commanding.commands import ParamterizedCommand
 from src.now_playing import MediaStatus
 from src.commanding import Command
-from src.commanding.handler import PropertyBasedCommandHandler
-from src.server.errors import BusyError, NoHandlerError
+from src.server.errors import NoHandlerError
 from src.server.history import PersistentCommandHistory
 
 from src.commands import *
 from src.server.launcher import is_spotify_running, start_spotify
-from src.server.spotify import Root, album, device, playback, track
+from src.server.spotify import Root, playback
 from src.server.spotify.root import SpotifyAuth
 from src.server.history.undo import UndoWaiter
 

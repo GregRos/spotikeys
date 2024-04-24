@@ -4,7 +4,7 @@ import keyboard
 from keyboard import KeyboardEvent
 
 from src.commanding import Command
-from src.client.kb import Key, ModifiedKey
+from src.client.kb import Key
 from src.client.hotkeys.hotkey import Hotkey
 
 num0_modifier = Key("num 0")

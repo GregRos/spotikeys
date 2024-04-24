@@ -1,6 +1,5 @@
 from typing import Callable
 
-from benedict import BeneDict as benedict
 from spotipy import Spotify
 
 from src.server.spotify.base import SpotifyBase

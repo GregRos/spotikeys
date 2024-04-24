@@ -1,5 +1,4 @@
 from logging import getLogger
-from math import log
 import threading
 from typing import Callable
 

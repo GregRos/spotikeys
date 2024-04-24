@@ -1,6 +1,4 @@
-from io import FileIO
-from operator import is_
-from os import PathLike, sep
+from os import PathLike
 from pathlib import Path
 from typing import BinaryIO
 

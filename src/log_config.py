@@ -1,6 +1,5 @@
 import ctypes
 import logging
-import re
 
 from colorama import Fore, Style, init
 

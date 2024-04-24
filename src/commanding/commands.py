@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from ast import Call
-from typing import Protocol, Callable, Any, TypeVar, override
+from typing import Protocol, Callable, Any, TypeVar
 
 
 class CommandLike(Protocol):

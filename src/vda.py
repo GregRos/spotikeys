@@ -1,7 +1,7 @@
 from threading import Thread
 from typing import Any
 import keyboard
-from pyvda import AppView, VirtualDesktop, get_virtual_desktops, get_apps_by_z_order
+from pyvda import AppView, VirtualDesktop, get_virtual_desktops
 
 from src.client.hotkeys.hotkey import Hotkey
 from src.client.kb.key import Key

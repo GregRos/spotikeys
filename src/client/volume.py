@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-import re
-from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 

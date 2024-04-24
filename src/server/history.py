@@ -1,4 +1,3 @@
-from io import FileIO
 from os import PathLike
 from typing import BinaryIO
 

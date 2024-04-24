@@ -1,10 +1,8 @@
 from logging import getLogger
-import logging
 from typing import Callable
 
 import keyboard
 
-from src.client.kb.key import Key, ModifiedKey
 from src.client.kb.bindings import (
     Binding,
     OffBinding,

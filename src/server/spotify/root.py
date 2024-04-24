@@ -1,16 +1,12 @@
-import asyncio
-from dataclasses import dataclass
 from logging import getLogger
 import time
-from typing import List, ParamSpec, TypeVar, TypedDict
+from typing import TypedDict
 from spotipy import Spotify, SpotifyOAuth
 
 
-from src.server import spotify
 from src.server.spotify import Playback, Artist, Track, Playlist, Album, CurrentUser
 from src.server.spotify.asyncify import asyncify
 from src.server.spotify.device import Device
-from src.server.spotify.playback import NothingPlayingError
 
 
 class SpotifyAuth(TypedDict):
