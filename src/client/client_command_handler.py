@@ -4,38 +4,30 @@ import os
 import threading
 import time
 import traceback
-from typing import Any, Awaitable
+from typing import Any, Awaitable, Callable
 
 from src.client.received_command import ReceivedCommand
 from src.client.ui.display_thread import ActivityDisplay
 from src.client.volume import ClientVolumeControl
 from src.now_playing import MediaStatus
-from src.commanding.commands import Command
-from src.commanding.handler import AsyncCommandHandler
+from src.commanding.commands import Command, ParamterizedCommand
+from src.commanding.handler import AsyncCommandHandler, handles
 from src.commands.media_commands import MediaCommands
 
 logger = getLogger("client")
-
-
-def handles(*commands: Command) -> Any:
-    def decorator(handler: Any):
-        setattr(handler, "handles", [c.code for c in commands])
-        return handler
-
-    return decorator
 
 
 class ClientCommandHandler(AsyncCommandHandler[ReceivedCommand, None]):
     _current: ReceivedCommand | None = None
     _lock = threading.Lock()
     _display = ActivityDisplay()
-    _mapping: dict[str, AsyncCommandHandler[ReceivedCommand, None]] = {}
 
     def __init__(
         self,
         loop: AbstractEventLoop,
-        downstream: AsyncCommandHandler[Command, MediaStatus],
+        downstream: AsyncCommandHandler[Command, Awaitable[MediaStatus]],
     ) -> None:
+        super().__init__()
         self._loop = loop
         self._volume_control = ClientVolumeControl()
 
@@ -47,15 +39,6 @@ class ClientCommandHandler(AsyncCommandHandler[ReceivedCommand, None]):
             return result
 
         self._downstream = with_logging
-        for name in dir(self):
-            handler = getattr(self, name)
-            if not hasattr(handler, "handles"):
-                continue
-
-            for code in handler.handles:
-                if code in self._mapping:
-                    raise ValueError(f"Duplicate handler for {code}")
-                self._mapping[code] = handler
 
     def busy(self, command: ReceivedCommand) -> None:
         pass
@@ -145,8 +128,8 @@ class ClientCommandHandler(AsyncCommandHandler[ReceivedCommand, None]):
         except Exception as e:
             self._handle_error(received, e)
 
-    def _get_handler(self, command: ReceivedCommand) -> Awaitable[None]:
-        local_handler = self._mapping.get(command.command.code, None)
+    def _get_handler(self, command: ReceivedCommand) -> Awaitable[None] | None:
+        local_handler = self.get_handler(command)
         if local_handler:
             logger.info(f"Handling {command} locally.")
             return local_handler(command)
@@ -157,7 +140,8 @@ class ClientCommandHandler(AsyncCommandHandler[ReceivedCommand, None]):
         loop = self._loop
         try:
             handler = self._get_handler(command)
-            loop.run_until_complete(handler)
+            if handler:
+                loop.run_until_complete(handler)
 
         except RuntimeError as e:
             if "Event loop stopped before Future completed" in str(e):
@@ -169,7 +153,7 @@ class ClientCommandHandler(AsyncCommandHandler[ReceivedCommand, None]):
         else:
             self._current = None
 
-    async def __call__(self, command: ReceivedCommand) -> None:
+    def __call__(self, command: ReceivedCommand) -> None:
         with self._lock:
             match self._current and self._current.command:
                 case Command(code="show_status"):

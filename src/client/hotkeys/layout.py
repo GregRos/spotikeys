@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Callable
+from typing import Awaitable, Callable
 
 import keyboard
 

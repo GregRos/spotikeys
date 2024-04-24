@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from pathlib import Path
+from typing import Awaitable
 from venv import logger
 
 
@@ -20,7 +21,7 @@ setup_logging()
 client_loop = asyncio.new_event_loop()
 
 
-def create_client(send: AsyncCommandHandler[Command, MediaStatus]):
+def create_client(send: AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
     logger = logging.getLogger("client")
     logger.info("Starting up...")
     cmd = ClientCommandHandler(client_loop, send)
@@ -46,10 +47,6 @@ def create_client(send: AsyncCommandHandler[Command, MediaStatus]):
         num_slash.bind_numpad(MediaCommands.volume_reset),
     )
     return layout
-
-
-def create_vda():
-    layout = Layout("vda")
 
 
 logger = logging.getLogger("server")
