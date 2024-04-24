@@ -23,7 +23,9 @@ class Command(CommandLike):
     def is_command(self, command: Command):
         return self.code == command.code
 
-    def __eq__(self, other: Command):
+    def __eq__(self, other: object):
+        if not isinstance(other, Command):
+            return NotImplemented
         return self.code == other.code
 
     def __hash__(self):

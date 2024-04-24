@@ -10,8 +10,10 @@ class ClientVolumeState:
     volume_percent: int
 
 
-devices = AudioUtilities.GetSpeakers()
-interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+devices = AudioUtilities.GetAllDevices()
+device = [device for device in devices if device.state.name == "Active"][0]
+
+interface = device.EndpointVolume
 audio_interface = interface.QueryInterface(IAudioEndpointVolume)
 
 

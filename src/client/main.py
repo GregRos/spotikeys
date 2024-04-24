@@ -13,6 +13,7 @@ from colorama import init
 import keyboard
 
 from src.client.client_command_handler import ClientCommandHandler
+from src.client.hotkeys.hotkey import Hotkey
 from src.commanding.handler import AsyncCommandHandler
 from src.server.command_handler import MediaCommandHandler
 from src.server.spotify.root import Root, SpotifyAuth
@@ -55,6 +56,10 @@ def create_client(send: AsyncCommandHandler[Command, MediaStatus]):
         num_slash.bind_numpad(MediaCommands.volume_reset),
     )
     return layout
+
+
+def create_vda():
+    layout = Layout("vda")
 
 
 logger = logging.getLogger("server")

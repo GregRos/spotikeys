@@ -40,7 +40,7 @@ class MediaCommandHandler(MediaCommands):
 
     def __init__(self, auth: SpotifyAuth, history_file: PathLike):
         self._auth = auth
-        self.history = PersistentCommandHistory(history_file, commands)
+        self.history = PersistentCommandHistory(history_file, media_commands)
 
     @property
     def root(self):
@@ -283,6 +283,7 @@ class MediaCommandHandler(MediaCommands):
         playing = await self.playing
         with self.undoable(MediaCommands.repeat_to(playing.repeat)):
             await playing.set_repeat("track")
+            await playing.set_progress(0)
             return playing.get_status()
 
     @override

@@ -18,7 +18,7 @@ from src.client.volume import ClientVolumeControl
 from src.now_playing import MediaStatus
 from src.commanding.commands import Command
 from src.commanding.handler import AsyncCommandHandler
-from src.commands.commands import MediaCommands
+from src.commands.media_commands import MediaCommands
 
 logger = getLogger("client")
 

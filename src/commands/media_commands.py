@@ -7,32 +7,6 @@ from src.commanding import Command
 from src.commanding.commands import command, parameterized_command
 from src.server.spotify.device import Device
 
-Code = Literal[
-    "show_status",
-    "hide_status",
-    "next_track",
-    "prev_track",
-    "play_pause",
-    "loop_track",
-    "seek_fwd",
-    "seek_back",
-    "rewind_context",
-    "repeat_track",
-    "love",
-    "spin_this_in_last",
-    "spin_this_in_new",
-    "volume_up",
-    "volume_down",
-    "volume_max",
-    "volume_mute",
-    "redo",
-    "undo",
-    "cancel",
-    "rewind_this",
-    "next_multi",
-    "prev_multi",
-]
-
 
 class LoveStateArgs(TypedDict):
     id: str

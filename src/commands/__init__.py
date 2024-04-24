@@ -1,1 +1,1 @@
-from .commands import *
+from .media_commands import *

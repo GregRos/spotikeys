@@ -3,7 +3,6 @@ from typing import Callable
 import keyboard
 from keyboard import KeyboardEvent
 
-from src.commands.commands import Code
 from src.commanding import Command
 from src.client.kb import Key, ModifiedKey
 from src.client.hotkeys.hotkey import Hotkey

@@ -1,6 +1,15 @@
 {
   "configurations": [
     {
+      "name": "Python: Current File",
+
+      "type": "debugpy",
+      "cwd": "${workspaceFolder}",
+      "request": "launch",
+      "module": "${relativeFileDirname}.${fileBasenameNoExtension}",
+      "console": "integratedTerminal"
+    },
+    {
       "name": "Main",
       "type": "debugpy",
       "request": "launch",
