@@ -169,7 +169,7 @@ class ClientCommandHandler(AsyncCommandHandler[ReceivedCommand, None]):
         else:
             self._current = None
 
-    def __call__(self, command: ReceivedCommand) -> None:
+    async def __call__(self, command: ReceivedCommand) -> None:
         with self._lock:
             match self._current and self._current.command:
                 case Command(code="show_status"):

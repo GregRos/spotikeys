@@ -5,7 +5,8 @@ from src.commanding.commands import CommandLike
 from src.client.kb.key import Key, ModifiedKey
 
 
-class ReceivedCommand(CommandLike):
+class ReceivedCommand:
+
     def __init__(self, command: Command, key: Key | ModifiedKey):
         self.command = command
         self.key = key

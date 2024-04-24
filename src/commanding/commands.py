@@ -4,7 +4,7 @@ from typing import Protocol, Callable, Any, TypeVar
 
 
 class CommandLike(Protocol):
-    code: str
+
     label: str
 
 
