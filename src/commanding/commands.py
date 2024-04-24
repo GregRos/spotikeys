@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from typing import Protocol, Callable, Any, TypeVar
+from typing import Protocol, Callable, Any, TypeVar, Union
 
 
 class CommandLike(Protocol):
 
-    label: str
+    @property
+    def code(self) -> str: ...
 
 
-class Command(CommandLike):
+class Command:
     code: str
 
     def __init__(self, command: str, label: str, describe: str | None = None):

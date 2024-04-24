@@ -45,7 +45,7 @@ class CurrentUser(SpotifyResource):
         return self._data.get("product")
 
     def __str__(self):
-        return self.display_name
+        return self.display_name or "Unknown"
 
     def __repr__(self):
         return f"SpotifyCurrentUser({self.display_name})"
