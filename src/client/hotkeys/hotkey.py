@@ -1,11 +1,12 @@
 from logging import getLogger
+from operator import is_
 import threading
 from typing import Callable
 
 import keyboard
 from keyboard import KeyboardEvent
 
-from src.client.kb.key import Key
+from src.client.kb.key import Key, ModifiedKey
 
 logger = getLogger("keyboard")
 
@@ -17,7 +18,7 @@ class Hotkey:
 
     def __init__(
         self,
-        key: Key,
+        key: Key | ModifiedKey,
         on_down: Callable[[KeyboardEvent], None],
         on_up: Callable[[KeyboardEvent], None] | None = None,
     ):
@@ -27,7 +28,7 @@ class Hotkey:
 
     def on_key(self, e: KeyboardEvent):
         with self._lock:
-            if (e.is_keypad) != ("num" in self.key.id):
+            if not self.key.match_event(e):
                 return True
             if e.event_type == "up":
                 self.last_emitted = None

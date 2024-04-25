@@ -59,11 +59,13 @@ Returns = TypeVar("Returns")
 Arg = TypeVar("Arg")
 
 
-def parameterized_command(label: str):
+def parameterized_command(label: str | Callable[[Arg], str]):
 
     def decorator(
         func: Callable[[Any, Arg], Returns]
     ) -> Callable[[Arg], ParamterizedCommand[Arg]]:
-        return lambda arg: ParamterizedCommand(func.__name__, label, arg)
+        return lambda arg: ParamterizedCommand(
+            func.__name__, label if isinstance(label, str) else label(arg), arg
+        )
 
     return decorator

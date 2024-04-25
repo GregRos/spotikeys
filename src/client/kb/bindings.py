@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from src.commanding import Command
-from src.client.kb.key import Key
+from src.client.kb.key import Key, ModifiedKey
 
 
 class OffBinding:
@@ -13,6 +13,25 @@ class OffBinding:
 
     def __str__(self) -> str:
         return f"{self.key.id} ➜  ∅"
+
+
+class DownBinding:
+    __match_args__ = ("key", "command", "leftMouse", "rightMouse")
+
+    def __init__(
+        self,
+        key: Key | ModifiedKey,
+        command: Command,
+        leftMouse: Command | None = None,
+        rightMouse: Command | None = None,
+    ):
+        self.key = key
+        self.command = command
+        self.leftMouse = leftMouse
+        self.rightMouse = rightMouse
+
+    def __str__(self):
+        return f"{self.key} ➜  {self.command}"
 
 
 class UpDownBinding:
@@ -46,4 +65,4 @@ class NumpadBinding:
         return f"{self.key} ➜  {self.command} {self.alt_command}"
 
 
-type Binding = OffBinding | UpDownBinding | NumpadBinding
+type Binding = OffBinding | UpDownBinding | NumpadBinding | DownBinding

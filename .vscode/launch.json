@@ -10,6 +10,15 @@
       "console": "integratedTerminal"
     },
     {
+      "name": "vda",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "src.vda_client.main",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": false
+    },
+    {
       "name": "Main",
       "type": "debugpy",
       "request": "launch",

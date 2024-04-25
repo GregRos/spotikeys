@@ -3,8 +3,10 @@ from typing import Awaitable, Callable
 
 import keyboard
 
+from src.client.hotkeys.keycombo import KeyCombo
 from src.client.kb.bindings import (
     Binding,
+    DownBinding,
     OffBinding,
     UpDownBinding,
     NumpadBinding,
@@ -18,7 +20,7 @@ logger = getLogger("keyboard")
 
 
 class Layout:
-    _hotkeys: dict[Binding, Hotkey]
+    _hotkeys: dict[Binding, Hotkey | KeyCombo]
 
     def __init__(self, name: str, send: Callable[[ReceivedCommand], None]):
         self._hotkeys = {}
@@ -28,9 +30,9 @@ class Layout:
     def _binding_to_hotkey(self, binding: Binding):
         def send_command(command: Command | None):
             if command is None:
-                return lambda e: None
+                return lambda e=None: None
 
-            def send(e: keyboard.KeyboardEvent):
+            def send(e: keyboard.KeyboardEvent | None = None):
                 if not self._send:
                     raise ValueError("No send function set")
                 self._send(ReceivedCommand(command, binding.key))
@@ -40,6 +42,13 @@ class Layout:
         match binding:
             case OffBinding(key):
                 return Hotkey(key, lambda e: None)
+            case DownBinding(key, command, leftMouse, rightMouse):
+                return KeyCombo(
+                    key,
+                    send_command(command),
+                    send_command(leftMouse),
+                    send_command(rightMouse),
+                )
             case UpDownBinding(key, down, up):
                 return Hotkey(key, send_command(down), send_command(up))
             case NumpadBinding(key, default, alt):

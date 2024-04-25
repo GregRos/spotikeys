@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from keyboard import KeyboardEvent
+import keyboard
+
 
 if TYPE_CHECKING:
     from src.commanding import Command
@@ -16,6 +19,11 @@ class Key:
     @property
     def label(self):
         return key_labels.get(self.id, self.id)
+
+    def match_event(self, e: KeyboardEvent):
+        if (e.is_keypad) != ("num" in self.id):
+            return False
+        return e.name == self.hook_id
 
     @property
     def hook_id(self):
@@ -33,6 +41,16 @@ class Key:
 
     def __str__(self):
         return f"{self.label}  {self.id}"
+
+    def lwin(self):
+        return self.modified(Key("left windows"))
+
+    def win(self):
+        return self.modified(Key("windows"))
+
+    @property
+    def hotkey_id(self):
+        return self.hook_id
 
     def modified(self, modifier: Key):
         return ModifiedKey(self, modifier)
@@ -58,6 +76,17 @@ class ModifiedKey:
         self.base = base
         self.modifier = modifier
 
+    def match_event(self, e: KeyboardEvent):
+        return self.base.match_event(e) and keyboard.is_pressed(self.modifier.hook_id)
+
+    @property
+    def hook_id(self):
+        return self.base.hook_id
+
+    @property
+    def hotkey_id(self):
+        return f"{self.modifier.hook_id}+{self.base.hook_id}"
+
     @property
     def id(self):
         return f"{self.modifier.id} + {self.base.id}"
@@ -68,3 +97,13 @@ class ModifiedKey:
 
     def __str__(self):
         return f"{self.modifier} + {self.base}"
+
+    def bind(
+        self,
+        command: Command,
+        leftMouse: Command | None = None,
+        rightMouse: Command | None = None,
+    ):
+        from src.client.kb.bindings import DownBinding
+
+        return DownBinding(self, command, leftMouse, rightMouse)
