@@ -1,75 +1,84 @@
 from logging import getLogger
-from typing import Awaitable, Callable
+from typing import Any, Awaitable, Callable
 
 import keyboard
+from referencing import Anchor
 
-from src.client.hotkeys.keycombo import KeyCombo
-from src.client.kb.bindings import (
-    Binding,
-    DownBinding,
-    OffBinding,
-    UpDownBinding,
-    NumpadBinding,
-)
-from src.client.hotkeys.numpad_hotkey import NumpadHotkey
-from src.commanding.commands import Command
-from ..received_command import ReceivedCommand
-from .hotkey import Hotkey
+
+from src.client.kb.key_combination import KeyCombination
+from src.client.kb.triggered_command import TriggeredCommand
+from src.client.kb.compound_binding import CompoundBinding
+from src.client.kb.key import Key
+from src.commanding.commands import Command, CommandLike
 
 logger = getLogger("keyboard")
 
 
-class Layout:
-    _hotkeys: dict[Binding, Hotkey | KeyCombo]
+def fix_padding_len(text: str):
+    if "*️⃣️" in text:
+        return 4
+    elif "➗‍‍" in text:
+        return 2
+    elif "⏎" in text:
+        return 1
+    elif "\ufe0f" in text:
+        return 3
+    else:
+        return 0
 
-    def __init__(self, name: str, send: Callable[[ReceivedCommand], None]):
-        self._hotkeys = {}
+
+class Layout:
+    _bindings: dict[Key, CompoundBinding]
+    _registered: list[Any]
+
+    def __init__(self, name: str, send: Callable[[TriggeredCommand], None]):
+        self._bindings = {}
+        self._registered = []
         self.name = name
         self._send = send
 
-    def _binding_to_hotkey(self, binding: Binding):
-        def send_command(command: Command | None):
-            if command is None:
-                return lambda e=None: None
-
-            def send(e: keyboard.KeyboardEvent | None = None):
-                if not self._send:
-                    raise ValueError("No send function set")
-                self._send(ReceivedCommand(command, binding.key))
-
-            return send
-
-        match binding:
-            case OffBinding(key):
-                return Hotkey(key, lambda e: None)
-            case DownBinding(key, command, leftMouse, rightMouse):
-                return KeyCombo(
-                    key,
-                    send_command(command),
-                    send_command(leftMouse),
-                    send_command(rightMouse),
-                )
-            case UpDownBinding(key, down, up):
-                return Hotkey(key, send_command(down), send_command(up))
-            case NumpadBinding(key, default, alt):
-                return NumpadHotkey(key, send_command(default), send_command(alt))
-            case _:
-                raise ValueError(f"Binding type not supported: {binding}")
-
-    def add_bindings(self, *bindings: Binding):
+    def add_bindings(self, *bindings: CompoundBinding):
         for binding in bindings:
-            self._hotkeys[binding] = self._binding_to_hotkey(binding)
+            self._bindings[binding.trigger] = binding
+
+    def __str__(self):
+        def binding_to_row(binding: CompoundBinding):
+            default = binding.modifiers.get(KeyCombination(set()))
+            no_default = [(k, v) for k, v in binding if not k.is_empty]
+            return [
+                f"{str(binding.trigger)} ➤",
+                str(default),
+                *[f"{k} ➜  {v}" for k, v in no_default],
+            ]
+
+        rows = [*map(binding_to_row, self._bindings.values())]
+        cols_width = [
+            max(len(row[i]) if i < len(row) else 0 for row in rows) + 2
+            for i in range(max(map(len, rows)))
+        ]
+
+        return "\n".join(
+            " | ".join(
+                f"{row[i]:<{cols_width[i] + fix_padding_len(row[i])}}"
+                for i in range(len(row))
+            )
+            for row in rows
+        )
 
     def __enter__(self):
-        logger.info(f"Entering layout {self.name} with {len(self._hotkeys)} hotkeys")
-
-        # rounded arrow:
-        for binding, hotkey in self._hotkeys.items():
-            logger.info(f"Registering {binding}")
-            hotkey.__enter__()
+        logger.info(f"Entering layout {self.name} with {len(self._bindings)} hotkeys")
+        logger.info("\n" + str(self))
+        for binding in self._bindings.values():
+            self._registered += [
+                keyboard.hook_key(
+                    binding.trigger.hook_id,
+                    suppress=True,
+                    callback=binding.handler(self._send),
+                )
+            ]
         return self
 
     def __exit__(self, *args):
         logger.info(f"Exiting layout {self.name}")
-        for hotkey in self._hotkeys.values():
-            hotkey.__exit__()
+        for registration in self._registered:
+            keyboard.unhook(registration)

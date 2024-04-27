@@ -1,20 +1,40 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+from functools import total_ordering
+from typing import TYPE_CHECKING, Literal, Optional, overload
+import mouse
 from keyboard import KeyboardEvent
 import keyboard
+
+from src.commanding.commands import CommandLike
 
 
 if TYPE_CHECKING:
     from src.commanding import Command
 
+
 from src.client.kb.labels import key_labels
 
 
+@total_ordering
 class Key:
-    def __init__(self, key_id: str):
-        self.id = key_id
+    def __init__(self, key_id: str, type: Literal["kb", "mouse", None] = None) -> None:
+        if type:
+            if ":" in key_id:
+                raise ValueError(
+                    f"Cannot specify type and fully qualified key id {key_id}"
+                )
+            self.id = key_id
+            self.type = type
+        elif ":" in key_id:
+            self.type, self.id = key_id.split(":")
+        else:
+            self.id = key_id
+            self.type = "kb"
+
+    @property
+    def specificity(self):
+        return 1
 
     @property
     def label(self):
@@ -23,87 +43,71 @@ class Key:
     def match_event(self, e: KeyboardEvent):
         if (e.is_keypad) != ("num" in self.id):
             return False
-        return e.name == self.hook_id
+        return True
+
+    def __add__(self, other: Key):
+        from src.client.kb.key_combination import KeyCombination
+
+        return KeyCombination({self, other})
+
+    def __lt__(self, other: Key) -> bool:
+        return self.id < other.id
+
+    @property
+    def fqn(self):
+        return f"{self.type}:{self.id}"
+
+    def is_pressed(self):
+        if self.type == "mouse":
+            return mouse.is_pressed(self.hook_id)
+        else:
+            return keyboard.is_pressed(self.hook_id)
 
     @property
     def hook_id(self):
-        match self.id:
-            case "num enter":
+        match self.type, self.id:
+            case "kb", "num enter":
                 return "enter"
-            case "num dot" | "num .":
+            case "kb", "num dot" | "num .":
                 return "."
-            case "num slash" | "num /":
-                return "/"
-            case "num star" | "num *" | "num multiply":
+            case "kb", "num star" | "num *" | "num multiply":
                 return "*"
+            case "kb", "num plus" | "num +":
+                return "+"
+            case "kb", "num minus" | "num -":
+                return "-"
+            case "kb", "num slash" | "num /":
+                return "/"
+            case "mouse", "1":
+                return "left"
+            case "mouse", "2":
+                return "right"
+            case "mouse", "3":
+                return "middleouse"
+            case "mouse", "4":
+                return "x"
+            case "mouse", "5":
+                return "x2"
             case _:
                 return self.id
 
     def __str__(self):
-        return f"{self.label}  {self.id}"
-
-    def lwin(self):
-        return self.modified(Key("left windows"))
-
-    def win(self):
-        return self.modified(Key("windows"))
+        return f"{self.label}"
 
     @property
     def hotkey_id(self):
         return self.hook_id
 
-    def modified(self, modifier: Key):
-        return ModifiedKey(self, modifier)
-
-    def bind_numpad(self, command: Command, alt: Command | None = None):
-        from src.client.kb.bindings import NumpadBinding
-
-        return NumpadBinding(self, command, alt)
-
-    def bind_off(self):
-        from src.client.kb.bindings import OffBinding
-
-        return OffBinding(self)
-
-    def bind_up_down(self, down: Command, up: Command):
-        from src.client.kb.bindings import UpDownBinding
-
-        return UpDownBinding(self, down, up)
-
-
-class ModifiedKey:
-    def __init__(self, base: Key, modifier: Key):
-        self.base = base
-        self.modifier = modifier
-
-    def match_event(self, e: KeyboardEvent):
-        return self.base.match_event(e) and keyboard.is_pressed(self.modifier.hook_id)
-
     @property
-    def hook_id(self):
-        return self.base.hook_id
+    def bind(self):
+        from src.client.kb.compound_binding import CompoundBinding
 
-    @property
-    def hotkey_id(self):
-        return f"{self.modifier.hook_id}+{self.base.hook_id}"
+        return CompoundBinding(self)
 
-    @property
-    def id(self):
-        return f"{self.modifier.id} + {self.base.id}"
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, Key):
+            return False
+        return self.id == value.id
 
-    @property
-    def label(self):
-        return f"{self.modifier.label} + {self.base.label}"
-
-    def __str__(self):
-        return f"{self.modifier} + {self.base}"
-
-    def bind(
-        self,
-        command: Command,
-        leftMouse: Command | None = None,
-        rightMouse: Command | None = None,
-    ):
-        from src.client.kb.bindings import DownBinding
-
-        return DownBinding(self, command, leftMouse, rightMouse)
+    def __hash__(self) -> int:
+        return hash(self.id)

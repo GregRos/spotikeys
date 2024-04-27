@@ -231,18 +231,21 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
     @handles(MediaCommands.transfer_to_phone)
     async def _transfer_to_phone(self):
         playing = await self.root.playback
+        if not playing:
+            raise NoPlaybackError()
         devices = await self.root.get_devices()
         logger.debug(f"Got devices: {", ".join(d.name for d in devices)}")
         phone = next(d for d in devices if d.type == "Smartphone")
         logger.debug(f"Phone: {phone.name}")
         if playing:
             self.history.push(MediaCommands.transfer_to_device(playing.device))
-        await self._root.transfer_playback(phone)
+        await self.root.transfer_playback(phone)
         return playing.get_status()
 
     @handles(MediaCommands.transfer_to_current)
     async def _transfer_to_current(self):
         playing = await self.root.playback
+
         devices = await self.root.get_devices()
         hostname = socket.gethostname()
         logger.debug(f"Got devices: {", ".join(d.name for d in devices)}")
@@ -267,7 +270,7 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
                 )
         await self.root.transfer_playback(current_device)
         playing = await self.root.playback
-        return playing.get_status()
+        return playing.get_status()  # type: ignore
 
     @handles(MediaCommands.next_track)
     async def _next_track(self):
@@ -332,7 +335,7 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
                     "uri": playlist_uri,
                 }
             }:
-                playlist = await self._root.playlist(playlist_uri)
+                playlist = await self.root.playlist(playlist_uri)
                 await playlist.delete()
             case {
                 "context": {
@@ -433,7 +436,8 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
 
         start = time.time()
         result = await self.handle(command)
-        result.volume = VolumeInfo(result.volume.volume, False)
+        if result:
+            result.volume = VolumeInfo(result.volume.volume, False)
         elapsed = time.time() - start
         logger.info(f"Command {command} took {elapsed:.3f} seconds")
         return result  # type: ignore

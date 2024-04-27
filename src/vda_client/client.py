@@ -7,7 +7,7 @@ from typing import Any, Awaitable
 
 from flask import current_app
 import win32com
-from src.client.received_command import ReceivedCommand
+from src.client.kb.triggered_command import TriggeredCommand
 from src.commanding.commands import Command, ParamterizedCommand
 from src.commanding.handler import AsyncCommandHandler, handles
 from src.commands.desktop_commands import DesktopCommands
@@ -16,7 +16,7 @@ from pyvda import AppView, VirtualDesktop, get_virtual_desktops
 logger = getLogger("vda_client")
 
 
-class VdaClient(AsyncCommandHandler[ReceivedCommand, None]):
+class VdaClient(AsyncCommandHandler[TriggeredCommand, None]):
     _loop: AbstractEventLoop
 
     def __init__(self, loop: AbstractEventLoop) -> None:
@@ -92,7 +92,7 @@ class VdaClient(AsyncCommandHandler[ReceivedCommand, None]):
         AppView.current().move(next)
         next.go()
 
-    def _exec(self, command: ReceivedCommand) -> None:
+    def _exec(self, command: TriggeredCommand) -> None:
         loop = self._loop
         try:
             handler: Any = self.get_handler(command)
@@ -114,10 +114,10 @@ class VdaClient(AsyncCommandHandler[ReceivedCommand, None]):
         else:
             self._current = None
 
-    def busy(self, command: ReceivedCommand) -> None:
+    def busy(self, command: TriggeredCommand) -> None:
         pass
 
-    def __call__(self, command: ReceivedCommand) -> None:
+    def __call__(self, command: TriggeredCommand) -> None:
         with self._lock:
             if self._current:
                 return self.busy(command)

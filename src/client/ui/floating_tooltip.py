@@ -4,8 +4,9 @@ from tkinter import Tk, Label, SOLID, LEFT, CENTER
 from typing import Tuple
 
 
-from src.client.received_command import ReceivedCommand, Command
+from src.client.kb.triggered_command import TriggeredCommand
 from src.client.volume import VolumeInfo
+from src.commanding.commands import Command
 from .make_clickthrough import make_clickthrough
 from src.now_playing import MediaStatus
 
@@ -181,12 +182,12 @@ class MediaTooltip:
             label.pack_forget()
         self._place_window()
 
-    def notify_command_start(self, command: ReceivedCommand):
+    def notify_command_start(self, command: TriggeredCommand):
         if self._error:
             self._error = False
             self._command_line.pack_forget()
             self._set_first_line(" ")
-        self._set_command_part("⌛ " + command.pretty, "⌛⌛", "darkblue", False)
+        self._set_command_part("⌛ " + str(command), "⌛⌛", "darkblue", False)
         self._place_window()
         self._tk.attributes("-alpha", 0.85)
         self._tk.update_idletasks()
@@ -202,12 +203,12 @@ class MediaTooltip:
         self._tk.update_idletasks()
 
     def notify_command_done(
-        self, finished: ReceivedCommand, duration: float, state: MediaStatus
+        self, finished: TriggeredCommand, duration: float, state: MediaStatus
     ):
         self._tk.attributes("-alpha", 1)
         self._status = state
         self._set_command_part(
-            "✅ " + finished.pretty, f"{duration * 1000:.0f}ms", "green"
+            "✅ " + str(finished), f"{duration * 1000:.0f}ms", "green"
         )
         self._show_media(state)
         self._place_window()

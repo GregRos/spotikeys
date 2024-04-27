@@ -8,6 +8,9 @@ class CommandLike(Protocol):
     @property
     def code(self) -> str: ...
 
+    @property
+    def label(self) -> str: ...
+
 
 class Command:
     code: str

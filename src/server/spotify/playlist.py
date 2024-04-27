@@ -73,7 +73,7 @@ class Playlist(SpotifyResource):
         self._spotify.playlist_remove_all_occurrences_of_items(self.id, tracks)
         self._data["tracks"]["items"] = [
             track
-            for track in self._data.get("tracks").get("items")
+            for track in self._data.get("tracks").get("items") 
             if track.get("track").get("id") not in tracks
         ]
 

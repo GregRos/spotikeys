@@ -18,7 +18,9 @@ class Album(SpotifyResource):
 
     @property
     def artists(self):
-        return [Artist(self._spotify, artist) for artist in self._data.get("artists")]
+        return [
+            Artist(self._spotify, artist) for artist in self._data.get("artists") or []
+        ]
 
     @property
     def release_date(self):

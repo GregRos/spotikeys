@@ -3,7 +3,6 @@ from typing import Any
 import keyboard
 from pyvda import AppView, VirtualDesktop, get_virtual_desktops
 
-from src.client.hotkeys.hotkey import Hotkey
 from src.client.kb.key import Key
 
 number_of_active_desktops = len(get_virtual_desktops())
@@ -23,5 +22,4 @@ def do_vda_change(e: Any):
     Thread(target=do).start()
 
 
-Hotkey(Key("b"), do_vda_change).__enter__()
 keyboard.wait("esc")
