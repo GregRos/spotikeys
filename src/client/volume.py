@@ -8,17 +8,17 @@ class ClientVolumeState:
     volume_percent: int
 
 
+@dataclass
+class VolumeInfo:
+    volume: int
+    mute: bool
+
+
 devices = AudioUtilities.GetAllDevices()
 device = [device for device in devices if device.state.name == "Active"][0]
 
 interface = device.EndpointVolume
 audio_interface = interface.QueryInterface(IAudioEndpointVolume)
-
-
-@dataclass
-class VolumeInfo:
-    volume: int
-    mute: bool
 
 
 class ClientVolumeControl:
@@ -27,6 +27,7 @@ class ClientVolumeControl:
 
     @property
     def audio_endpoint(self):
+
         return audio_interface
 
     @property

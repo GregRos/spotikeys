@@ -6,7 +6,7 @@ CommandType = TypeVar("CommandType", bound=CommandLike)
 ReturnType = TypeVar("ReturnType")
 
 
-class AsyncCommandHandler(Protocol, Generic[CommandType, ReturnType]):
+class AsyncCommandHandler(Generic[CommandType, ReturnType]):
     _mapping: dict[str, Callable[[CommandType], ReturnType]]
 
     def get_handler(
@@ -35,6 +35,7 @@ class PropertyBasedCommandHandler(AsyncCommandHandler[CommandType, ReturnType]):
     _current: Command | None = None
 
     def __init__(self, name: str):
+        super().__init__()
         self._name = name
 
 

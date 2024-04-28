@@ -6,9 +6,9 @@ import time
 import traceback
 from typing import Any, Awaitable, Callable
 
-from src.client.kb.triggered_command import FailedCommand, TriggeredCommand
-from src.client.ui.display_thread import ActivityDisplay
-from src.client.volume import ClientVolumeControl
+from src.client.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
+from src.client.ui.floating_tooltip import MediaTooltip
+from src.client.volume import ClientVolumeControl, VolumeInfo
 from src.now_playing import MediaStatus
 from src.commanding.commands import Command, ParamterizedCommand
 from src.commanding.handler import AsyncCommandHandler, handles
@@ -20,16 +20,31 @@ logger = getLogger("client")
 class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     _current: TriggeredCommand | None = None
     _lock = threading.Lock()
-    _display = ActivityDisplay()
+    _display = MediaTooltip()
     _last_command: TriggeredCommand | None = None
+    _last_status: MediaStatus
 
     def __init__(
         self,
         loop: AbstractEventLoop,
         downstream: AsyncCommandHandler[Command, Awaitable[MediaStatus]],
     ) -> None:
+        super().__init__()
+        self._display.value.of_type(FailedCommand).subscribe(
+            lambda c: logger.error(c.exception)
+        )
         self._loop = loop
         self._volume_control = ClientVolumeControl()
+        self._last_status = MediaStatus(
+            artist="",
+            title="",
+            album="",
+            volume=VolumeInfo(volume=0, mute=False),
+            duration=0,
+            position=0,
+            is_playing=False,
+            device=None,  # type: ignore
+        )
 
         async def with_logging(x):
             logger.info(f"Sending {x} to server")
@@ -43,53 +58,48 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     def busy(self, command: TriggeredCommand) -> None:
         pass
 
-    @handles(MediaCommands.show_status)
-    async def _show_status(self, r_command: TriggeredCommand) -> None:
-        try:
-            self._display.run(lambda tt: tt.notify_show_status(), auto_hide=False)
-            result = await self._downstream(MediaCommands.get_status)
-            if self._current:
-                self._display.run(
-                    lambda tt: tt.notify_show_status(result), auto_hide=True
-                )
-        except Exception as e:
-            self._handle_error(r_command, e)
-
     @handles(MediaCommands.exit)
     async def _exit(self, r_command: TriggeredCommand) -> None:
         logger.fatal("Exit received! Goodbye.")
         os._exit(0)
 
+    @handles(MediaCommands.show_status)
+    async def _show_status(self, r_command: TriggeredCommand) -> None:
+
+        self._display.value.set(r_command)
+        result = await r_command.execute_async(
+            lambda: self._downstream(MediaCommands.get_status)
+        )
+        if self._current:
+            self._display.value.set(result)
+
     @handles(MediaCommands.hide_status)
     async def _hide_status(self, r_command: TriggeredCommand) -> None:
-        self._display.run(lambda tt: tt.hide())
-
-    async def _set_volume(self, r_command: TriggeredCommand, volume: int) -> None:
-        self._volume_control.volume = volume
-        self._display.run(
-            lambda tt: tt.notify_volume_changed(self._volume_control.info)
-        )
+        self._display.hide()
 
     @handles(MediaCommands.volume_up)
     async def _volume_up(self, r_command: TriggeredCommand) -> None:
-        self._volume_control.volume += 20
-        self._display.run(
-            lambda tt: tt.notify_volume_changed(self._volume_control.info)
-        )
+        def handle_volume_up():
+            self._volume_control.volume += 10
+            self._last_status.volume = self._volume_control.info
+            return self._last_status
+
+        exec = r_command.execute(handle_volume_up)
+        self._display.value.set(exec)
 
     @handles(MediaCommands.volume_down)
     async def _volume_down(self, r_command: TriggeredCommand) -> None:
-        self._volume_control.volume -= 20
-        self._display.run(
-            lambda tt: tt.notify_volume_changed(self._volume_control.info)
-        )
+        def handle_volume_down():
+            self._volume_control.volume -= 10
+            self._last_status.volume = self._volume_control.info
+            return self._last_status
+
+        exec = r_command.execute(handle_volume_down)
+        self._display.value.set(exec)
 
     @handles(MediaCommands.volume_mute)
     async def _volume_mute(self, r_command: TriggeredCommand) -> None:
         self._volume_control.mute = not self._volume_control.mute
-        self._display.run(
-            lambda tt: tt.notify_volume_changed(self._volume_control.info)
-        )
 
     @handles(MediaCommands.volume_reset)
     async def _volume_reset(self, r_command: TriggeredCommand) -> None:
@@ -107,24 +117,13 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
             return ("No volume control", "🔇")
         return (stringified, "❌")
 
-    def _handle_error(
-        self, command: TriggeredCommand, error: Exception
-    ) -> MediaStatus | None:
-        message, emoji = self._diagnose(error)
-        traceback.print_exc()
-        self._display.run(
-            lambda tt: tt.notify_command_errored(command.command, message, emoji)
-        )
-
     async def _wrap_downstream(self, received: TriggeredCommand):
-        try:
-            command = received.command
-            self._display.run(lambda tt: tt.notify_command_start(received), False)
-            result = await received.execute_async(lambda: self._downstream(command))
-            if result.success:
-                self._display.run(lambda tt: tt.notify_command_done(result))
-        except Exception as e:
-            self._handle_error(received, e)
+        command = received.command
+        self._display.value.set(received)
+        result = await received.execute_async(lambda: self._downstream(command))
+        if isinstance(result, OkayCommand):
+            self._last_status = result.result
+        self._display.value.set(result)
 
     def _get_handler(self, command: TriggeredCommand) -> Awaitable[None] | None:
         local_handler = self.get_handler(command)
@@ -155,6 +154,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         with self._lock:
             if (
                 self._last_command
+                and command == self._last_command
                 and command.timestamp - self._last_command.timestamp < 0.25
             ):
                 return

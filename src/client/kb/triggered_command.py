@@ -7,7 +7,7 @@ from src.commanding.commands import Command
 
 
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, Coroutine, Literal
+from typing import Any, Awaitable, Callable, Coroutine, Literal, TypeGuard
 
 
 @dataclass
@@ -26,12 +26,23 @@ class TriggeredCommand:
 
     @property
     def label(self):
-        return f"{self.trigger.label}{self.modifiers} ➜  {self.command.label}"
+        modifiers = f"[{self.modifiers}]" if self.modifiers else ""
+        return f"{self.trigger.label}{modifiers} ➜  {self.command.label}"
 
     async def execute_async[T](self, executor: Callable[[], Awaitable[T]]):
         start = time.time()
         try:
             result = await executor()
+            end = time.time()
+            return OkayCommand(self, end - start, result)
+        except Exception as e:
+            end = time.time()
+            return FailedCommand(self, end - start, e)
+
+    def execute(self, executor: Callable[[], Any]):
+        start = time.time()
+        try:
+            result = executor()
             end = time.time()
             return OkayCommand(self, end - start, result)
         except Exception as e:
@@ -46,8 +57,12 @@ class TriggeredCommand:
 class OkayCommand[T]:
     success: Literal[True] = field(default=True, init=False)
     triggered: TriggeredCommand
+    command: Command = field(init=False)
     duration: float
     result: T
+
+    def __post_init__(self):
+        self.command = self.triggered.command
 
 
 @dataclass
@@ -56,5 +71,3 @@ class FailedCommand:
     triggered: TriggeredCommand
     duration: float
     exception: Exception
-    
-type ExecutedCommand[T] = FailedCommand | OkayCommand[T]

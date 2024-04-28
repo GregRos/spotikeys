@@ -1,16 +1,18 @@
 import ctypes
+from logging import getLogger
 from math import trunc
 from tkinter import Tk, Label, SOLID, LEFT, CENTER
 from typing import Tuple
 
-from networkx import project
-
 
 from src.client.kb.triggered_command import (
-    ExecutedCommand,
+    FailedCommand,
     OkayCommand,
     TriggeredCommand,
 )
+from src.client.ui.framework.active_value import ActiveValue
+from src.client.ui.framework.bindable_property import bindable
+from src.client.ui.framework.lbl import UiOwner
 from src.client.ui.tooltip_row import TooltipRow
 from src.client.volume import VolumeInfo
 from src.commanding.commands import Command
@@ -31,7 +33,7 @@ def truncate_text(text: str, max_length: int) -> str:
     return text
 
 
-def get_volume_line(info: VolumeInfo, _):
+def get_volume_line(info: VolumeInfo):
     empty = "◇"
     full = "◇" if info.mute else "◆"
     if info.mute:
@@ -40,7 +42,7 @@ def get_volume_line(info: VolumeInfo, _):
     return f"🔊 {full * full_boxes}{empty * (16 - full_boxes)}"
 
 
-def get_progress_line(status: MediaStatus, _):
+def get_progress_line(status: MediaStatus):
     remaining_time = format_duration(status.duration - status.position)
     full_blocks = round(float(status.progress / 100) * 9)
     progress_line = f"{ '▶' if status.is_playing else '⏸' } {'█' * full_blocks}{'░' * (9 - full_blocks)} {remaining_time}"
@@ -48,81 +50,132 @@ def get_progress_line(status: MediaStatus, _):
 
 
 MediaOkay = OkayCommand[MediaStatus]
+MediaFailed = FailedCommand
+MediaExecuted = MediaOkay | MediaFailed
+MediaStageMessage = MediaExecuted | TriggeredCommand
+
+justify = 24
 
 
-def set_success(
-    executed: OkayCommand[MediaStatus], target: TooltipRow[OkayCommand[MediaStatus]]
-):
-    if executed.triggered.command.code == "get_status":
-        target.background("grey")
+def get_command_line(executed: MediaStageMessage):
+    if isinstance(executed, FailedCommand):
         return (
-            f"💡 {str(executed.triggered).ljust(30)} {executed.duration * 1000:.0f}ms"
+            f"❌ {str(executed.triggered).ljust(28)} {executed.duration * 1000:.0f}ms"
         )
 
-    target.background("darkblue")
-    return f"✅ {executed.triggered} {executed.duration * 1000:.0f}ms"
+    if isinstance(executed, TriggeredCommand):
+        return (
+            f"⌛ {str(executed).ljust(justify)} ⌛⌛"
+            if executed.code != "show_status"
+            else f"💡 {str(executed).ljust(justify)} ⌛⌛"
+        )
+
+    if (
+        isinstance(executed, OkayCommand)
+        and executed.triggered.command.code == "show_status"
+    ):
+        return f"💡 {str(executed.triggered).ljust(justify)} ⌛⌛"
+
+    return f"✅ {executed.triggered.__str__().ljust(justify)} {executed.duration * 1000:.0f}ms"
 
 
-class MediaTooltip:
+def get_header_bg(executed: MediaStageMessage):
+    if isinstance(executed, FailedCommand):
+        return "red"
+    if isinstance(executed, TriggeredCommand):
+        return "grey" if executed.code == "show_status" else "darkblue"
+    if (
+        isinstance(executed, OkayCommand)
+        and executed.triggered.command.code == "show_status"
+    ):
+        return "grey"
+    return "green"
+
+
+class MediaTooltip(UiOwner[MediaStageMessage]):
     _tk: Tk
     _pos: Tuple[int, int]
-    _status: MediaStatus
     _error = False
 
-    def __init__(self, tk: Tk):
-        self._tk = tk
+    def __init__(self):
+        super().__init__()
+        tk = self._tk
         self._pos = (-450, -350)
+        via = self.value
+        self.value.tap_after(self.on_after_value_change).subscribe()
         tk.attributes("-topmost", 1, "-transparentcolor", "black")
         tk.wm_attributes("-topmost", True)
         tk.config(bg="black")
         tk.overrideredirect(True)
-        self._command_line = TooltipRow[OkayCommand[MediaStatus]](
-            tk,
-            fill="both",
-            bg="#000000",
-            fg="#dddddd",
-            ipadx=20,
-            ipady=5,
-            projection=set_success,
+        self._command_line = (
+            self._ToolTipRow()
+            .text(" ")
+            .text(via.map(get_command_line))
+            .background("black")
+            .fill("both")
+            .foreground("#dddddd")
+            .ipadx(20)
+            .ipady(5)
+            .background(via.map(get_header_bg))
+            .font(("Segoe UI Emoji", 12))
+            .font_size(via.map(lambda x: 18 if isinstance(x, FailedCommand) else 12))
         )
-        self._song_title_line = TooltipRow[MediaStatus](
-            tk,
-            projection=lambda x, _: x.title,
-            fill="both",
-            ipadx=15,
-            bg="#000000",
-            fg="#ffffff",
-            font=("Segoe UI Emoji", 18),
+        self._song_title_line = (
+            self._ToolTipRow()
+            .text(" ")
+            .text(
+                via.of_type(OkayCommand)
+                .map(lambda x: x.result)
+                .map(lambda x: truncate_text(x.title, 30))
+            )
+            .ipadx(15)
+            .fill("both")
+            .background("#000001")
+            .foreground("#ffffff")
+            .font(("Segoe UI Emoji", 18))
         )
-        self._song_artist_line = TooltipRow[MediaStatus](
-            tk,
-            projection=lambda x, _: x.artist,
-            fill="x",
-            bg="#000000",
-            fg="#aaaafb",
-            font=("Segoe UI Emoji", 14),
-            ipadx=15,
+        self._song_artist_line = (
+            self._ToolTipRow()
+            .text(" ")
+            .text(
+                via.of_type(OkayCommand).map(
+                    lambda x: truncate_text(x.result.artist, 30)
+                )
+            )
+            .fill("x")
+            .ipadx(15)
+            .background("#000001")
+            .foreground("#aaaafb")
+            .font(("Segoe UI Emoji", 14))
         )
-        self._progress_line = TooltipRow[MediaStatus](
-            tk,
-            projection=get_progress_line,
-            fill="both",
-            bg="#000000",
-            fg="#ffffff",
-            font=("Segoe UI Emoji", 12),
-            ipadx=20,
-            ipady=15,
+        self._progress_line = (
+            self._ToolTipRow()
+            .text(" ")
+            .text(
+                via.of_type(OkayCommand).map(lambda x: x.result).map(get_progress_line)
+            )
+            .fill("both")
+            .background("#000001")
+            .foreground("#ffffff")
+            .font(("Segoe UI Emoji", 15))
+            .ipadx(20)
+            .ipady(15)
         )
 
-        self._song_volume_line = TooltipRow[VolumeInfo](
-            tk,
-            projection=get_volume_line,
-            fill="both",
-            bg="#000000",
-            ipadx=40,
-            ipady=15,
-            fg="#00ff00",
-            font=("Segoe UI Emoji", 12),
+        self._song_volume_line = (
+            self._ToolTipRow()
+            .text(" ")
+            .text(
+                via.of_type(OkayCommand)
+                .map(lambda x: x.result.volume)
+                .map(get_volume_line)
+            )
+            .fill("both")
+            .background("#000001")
+            .foreground("#00ff00")
+            .font(("Segoe UI Emoji", 13))
+            .ipadx(40)
+            .ipady(15)
         )
         self._tk.update_idletasks()
 
@@ -136,60 +189,37 @@ class MediaTooltip:
             pos_y = screen_height + pos_y
         return pos_x, pos_y
 
-    def show(self):
-        self._place_window()
-
-    def _place_window(self):
+    def _place_window(self, *excluded: TooltipRow):
         self._tk.wm_geometry("420x250+%d+%d" % self._normalize_pos(self._pos))
         self._tk.deiconify()
-        self._tk.update_idletasks()
+        labels: list[TooltipRow] = [
+            self._command_line,
+            self._song_title_line,
+            self._song_artist_line,
+            self._progress_line,
+            self._song_volume_line,
+        ]
 
-    def notify_command_start(self, command: TriggeredCommand):
-        if self._error:
-            self._error = False
-            self._command_line.unplace()
-            self._song_title_line.text(" ")
-        self._command_line.text(f"⌛ {str(command).ljust(30)} ⌛⌛").background(
-            "darkblue"
-        ).font_size(12)
-        self._place_window()
-        self._tk.attributes("-alpha", 0.85)
-        self._tk.update_idletasks()
+        for label in labels:
+            if label in excluded:
+                label.unplace()
+            else:
+                label.place()
 
-    def notify_start_show_status(self):
-        self._tk.attributes("-alpha", 1)
-        self._command_line
-        self._tk.attributes("-alpha", 0.85)
-        self._tk.update_idletasks()
-
-    def notify_show_status(self, exec: MediaOkay | None = None):
-        self._tk.attributes("-alpha", 1)
-
-        if exec:
-            self._status = exec
-            self._show_media(exec)
-        self._place_window()
-        self._tk.update_idletasks()
-
-    def notify_command_done(self, finished: MediaOkay):
-        self._tk.attributes("-alpha", 1)
-        self._status = finished.result
-        self._show_media(finished.result)
-        self._place_window()
-        self._tk.update_idletasks()
-
-    def _show_media(self, exec: MediaOkay):
-        status = exec.result
-        self._command_line.value(exec).place()
-        self._song_title_line.value(status).place()
-
-        self._song_artist_line.value(status).place()
-
-        self._progress_line.value(status).place()
-
-        self._song_volume_line.value(status.volume).place()
-
-        self._place_window()
+    def on_after_value_change(self, value: MediaStageMessage):
+        match value:
+            case FailedCommand():
+                self._error = True
+                self._place_window(self._song_artist_line, self._progress_line)
+                return
+            case TriggeredCommand():
+                self._tk.attributes("-alpha", 0.85)
+                self._place_window()
+                return
+            case OkayCommand():
+                self._tk.attributes("-alpha", 1)
+                self._place_window()
+                return
 
     def hide(self):
         self._tk.withdraw()

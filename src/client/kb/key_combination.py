@@ -11,6 +11,9 @@ class KeyCombination:
     def __init__(self, keys: set[Key]):
         self.keys = frozenset(keys)
 
+    def __bool__(self):
+        return bool(self.keys)
+
     def __iter__(self):
         return iter(self.keys)
 
