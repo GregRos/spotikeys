@@ -6,7 +6,7 @@ import time
 import traceback
 from typing import Any, Awaitable, Callable
 
-from src.client.kb.triggered_command import TriggeredCommand
+from src.client.kb.triggered_command import FailedCommand, TriggeredCommand
 from src.client.ui.display_thread import ActivityDisplay
 from src.client.volume import ClientVolumeControl
 from src.now_playing import MediaStatus
@@ -28,7 +28,6 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         loop: AbstractEventLoop,
         downstream: AsyncCommandHandler[Command, Awaitable[MediaStatus]],
     ) -> None:
-        super().__init__()
         self._loop = loop
         self._volume_control = ClientVolumeControl()
 
@@ -121,12 +120,9 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         try:
             command = received.command
             self._display.run(lambda tt: tt.notify_command_start(received), False)
-            start = time.time()
-            result = await self._downstream(command)
-            elapsed = time.time() - start
-            self._display.run(
-                lambda tt: tt.notify_command_done(received, elapsed, result)
-            )
+            result = await received.execute_async(lambda: self._downstream(command))
+            if result.success:
+                self._display.run(lambda tt: tt.notify_command_done(result))
         except Exception as e:
             self._handle_error(received, e)
 

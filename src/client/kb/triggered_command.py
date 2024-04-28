@@ -6,8 +6,8 @@ from src.client.kb.key_combination import KeyCombination
 from src.commanding.commands import Command
 
 
-from dataclasses import dataclass
-from typing import Literal
+from dataclasses import dataclass, field
+from typing import Any, Awaitable, Callable, Coroutine, Literal
 
 
 @dataclass
@@ -28,5 +28,33 @@ class TriggeredCommand:
     def label(self):
         return f"{self.trigger.label}{self.modifiers} ➜  {self.command.label}"
 
+    async def execute_async[T](self, executor: Callable[[], Awaitable[T]]):
+        start = time.time()
+        try:
+            result = await executor()
+            end = time.time()
+            return OkayCommand(self, end - start, result)
+        except Exception as e:
+            end = time.time()
+            return FailedCommand(self, end - start, e)
+
     def __str__(self):
         return self.label
+
+
+@dataclass()
+class OkayCommand[T]:
+    success: Literal[True] = field(default=True, init=False)
+    triggered: TriggeredCommand
+    duration: float
+    result: T
+
+
+@dataclass
+class FailedCommand:
+    success: Literal[False] = field(default=False, init=False)
+    triggered: TriggeredCommand
+    duration: float
+    exception: Exception
+    
+type ExecutedCommand[T] = FailedCommand | OkayCommand[T]

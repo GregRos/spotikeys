@@ -3,8 +3,15 @@ from math import trunc
 from tkinter import Tk, Label, SOLID, LEFT, CENTER
 from typing import Tuple
 
+from networkx import project
 
-from src.client.kb.triggered_command import TriggeredCommand
+
+from src.client.kb.triggered_command import (
+    ExecutedCommand,
+    OkayCommand,
+    TriggeredCommand,
+)
+from src.client.ui.tooltip_row import TooltipRow
 from src.client.volume import VolumeInfo
 from src.commanding.commands import Command
 from .make_clickthrough import make_clickthrough
@@ -24,6 +31,38 @@ def truncate_text(text: str, max_length: int) -> str:
     return text
 
 
+def get_volume_line(info: VolumeInfo, _):
+    empty = "◇"
+    full = "◇" if info.mute else "◆"
+    if info.mute:
+        return f"🔇 {empty * 16}"
+    full_boxes = trunc(info.volume / 100 * 16)
+    return f"🔊 {full * full_boxes}{empty * (16 - full_boxes)}"
+
+
+def get_progress_line(status: MediaStatus, _):
+    remaining_time = format_duration(status.duration - status.position)
+    full_blocks = round(float(status.progress / 100) * 9)
+    progress_line = f"{ '▶' if status.is_playing else '⏸' } {'█' * full_blocks}{'░' * (9 - full_blocks)} {remaining_time}"
+    return progress_line
+
+
+MediaOkay = OkayCommand[MediaStatus]
+
+
+def set_success(
+    executed: OkayCommand[MediaStatus], target: TooltipRow[OkayCommand[MediaStatus]]
+):
+    if executed.triggered.command.code == "get_status":
+        target.background("grey")
+        return (
+            f"💡 {str(executed.triggered).ljust(30)} {executed.duration * 1000:.0f}ms"
+        )
+
+    target.background("darkblue")
+    return f"✅ {executed.triggered} {executed.duration * 1000:.0f}ms"
+
+
 class MediaTooltip:
     _tk: Tk
     _pos: Tuple[int, int]
@@ -37,72 +76,54 @@ class MediaTooltip:
         tk.wm_attributes("-topmost", True)
         tk.config(bg="black")
         tk.overrideredirect(True)
-        self._command_line = command_line = Label(
+        self._command_line = TooltipRow[OkayCommand[MediaStatus]](
             tk,
-            text=" ",
-            justify=CENTER,
-            relief=SOLID,
-            borderwidth=0,
-            background="#000000",
-            foreground="#dddddd",
-            font=("Segoe UI Emoji", 12, "normal"),
+            fill="both",
+            bg="#000000",
+            fg="#dddddd",
+            ipadx=20,
+            ipady=5,
+            projection=set_success,
         )
-
-        self._song_title_line = song_title_line = Label(
+        self._song_title_line = TooltipRow[MediaStatus](
             tk,
-            text=" ",
-            justify=CENTER,
-            relief=SOLID,
-            borderwidth=0,
-            background="#000000",
-            foreground="#ffffff",
+            projection=lambda x, _: x.title,
+            fill="both",
+            ipadx=15,
+            bg="#000000",
+            fg="#ffffff",
             font=("Segoe UI Emoji", 18),
         )
-
-        self._song_artist_line = song_artist_line = Label(
+        self._song_artist_line = TooltipRow[MediaStatus](
             tk,
-            text=" ",
-            justify=CENTER,
-            relief=SOLID,
-            borderwidth=0,
-            background="#000000",
-            foreground="#aaaafb",
+            projection=lambda x, _: x.artist,
+            fill="x",
+            bg="#000000",
+            fg="#aaaafb",
             font=("Segoe UI Emoji", 14),
+            ipadx=15,
+        )
+        self._progress_line = TooltipRow[MediaStatus](
+            tk,
+            projection=get_progress_line,
+            fill="both",
+            bg="#000000",
+            fg="#ffffff",
+            font=("Segoe UI Emoji", 12),
+            ipadx=20,
+            ipady=15,
         )
 
-        self._song_progress_line = progress_line = Label(
+        self._song_volume_line = TooltipRow[VolumeInfo](
             tk,
-            text=" ",
-            justify=LEFT,
-            relief=SOLID,
-            borderwidth=0,
-            background="#000000",
-            foreground="#ff0000",
-            font=("Segoe UI Emoji", 15),
-        )
-
-        self._song_album_line = Label(
-            tk,
-            text=" ",
-            justify=CENTER,
-            relief=SOLID,
-            borderwidth=0,
-            background="#000000",
-            foreground="#ff0000",
+            projection=get_volume_line,
+            fill="both",
+            bg="#000000",
+            ipadx=40,
+            ipady=15,
+            fg="#00ff00",
             font=("Segoe UI Emoji", 12),
         )
-
-        self._volume_line = Label(
-            tk,
-            text=" ",
-            justify=CENTER,
-            relief=SOLID,
-            borderwidth=0,
-            background="#111111",
-            foreground="#00ff00",
-            font=("Segoe UI Emoji", 12),
-        )
-
         self._tk.update_idletasks()
 
     def _normalize_pos(self, pos: Tuple[int, int]) -> Tuple[int, int]:
@@ -115,56 +136,6 @@ class MediaTooltip:
             pos_y = screen_height + pos_y
         return pos_x, pos_y
 
-    def _set_album_line(self, line: str):
-        pass
-
-    _command_part_placed = False
-
-    def _set_command_part(
-        self, text: str, duration: str, bg: str = "#000000", place=True, font_size=12
-    ):
-        typeset = f"{text.ljust(30)}{str(duration)}"
-        command_line = self._command_line
-        command_line.config(
-            text=typeset, background=bg, font=("Segoe UI Emoji", font_size)
-        )
-        # either place is true or the command line is not placed:
-        if place or not self._command_part_placed:
-            self._command_part_placed = True
-            command_line.place(relx=0, rely=0, width=100)
-            command_line.pack(ipadx=20, fill="both", ipady=5, expand=True)
-            make_clickthrough(command_line)
-
-    def _set_first_line(self, line: str, font_size=18):
-        song_title_line = self._song_title_line
-        song_title_line.config(
-            text=truncate_text(line, 20), font=("Segoe UI Emoji", font_size)
-        )
-        song_title_line.place(x=0, y=20, width=200)
-        song_title_line.pack(ipadx=15, fill="both", expand=True)
-        make_clickthrough(song_title_line)
-
-    def _set_volume_line(self, line: str):
-        volume_line = self._volume_line
-        volume_line.config(text=line)
-        volume_line.place(x=0, y=200, width=20)
-        volume_line.pack(ipadx=40, fill="both", ipady=15, expand=True)
-        make_clickthrough(volume_line)
-
-    def _set_artist_line(self, line: str):
-        song_artist_line = self._song_artist_line
-        song_artist_line.config(text=truncate_text(line, 20))
-        song_artist_line.place(x=0, y=50, width=200)
-        song_artist_line.pack(ipadx=15, fill="x", expand=True)
-        make_clickthrough(self._song_artist_line)
-
-    def _set_progress_line(self, line: str):
-        progress_line = self._song_progress_line
-        progress_line.config(text=line)
-        progress_line.place(x=0, y=100, width=200)
-        progress_line.pack(ipadx=20, fill="both", ipady=15, expand=True)
-        make_clickthrough(progress_line)
-
     def show(self):
         self._place_window()
 
@@ -173,76 +144,51 @@ class MediaTooltip:
         self._tk.deiconify()
         self._tk.update_idletasks()
 
-    def notify_command_errored(self, command: Command, error: str, fate_emoji: str):
-        self._error = True
-        self._tk.attributes("-alpha", 1)
-        self._set_command_part(f"{fate_emoji} {command.code}", "", "darkred", False, 18)
-        self._set_first_line(error, 15)
-        for label in (self._song_artist_line, self._song_progress_line):
-            label.pack_forget()
-        self._place_window()
-
     def notify_command_start(self, command: TriggeredCommand):
         if self._error:
             self._error = False
-            self._command_line.pack_forget()
-            self._set_first_line(" ")
-        self._set_command_part("⌛ " + str(command), "⌛⌛", "darkblue", False)
+            self._command_line.unplace()
+            self._song_title_line.text(" ")
+        self._command_line.text(f"⌛ {str(command).ljust(30)} ⌛⌛").background(
+            "darkblue"
+        ).font_size(12)
         self._place_window()
         self._tk.attributes("-alpha", 0.85)
         self._tk.update_idletasks()
 
-    def notify_show_status(self, status: MediaStatus | None = None):
+    def notify_start_show_status(self):
+        self._tk.attributes("-alpha", 1)
+        self._command_line
+        self._tk.attributes("-alpha", 0.85)
+        self._tk.update_idletasks()
+
+    def notify_show_status(self, exec: MediaOkay | None = None):
         self._tk.attributes("-alpha", 1)
 
-        self._set_command_part("status", "💡", "grey", False)
-        if status:
-            self._status = status
-            self._show_media(status)
+        if exec:
+            self._status = exec
+            self._show_media(exec)
         self._place_window()
         self._tk.update_idletasks()
 
-    def notify_command_done(
-        self, finished: TriggeredCommand, duration: float, state: MediaStatus
-    ):
+    def notify_command_done(self, finished: MediaOkay):
         self._tk.attributes("-alpha", 1)
-        self._status = state
-        self._set_command_part(
-            "✅ " + str(finished), f"{duration * 1000:.0f}ms", "green"
-        )
-        self._show_media(state)
+        self._status = finished.result
+        self._show_media(finished.result)
         self._place_window()
         self._tk.update_idletasks()
 
-    def show_progress(self, status: MediaStatus):
-        self._command_line.pack_forget()
-        self._show_media(status)
+    def _show_media(self, exec: MediaOkay):
+        status = exec.result
+        self._command_line.value(exec).place()
+        self._song_title_line.value(status).place()
 
-    def get_volume_line(self, info: VolumeInfo):
-        empty = "◇"
-        full = "◇" if info.mute else "◆"
-        if info.mute:
-            return f"🔇 {empty * 16}"
-        full_boxes = trunc(info.volume / 100 * 16)
-        return f"🔊 {full * full_boxes}{empty * (16 - full_boxes)}"
+        self._song_artist_line.value(status).place()
 
-    def notify_volume_changed(self, info: VolumeInfo):
-        volume_line = self.get_volume_line(info)
-        self._set_volume_line(volume_line)
-        self._place_window()
-        self._tk.update_idletasks()
+        self._progress_line.value(status).place()
 
-    def _show_media(self, status: MediaStatus):
+        self._song_volume_line.value(status.volume).place()
 
-        remaining_time = format_duration(status.duration - status.position)
-        full_blocks = round(float(status.progress / 100) * 9)
-        progress_line = f"{ '▶' if status.is_playing else '⏸' } {'█' * full_blocks}{'░' * (9 - full_blocks)} {remaining_time}"
-        volume_line = self.get_volume_line(status.volume)
-        self._set_first_line(status.title)
-        self._set_artist_line(status.artist)
-        self._set_progress_line(progress_line)
-        self._set_album_line(status.album)
-        self._set_volume_line(volume_line)
         self._place_window()
 
     def hide(self):
