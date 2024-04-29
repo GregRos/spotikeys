@@ -1,6 +1,6 @@
 from typing import Any, Callable
-from src.client.ui.framework.Disposable import Disposable
-from src.client.ui.framework.subscribable import Subscribable
+from src.client.ui.binding.closable import Closable
+from src.client.ui.binding.subscribable import Subscribable
 
 
 class ZippedValue(Subscribable[tuple[Any, ...]]):
@@ -23,7 +23,7 @@ class ZippedValue(Subscribable[tuple[Any, ...]]):
 
             return handler
 
-        combined = Disposable(lambda: None)
+        combined = Closable(lambda: None)
         for i, source in enumerate(self._sources):
             combined += source.subscribe(single_handler(i))
 

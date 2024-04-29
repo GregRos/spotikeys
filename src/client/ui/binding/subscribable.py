@@ -1,24 +1,24 @@
 from typing import Any, Callable, Protocol, overload, runtime_checkable
 
-from src.client.ui.framework.Disposable import Disposable
+from src.client.ui.binding.closable import Closable
 
 
 @runtime_checkable
 class Subscribable[Value](Protocol):
-    def subscribe(self, action: Callable[[Value], Any] | None = None) -> Disposable: ...
+    def subscribe(self, action: Callable[[Value], Any] | None = None) -> Closable: ...
 
     def map[X](self, f: Callable[[Value], X]) -> "Subscribable[X]":
-        from src.client.ui.framework.map import MappedValue
+        from src.client.ui.binding.map import MappedValue
 
         return MappedValue[Value, X](self, f)
 
     def filter(self, f: Callable[[Value], bool]) -> "Subscribable[Value]":
-        from src.client.ui.framework.filter import FilteredValue
+        from src.client.ui.binding.filter import FilteredValue
 
         return FilteredValue(self, f)
 
     def of_type[X](self, t: type[X]) -> "Subscribable[X]":
-        from src.client.ui.framework.filter import FilteredValue
+        from src.client.ui.binding.filter import FilteredValue
 
         return self.filter(lambda x: isinstance(x, t))  # type: ignore
 
@@ -26,14 +26,24 @@ class Subscribable[Value](Protocol):
         return self.map(lambda x: (f(x), x)[1])
 
     def tap_after(self, f: Callable[[Value], Any]) -> "Subscribable[Value]":
-        from src.client.ui.framework.tap_after import TapAfter
+        from src.client.ui.binding.tap_after import TapAfter
 
         return TapAfter(self, f)
 
     def only_changed(self) -> "Subscribable[Value]":
-        from src.client.ui.framework.only_changed import OnlyChanged
+        from src.client.ui.binding.only_changed import OnlyChanged
 
         return OnlyChanged(self)
+
+    def reduce[X](self, initial: X, f: Callable[[X, Value], X]) -> "Subscribable[X]":
+        from src.client.ui.binding.reduce import Reduce
+
+        return Reduce[Value, X](self, initial, f)
+
+    def default(self, initial: Value) -> "Subscribable[Value]":
+        from src.client.ui.binding.default import Default
+
+        return Default(self, initial)
 
     def map_to[X](self, value: X) -> "Subscribable[X]":
         return self.map(lambda _: value)
@@ -81,6 +91,6 @@ class Subscribable[Value](Protocol):
     ) -> "Subscribable[tuple[Value, A, B, C, D, E]]": ...
 
     def zip(self, *args: "Subscribable[Any]") -> "Subscribable[Any]":
-        from src.client.ui.framework.zip import ZippedValue
+        from src.client.ui.binding.zip import ZippedValue
 
         return ZippedValue((self, *args))

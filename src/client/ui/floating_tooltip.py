@@ -10,13 +10,13 @@ from src.client.kb.triggered_command import (
     OkayCommand,
     TriggeredCommand,
 )
-from src.client.ui.framework.active_value import ActiveValue
-from src.client.ui.framework.bindable_property import bindable
-from src.client.ui.framework.lbl import UiOwner
-from src.client.ui.tooltip_row import TooltipRow
+from src.client.ui.binding.active_value import ActiveValue
+from src.client.ui.binding.bindable import bindable
+from src.client.ui.framework.owner import UiRoot
+from src.client.ui.framework.tooltip_row import TooltipRow
 from src.client.volume import VolumeInfo
 from src.commanding.commands import Command
-from .make_clickthrough import make_clickthrough
+from .framework.make_clickthrough import make_clickthrough
 from src.now_playing import MediaStatus
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -92,32 +92,26 @@ def get_header_bg(executed: MediaStageMessage):
     return "green"
 
 
-class MediaTooltip(UiOwner[MediaStageMessage]):
+class MediaTooltip(UiRoot[MediaStageMessage]):
     _tk: Tk
-    _pos: Tuple[int, int]
     _error = False
 
     def __init__(self):
-        super().__init__()
+        super().__init__((420, 250), (-450, -350))
         tk = self._tk
-        self._pos = (-450, -350)
         via = self.value
         self.value.tap_after(self.on_after_value_change).subscribe()
-        tk.attributes("-topmost", 1, "-transparentcolor", "black")
-        tk.wm_attributes("-topmost", True)
-        tk.config(bg="black")
-        tk.overrideredirect(True)
         self._command_line = (
             self._ToolTipRow()
             .text(" ")
             .text(via.map(get_command_line))
-            .background("black")
+            .background("#000001")
             .fill("both")
             .foreground("#dddddd")
             .ipadx(20)
             .ipady(5)
             .background(via.map(get_header_bg))
-            .font(("Segoe UI Emoji", 12))
+            .font_family("Segoe UI Emoji")
             .font_size(via.map(lambda x: 18 if isinstance(x, FailedCommand) else 12))
         )
         self._song_title_line = (
@@ -132,7 +126,8 @@ class MediaTooltip(UiOwner[MediaStageMessage]):
             .fill("both")
             .background("#000001")
             .foreground("#ffffff")
-            .font(("Segoe UI Emoji", 18))
+            .font_family("Segoe UI Emoji")
+            .font_size(18)
         )
         self._song_artist_line = (
             self._ToolTipRow()
@@ -142,11 +137,12 @@ class MediaTooltip(UiOwner[MediaStageMessage]):
                     lambda x: truncate_text(x.result.artist, 30)
                 )
             )
-            .fill("x")
+            .fill("both")
             .ipadx(15)
             .background("#000001")
             .foreground("#aaaafb")
-            .font(("Segoe UI Emoji", 14))
+            .font_family("Segoe UI Emoji")
+            .font_size(15)
         )
         self._progress_line = (
             self._ToolTipRow()
@@ -157,7 +153,8 @@ class MediaTooltip(UiOwner[MediaStageMessage]):
             .fill("both")
             .background("#000001")
             .foreground("#ffffff")
-            .font(("Segoe UI Emoji", 15))
+            .font_family("Segoe UI Emoji")
+            .font_size(14)
             .ipadx(20)
             .ipady(15)
         )
@@ -173,21 +170,11 @@ class MediaTooltip(UiOwner[MediaStageMessage]):
             .fill("both")
             .background("#000001")
             .foreground("#00ff00")
-            .font(("Segoe UI Emoji", 13))
+            .font_family("Segoe UI Emoji")
+            .font_size(13)
             .ipadx(40)
-            .ipady(15)
+            .ipady(13)
         )
-        self._tk.update_idletasks()
-
-    def _normalize_pos(self, pos: Tuple[int, int]) -> Tuple[int, int]:
-        pos_x, pos_y = pos
-        screen_width = self._tk.winfo_screenwidth()
-        screen_height = self._tk.winfo_screenheight()
-        if pos_x < 0:
-            pos_x = screen_width + pos_x
-        if pos_y < 0:
-            pos_y = screen_height + pos_y
-        return pos_x, pos_y
 
     def _place_window(self, *excluded: TooltipRow):
         self._tk.wm_geometry("420x250+%d+%d" % self._normalize_pos(self._pos))

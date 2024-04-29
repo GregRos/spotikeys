@@ -4,8 +4,8 @@ from tkinter import CENTER, SOLID, Label, Tk
 
 from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, TypeGuard
 
-from src.client.ui.framework.bindable_property import bindable
-from src.client.ui.framework.lbl import UiOwner
+from src.client.ui.binding.bindable import bindable
+from src.client.ui.framework.owner import Component, UiRoot
 
 if TYPE_CHECKING:
     from tkinter.font import _FontDescription
@@ -24,20 +24,12 @@ class TooltipRow:
     def unplace(self):
         self._label.pack_forget()
 
-    def __init__(self, parent: UiOwner):
+    def __init__(self, parent: Component):
         self._parentTk = parent
 
-        self._label = Label(parent._tk, text=" ", justify=CENTER, relief=SOLID)
-
-    @bindable()
-    def wrap_width(self, width: int):
-        self._label.configure(wraplength=width)
-        return self
-
-    @bindable()
-    def wrap(self, value: bool):
-        self._label.configure(wraplength=0)
-        return self
+        self._label = Label(
+            parent._tk, justify=CENTER, relief=SOLID, borderwidth=0, text=" "
+        )
 
     @bindable()
     def ipadx(self, value: int):
@@ -58,8 +50,30 @@ class TooltipRow:
         return (self._font_family, self._font_size, self._font_style)
 
     @bindable()
-    def font_size(self, value: int):
+    def wrap_width(self, width: int):
+        self._label.configure(wraplength=width)
+        return self
 
+    @bindable()
+    def wrap(self, value: bool):
+        self._label.configure(wraplength=0)
+        return self
+
+    @bindable()
+    def font_size(self, value: int):
+        self._font_size = value
+        self._label.configure(font=self._get_font())
+        return self
+
+    @bindable()
+    def font_family(self, value: str):
+        self._font_family = value
+        self._label.configure(font=self._get_font())
+        return self
+
+    @bindable()
+    def font_style(self, value: str):
+        self._font_style = value
         self._label.configure(font=self._get_font())
         return self
 
@@ -71,12 +85,7 @@ class TooltipRow:
             self.unplace()
         return self
 
-    @bindable()
-    def font(self, value: tuple[str, int, str]):
-        self._label.configure(font=value)
-        return self
-
-    @bindable()
+    @bindable(only_changed=False)
     def background(self, value: str):
         self._label.configure(bg=value)
         return self
@@ -103,7 +112,11 @@ class TooltipRow:
 
     def place(self):
         self._label.place()
-        self._label.pack(ipadx=self._ipadx, ipady=self._ipady, fill=self._fill)
+        self._label.pack(
+            ipadx=self._ipadx,
+            ipady=self._ipady,
+            fill=self._fill,
+        )
 
 
 def is_two_param_callable(obj) -> TypeGuard[Callable[[Any, TooltipRow], str]]:

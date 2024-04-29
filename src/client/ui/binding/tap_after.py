@@ -1,6 +1,6 @@
 from typing import Any, Callable
 
-from src.client.ui.framework.subscribable import Subscribable
+from src.client.ui.binding.subscribable import Subscribable
 
 
 class TapAfter[X](Subscribable[X]):

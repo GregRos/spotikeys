@@ -1,17 +1,18 @@
 from typing import Any, Callable
 
-from src.client.ui.framework.subscribable import Subscribable
+from src.client.ui.binding.subscribable import Subscribable
 
 
-class OnlyChanged[Value](Subscribable[Value]):
+class FilteredValue[Value](Subscribable[Value]):
     _last_value: Value | None = None
 
-    def __init__(self, source: Subscribable[Value]):
+    def __init__(self, source: Subscribable[Value], _filter: Callable[[Value], bool]):
         self._source = source
+        self._filter = _filter
 
     def subscribe(self, action: Callable[[Value], Any] | None = None):
         def handle(x: Value):
-            if self._last_value != x:
+            if self._filter(x):
                 action(x) if action else None
                 self._last_value = x
 

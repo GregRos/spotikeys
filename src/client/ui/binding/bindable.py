@@ -1,7 +1,7 @@
 from os import name
 from typing import Any, Callable
-from src.client.ui.framework.Disposable import Disposable
-from src.client.ui.framework.active_value import Subscribable
+from src.client.ui.binding.closable import Closable
+from src.client.ui.binding.active_value import ActiveValue, Subscribable
 
 
 def bindable[Value](only_changed=False):
@@ -13,6 +13,7 @@ def bindable[Value](only_changed=False):
         name = original.__name__
 
         def wrapper(self: Self, source: Subscribable[Value] | Value) -> Self:
+
             if not isinstance(source, Subscribable):
                 original(self, source)
                 return self
@@ -20,7 +21,7 @@ def bindable[Value](only_changed=False):
             if not bindings:
                 bindings = {}
                 setattr(self, "bindings", bindings)
-            existing: Disposable | None = bindings.get(name)
+            existing: Closable | None = bindings.get(name)
             if existing:
                 existing.close()
             x = source if not only_changed else source.only_changed()

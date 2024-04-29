@@ -12,8 +12,8 @@ from typing import (
     runtime_checkable,
 )
 
-from src.client.ui.framework.Disposable import Disposable
-from src.client.ui.framework.subscribable import Subscribable
+from src.client.ui.binding.closable import Closable
+from src.client.ui.binding.subscribable import Subscribable
 
 
 class ActiveValue[Value](Subscribable[Value]):
@@ -42,9 +42,6 @@ class ActiveValue[Value](Subscribable[Value]):
 
         return self._scheduler(action)
 
-    def set_action(self, value: Value):
-        return lambda: self.set(value)
-
     def subscribe(self, action: Callable[[Value], Any] | None = None):
         action = action or (lambda x: None)
 
@@ -54,4 +51,4 @@ class ActiveValue[Value](Subscribable[Value]):
         if self._push_initial and self._last_value is not None:
             action(self._last_value)
         self._on_change.append(handler)
-        return Disposable(lambda: self._on_change.remove(handler))
+        return Closable(lambda: self._on_change.remove(handler))
