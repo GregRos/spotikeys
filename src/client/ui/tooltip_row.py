@@ -36,7 +36,7 @@ class TooltipRow:
 
     @bindable()
     def wrap(self, value: bool):
-        self._label.configure(wraplength=0 if value else None)
+        self._label.configure(wraplength=0)
         return self
 
     @bindable()

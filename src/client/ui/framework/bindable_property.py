@@ -1,6 +1,7 @@
 from os import name
 from typing import Any, Callable
-from src.client.ui.framework.active_value import Disposable, Subscribable
+from src.client.ui.framework.Disposable import Disposable
+from src.client.ui.framework.active_value import Subscribable
 
 
 def bindable[Value](only_changed=False):
