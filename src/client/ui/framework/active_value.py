@@ -1,12 +1,27 @@
-from typing import Any, Callable, Protocol, runtime_checkable
+from typing import (
+    Annotated,
+    Any,
+    Callable,
+    Protocol,
+    TypeAlias,
+    TypeVar,
+    TypeVarTuple,
+    TypedDict,
+    Unpack,
+    overload,
+    runtime_checkable,
+)
 
 
 class Disposable:
-    def __init__(self, action: Callable[[], None]):
+    def __init__(self, action: Callable[[], Any]):
         self._action = action
 
     def close(self):
         self._action()
+
+    def __add__(self, other: "Disposable") -> "Disposable":
+        return Disposable(lambda: (self.close(), other.close()))
 
 
 @runtime_checkable
@@ -33,6 +48,51 @@ class Subscribable[Value](Protocol):
 
     def map_to[X](self, value: X) -> "Subscribable[X]":
         return self.map(lambda _: value)
+
+    @overload
+    def zip[A](self, a: "Subscribable[A]", /) -> "Subscribable[tuple[Value, A]]": ...
+
+    @overload
+    def zip[
+        A, B
+    ](
+        self, a: "Subscribable[A]", b: "Subscribable[B]", /
+    ) -> "Subscribable[tuple[Value, A, B]]": ...
+
+    @overload
+    def zip[
+        A, B, C
+    ](
+        self, a: "Subscribable[A]", b: "Subscribable[B]", c: "Subscribable[C]", /
+    ) -> "Subscribable[tuple[Value, A, B, C]]": ...
+
+    @overload
+    def zip[
+        A, B, C, D
+    ](
+        self,
+        a: "Subscribable[A]",
+        b: "Subscribable[B]",
+        c: "Subscribable[C]",
+        d: "Subscribable[D]",
+        /,
+    ) -> "Subscribable[tuple[Value, A, B, C, D]]": ...
+
+    @overload
+    def zip[
+        A, B, C, D, E
+    ](
+        self,
+        a: "Subscribable[A]",
+        b: "Subscribable[B]",
+        c: "Subscribable[C]",
+        d: "Subscribable[D]",
+        e: "Subscribable[E]",
+        /,
+    ) -> "Subscribable[tuple[Value, A, B, C, D, E]]": ...
+
+    def zip(self, *args: "Subscribable[Any]") -> "Subscribable[Any]":
+        return ZippedValue((self, *args))
 
 
 class ActiveValue[Value](Subscribable[Value]):
@@ -136,3 +196,30 @@ class OnlyChanged[Value](Subscribable[Value]):
                 self._last_value = x
 
         return self._source.subscribe(handle)
+
+
+class ZippedValue(Subscribable[tuple[Any, ...]]):
+    _last_value: list[Any]
+
+    def __init__(self, sources: tuple[Subscribable[Any], ...]):
+        self._last_value = [None] * len(sources)
+        self._sources = sources
+
+    def subscribe(self, action: Callable[[tuple[Any, ...]], Any] | None = None):
+        def zip_handler(vs: tuple[Any, ...]):
+            action(vs) if action else None  # type: ignore
+            self._last_value = vs  # type: ignore
+
+        def single_handler(i: int):
+            def handler(x: Any):
+                self._last_value[i] = x
+                if all(self._last_value):
+                    zip_handler(tuple(self._last_value))
+
+            return handler
+
+        combined = Disposable(lambda: None)
+        for i, source in enumerate(self._sources):
+            combined += source.subscribe(single_handler(i))
+
+        return combined

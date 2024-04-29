@@ -19,7 +19,7 @@ class UiOwner[Value]:
         )
 
         class TT(TooltipRow):
-            def __init__(self):
+            def __init__(self, **kwargs:):
                 super().__init__(owner)
 
             def __post_init__(self):

@@ -13,46 +13,31 @@ if TYPE_CHECKING:
 
 class TooltipRow:
     _label: Label
-    _ipadx: int
-    _ipady: int
-    _fill: Literal["both", "x", "y", "none"]
+    _ipadx: int = 0
+    _ipady: int = 0
+    _fill: Literal["both", "x", "y", "none"] = "none"
     _parent: UiOwner
-    _font: tuple[str, int, str]
+    _font_family: str = "Courier New"
+    _font_size: int = 18
+    _font_style: str = "normal"
 
     def unplace(self):
         self._label.pack_forget()
 
-    def __init__(
-        self,
-        parent: UiOwner,
-        *,
-        y: int = 0,
-        x: int = 0,
-        ipadx: int = 0,
-        ipady: int = 0,
-        text: str = " ",
-        fill: Literal["both", "x", "y", "none"] = "none",
-        font: tuple[str, int, str] = ("Segoe UI Emoji", 12, "normal"),
-        bg: str = "#000000",
-        fg: str = "#ffffff",
-    ):
+    def __init__(self, parent: UiOwner):
         self._parentTk = parent
-        self._ipadx = ipadx
-        self._ipady = ipady
-        self._fill = fill
-        self._font = font
-        self._y = y
-        self._x = x
-        self._label = Label(
-            parent._tk,
-            text=text,
-            justify=CENTER,
-            relief=SOLID,
-            borderwidth=0,
-            background=bg,
-            foreground=fg,
-            font=font,
-        )
+
+        self._label = Label(parent._tk, text=" ", justify=CENTER, relief=SOLID)
+
+    @bindable()
+    def wrap_width(self, width: int):
+        self._label.configure(wraplength=width)
+        return self
+
+    @bindable()
+    def wrap(self, value: bool):
+        self._label.configure(wraplength=0 if value else None)
+        return self
 
     @bindable()
     def ipadx(self, value: int):
@@ -69,10 +54,13 @@ class TooltipRow:
         self._fill = value
         return self
 
+    def _get_font(self) -> _FontDescription:
+        return (self._font_family, self._font_size, self._font_style)
+
     @bindable()
     def font_size(self, value: int):
 
-        self._label.configure(font=(self._font[0], value, self._font[2]))
+        self._label.configure(font=self._get_font())
         return self
 
     @bindable()

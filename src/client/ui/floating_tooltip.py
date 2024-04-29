@@ -107,6 +107,7 @@ class MediaTooltip(UiOwner[MediaStageMessage]):
         tk.wm_attributes("-topmost", True)
         tk.config(bg="black")
         tk.overrideredirect(True)
+        self._error = Label(background="")
         self._command_line = (
             self._ToolTipRow()
             .text(" ")
@@ -217,6 +218,9 @@ class MediaTooltip(UiOwner[MediaStageMessage]):
                 self._place_window()
                 return
             case OkayCommand():
+                if value.command.is_command("show_status"):
+                    return
+                self.auto_hide_after(3, value)
                 self._tk.attributes("-alpha", 1)
                 self._place_window()
                 return

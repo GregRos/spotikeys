@@ -23,8 +23,12 @@ class Command:
     def local(self, is_local: bool = True):
         return Command(self.code, self.label)
 
-    def is_command(self, command: Command):
-        return self.code == command.code
+    def is_command(self, command: Command | str):
+        return (
+            self.code == command.code
+            if isinstance(command, Command)
+            else self.code == command
+        )
 
     def __eq__(self, other: object):
         if not isinstance(other, Command):
