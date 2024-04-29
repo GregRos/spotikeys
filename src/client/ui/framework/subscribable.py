@@ -1,4 +1,4 @@
-from typing import Any, Callable, Protocol, overload
+from typing import Any, Callable, Protocol, overload, runtime_checkable
 
 from src.client.ui.framework.Disposable import Disposable
 

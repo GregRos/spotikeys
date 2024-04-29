@@ -107,7 +107,6 @@ class MediaTooltip(UiOwner[MediaStageMessage]):
         tk.wm_attributes("-topmost", True)
         tk.config(bg="black")
         tk.overrideredirect(True)
-        self._error = Label(background="")
         self._command_line = (
             self._ToolTipRow()
             .text(" ")
