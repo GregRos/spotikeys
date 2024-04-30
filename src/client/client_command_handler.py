@@ -7,7 +7,9 @@ import traceback
 from typing import Any, Awaitable, Callable
 
 from src.client.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
-from src.client.ui.floating_tooltip import MediaTooltip
+from src.client.ui.floating_tooltip import ActionHUD
+from src.client.ui.values.geometry import Geometry
+from src.client.ui.framework.owner import UiRoot
 from src.client.volume import ClientVolumeControl, VolumeInfo
 from src.now_playing import MediaStatus
 from src.commanding.commands import Command, ParamterizedCommand
@@ -20,7 +22,6 @@ logger = getLogger("client")
 class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     _current: TriggeredCommand | None = None
     _lock = threading.Lock()
-    _display = MediaTooltip()
     _last_command: TriggeredCommand | None = None
     _last_status: MediaStatus
 
@@ -29,10 +30,14 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         loop: AbstractEventLoop,
         downstream: AsyncCommandHandler[Command, Awaitable[MediaStatus]],
     ) -> None:
-        super().__init__()
-        self._display.value.of_type(FailedCommand).subscribe(
-            lambda c: logger.error(c.exception)
+        self._ui = UiRoot(Geometry(width=420, height=250, x=-450, y=-350)).mount(
+            ActionHUD
         )
+        self._ui.root.change.subscribe(lambda x: self._ui.place())
+        self._ui.root.value.subscribe(lambda x: logger.info(f"Received {x}"))
+        self._root = self._ui.root
+        super().__init__()
+
         self._loop = loop
         self._volume_control = ClientVolumeControl()
         self._last_status = MediaStatus(
@@ -66,16 +71,16 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     @handles(MediaCommands.show_status)
     async def _show_status(self, r_command: TriggeredCommand) -> None:
 
-        self._display.value.set(r_command)
+        self._root.value.set(r_command)
         result = await r_command.execute_async(
             lambda: self._downstream(MediaCommands.get_status)
         )
         if self._current:
-            self._display.value.set(result)
+            self._root.value.set(result)
 
     @handles(MediaCommands.hide_status)
     async def _hide_status(self, r_command: TriggeredCommand) -> None:
-        self._display.hide()
+        self._root.hide()
 
     @handles(MediaCommands.volume_up)
     async def _volume_up(self, r_command: TriggeredCommand) -> None:
@@ -85,7 +90,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
             return self._last_status
 
         exec = r_command.execute(handle_volume_up)
-        self._display.value.set(exec)
+        self._root.value.set(exec)
 
     @handles(MediaCommands.volume_down)
     async def _volume_down(self, r_command: TriggeredCommand) -> None:
@@ -95,7 +100,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
             return self._last_status
 
         exec = r_command.execute(handle_volume_down)
-        self._display.value.set(exec)
+        self._root.value.set(exec)
 
     @handles(MediaCommands.volume_mute)
     async def _volume_mute(self, r_command: TriggeredCommand) -> None:
@@ -119,11 +124,11 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
 
     async def _wrap_downstream(self, received: TriggeredCommand):
         command = received.command
-        self._display.value.set(received)
+        self._root.value.set(received)
         result = await received.execute_async(lambda: self._downstream(command))
         if isinstance(result, OkayCommand):
             self._last_status = result.result
-        self._display.value.set(result)
+        self._root.value.set(result)
 
     def _get_handler(self, command: TriggeredCommand) -> Awaitable[None] | None:
         local_handler = self.get_handler(command)

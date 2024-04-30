@@ -3,8 +3,10 @@ from typing import Any, Callable, Protocol, overload, runtime_checkable
 from src.client.ui.binding.closable import Closable
 
 
-@runtime_checkable
-class Subscribable[Value](Protocol):
+class Subscribable[Value]:
+    def __init__(self) -> None:
+        super().__init__()
+
     def subscribe(self, action: Callable[[Value], Any] | None = None) -> Closable: ...
 
     def map[X](self, f: Callable[[Value], X]) -> "Subscribable[X]":

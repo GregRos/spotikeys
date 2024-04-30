@@ -1,35 +1,40 @@
 from __future__ import annotations
 import inspect
-from tkinter import CENTER, SOLID, Label, Tk
+from tkinter import CENTER, SOLID, Label, Tk, Widget
 
-from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, TypeGuard
+from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, TypeGuard, override
 
 from src.client.ui.binding.bindable import bindable
-from src.client.ui.framework.owner import Component, UiRoot
+from src.client.ui.framework.component import Component
+from src.client.ui.framework.owner import UiRoot
 
 if TYPE_CHECKING:
     from tkinter.font import _FontDescription
 
 
-class TooltipRow:
+class TooltipRow(Component):
     _label: Label
     _ipadx: int = 0
     _ipady: int = 0
     _fill: Literal["both", "x", "y", "none"] = "none"
-    _parent: UiOwner
     _font_family: str = "Courier New"
     _font_size: int = 18
     _font_style: str = "normal"
 
     def unplace(self):
+        self._label.configure())
         self._label.pack_forget()
 
     def __init__(self, parent: Component):
+        super().__init__(parent)
         self._parentTk = parent
 
         self._label = Label(
-            parent._tk, justify=CENTER, relief=SOLID, borderwidth=0, text=" "
+            parent.tk, justify=CENTER, relief=SOLID, borderwidth=0, text=" "
         )
+
+    def render(self):
+        yield self._label
 
     @bindable()
     def ipadx(self, value: int):
