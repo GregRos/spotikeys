@@ -8,16 +8,17 @@ from attr import dataclass
 
 from src.client.ui.framework.component import Component
 from src.client.ui.framework.make_clickthrough import make_clickthrough
-from src.client.ui.shadow.core.property_dict import compute_values
-from src.client.ui.shadow.core.reconcilliation import Reconciliation
+from src.client.ui.shadow.core.reconciler.property_dict import compute_values
+from src.client.ui.shadow.core.reconciler.reconcile import Reconcile
 
 from src.client.ui.shadow.core.fields import FieldApplyInfo
-from src.client.ui.shadow.core.property_dict import PropertyDict, compute_diff
+from src.client.ui.shadow.core.reconciler.property_dict import (
+    PropertyDict,
+    compute_diff,
+)
 
 
-Mismatch = Literal[
-    "different_key", "same_key_different_type", "missing", "unnecessary", None
-]
+Mismatch = Literal["different_key", "same_key_different_type", "missing", None]
 
 
 @dataclass(frozen=True)
@@ -46,18 +47,6 @@ class ShadowNode[W: Widget]:
                 yield apply_info.to_apply_pair(key, getattr(self, key))
 
         return dict(_to_properties())
-
-    @staticmethod
-    def reconcile(prev: "ShadowNode | None", next: "ShadowNode") -> Reconciliation:
-
-        return Reconciliation(
-            next.key,
-            next.tk_type,
-            values["configure"],
-            values["place"],
-            post_reconcile=next.post_reconcile,
-            mismatch=mismatch,
-        )
 
     def post_reconcile(self, widget: W):
         pass

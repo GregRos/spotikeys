@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-from src.client.ui.shadow.core.property_dict import ApplyInfo
-from src.client.ui.shadow.core.property_dict import ApplyKey
+from src.client.ui.shadow.core.reconciler.property_dict import ApplyInfo
+from src.client.ui.shadow.core.reconciler.property_dict import ApplyKey
 from src.client.ui.shadow.types import Stage
 
 
