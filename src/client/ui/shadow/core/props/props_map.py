@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Iterator
+from typing import Any, Callable, Iterator, Literal, overload
 
 
 @dataclass(frozen=True)
@@ -7,35 +7,117 @@ class ApplyInfo:
     converter: Callable[[Any], Any] | None
     value: Any
 
+    def compute(self):
+        return self.converter(self.value) if self.converter else self.value
 
-from pyrsistent import PMap
+
+from pyrsistent import PMap, PRecord, m, pmap
 
 
 from collections.abc import Mapping
 
+type Diff = Literal["recursive", "unit", "none"]
 
-class PropsMap(Mapping[str, ApplyInfo]):
-    def __init__(self, props: PMap[str, ApplyInfo] = PMap()):
-        self._map = props
+type DiffMap = dict[str, Diff]
 
-    def __iter__(self) -> Iterator[str]:
-        return iter(self._map)
 
-    def compute(self):
-        return {
-            key: value.converter(value.value) if value.converter else value.value
-            for key, value in self._map.items()
-        }
+class PropsMap:
+    _diffs: DiffMap = dict()
 
-    def __getitem__(self, key: str) -> ApplyInfo:
+    def __init__(self, diffs: DiffMap, props: PMap[str, PMap[str, ApplyInfo]] = m()):
+        self._map = props or PMap[str, PMap[str, ApplyInfo]]()
+        self._diffs = diffs
+
+    def __iter__(self):
+        return iter(self._map.items())
+
+    def __getattr__(self, key: str) -> PMap[str, ApplyInfo]:
         return self._map[key]
 
-    def set(self, key: str, value: ApplyInfo) -> "PropsMap":
-        return PropsMap(self._map.transform(key, value))
+    @overload
+    def compute(self, group: str, key: str, /) -> Any: ...
+    @overload
+    def compute(self, group: str, /) -> PMap[str, Any]: ...
+
+    @overload
+    def compute(self, /) -> PMap[str, PMap[str, Any]]: ...
+
+    def compute(self, group: str | None = None, key: str | None = None, /):
+        def compute_group(group: str):
+            return pmap(
+                {key: value.compute() for key, value in self._map[group].items()}
+            )
+
+        if group:
+            return compute_group(group)
+
+        return pmap({group: compute_group(group) for group in self._map})
+
+    @overload
+    def get(self, key: str, /) -> PMap[str, ApplyInfo]: ...
+    @overload
+    def get(self, key: tuple[str, str], /) -> ApplyInfo: ...
+    def get(self, key: str | tuple[str, str], /):
+        if isinstance(key, tuple):
+            group, key = key
+            return self._map[group].get(key, PMap())
+        return self._map.get(key, PMap())
+
+    @overload
+    def __getitem__(self, key: str, /) -> PMap[str, ApplyInfo]: ...
+
+    @overload
+    def __getitem__(self, key: tuple[str, str], /) -> ApplyInfo: ...
+
+    def __getitem__(self, group: str | tuple[str, str], /):
+        if isinstance(group, tuple):
+            group, name = group
+            return self._map[group].get(name, PMap())
+        return self._map[group]
+
+    def __contains__(self, key: str | tuple[str, str]) -> bool:
+        if isinstance(key, tuple):
+            group, key = key
+            return group in self._map and key in self._map[group]
+        return key in self._map
+
+    def get_diff_type(self, group: str) -> Diff:
+        return self._diffs.get(group, "none")
+
+    @overload
+    def set(self, group: str, value: PMap[str, ApplyInfo], /) -> "PropsMap": ...
+
+    @overload
+    def set(self, key: tuple[str, str], value: ApplyInfo, /) -> "PropsMap": ...
+
+    def set(
+        self, key: str | tuple[str, str], value: ApplyInfo | PMap[str, ApplyInfo], /
+    ) -> "PropsMap":
+        if isinstance(key, tuple):
+            group, key = key
+            assert isinstance(value, ApplyInfo)
+            return PropsMap(
+                self._diffs,
+                self._map.set(group, self._map.get(group, PMap()).set(key, value)),
+            )
+        assert isinstance(value, Mapping)
+        return PropsMap(self._diffs, self._map.set(key, value))
 
     def diff(self, other: "PropsMap") -> "PropsMap":
-        result = PMap[str, ApplyInfo]()
-        for key, value in self._map.items():
-            if key not in other._map or other[key] != value:
-                result = result.transform(key, value)
-        return PropsMap(result)
+        result = PropsMap(self._diffs)
+        for group_name, group in other:
+            diff_type = self.get_diff_type(group_name)
+            if group_name not in self or diff_type == "none":
+                result = result.set(group_name, group)
+                continue
+
+            if diff_type == "unit" and group != self[group_name]:
+                result = result.set(group_name, group)
+
+            if diff_type == "recursive":
+                for key, value in group.items():
+                    key_pair = (group_name, key)
+                    if key_pair not in self or self[key_pair] != value:
+                        result = result.set(key_pair, value)
+
+        return result

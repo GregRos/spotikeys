@@ -125,7 +125,7 @@ class StatefulReconciler[Node: ShadowNode, Resource]:
             case Update(existing, next):
                 actions.update(existing, next)
             case Unplace(x):
-                self.actions.unplace(x)
+                actions.unplace(x)
             case Place(Recreate(old, next)):
                 new_resource = self.do_create_action(Create(next))
                 actions.destroy(old)

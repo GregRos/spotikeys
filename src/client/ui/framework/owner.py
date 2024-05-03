@@ -38,7 +38,7 @@ class UiRoot[X: Component]:
         tk = self._tk
         tk.attributes("-topmost", 1, "-transparentcolor", "black")
         tk.wm_attributes("-topmost", True)
-        tk.config(bg="black")
+        tk.configure(ba)
         tk.overrideredirect(True)
 
     def mount[

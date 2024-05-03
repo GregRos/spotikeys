@@ -4,9 +4,9 @@ from typing import Any, Callable, Literal, override
 from attr import dataclass
 
 from src.client.ui.framework.make_clickthrough import make_clickthrough
+from src.client.ui.shadow.core.props.prop import prop
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
-from src.client.ui.shadow.tk.widgets.field import configure_field, pack_field, prop
 from src.client.ui.values.font import Font
 
 

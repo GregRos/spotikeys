@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any, Callable
 
 from src.client.ui.shadow.core.reconciler.record import ResourceRecord
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
@@ -42,6 +43,7 @@ class Unplace[Node: ShadowNode, Resource]:
 
 
 class ReconcileActions[Node: ShadowNode, Resource]:
+
     @abstractmethod
     def create(self, node: Node) -> Resource: ...
     @abstractmethod

@@ -6,6 +6,7 @@ from tkinter import Label, Tk, Widget
 from typing import TYPE_CHECKING, Any, Callable, Generator, Literal, final, override
 
 
+from src.client.ui.framework.make_clickthrough import make_clickthrough
 from src.client.ui.shadow.core.reconciler.actions import (
     ReconcileActions,
     ResourceRecord,
@@ -36,9 +37,16 @@ class TkWidgetActions(ReconcileActions[SwTkWidget, Widget]):
 
     @override
     def replace(self, existing: TkWidgetRecord, next: TkWidgetRecord):
-        pack_info = next.node._props.pack.compute()
+        pack_info = next.node._props.compute("pack")
         next.resource.pack_configure(after=existing.resource, **pack_info)
         existing.resource.pack_forget()
+        make_clickthrough(next.resource)
+
+    @override
+    def place(self, record: TkWidgetRecord):
+        pack_info = record.node._props.compute("pack")
+        record.resource.pack_configure(**pack_info)
+        make_clickthrough(record.resource)
 
     @override
     def unplace(self, existing: TkWidgetRecord):
@@ -46,5 +54,5 @@ class TkWidgetActions(ReconcileActions[SwTkWidget, Widget]):
 
     @override
     def update(self, existing: TkWidgetRecord, next: SwTkWidget):
-        updates = next._props.configure.diff(existing.node._props.configure)
-        existing.resource.configure(**updates)
+        updates = next._props.diff(existing.node._props).compute()
+        existing.resource.configure(**updates["configure"])

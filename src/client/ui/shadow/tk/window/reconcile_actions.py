@@ -2,32 +2,83 @@ from dataclasses import dataclass, field
 from itertools import zip_longest
 
 
+import threading
 from tkinter import Label, Tk, Widget
 from typing import TYPE_CHECKING, Any, Callable, Generator, Literal, final, override
 
 import attr
+from pyrsistent import PMap, PRecord
 
 
+from src.client.ui.shadow.core.props.props_map import PropsMap
 from src.client.ui.shadow.core.reconciler.actions import (
     ReconcileActions,
     ResourceRecord,
 )
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 from src.client.ui.shadow.tk.window.window import SwTkWindow
+from src.client.ui.values.geometry import Geometry
 
 
-type TkRecord = ResourceRecord[SwTkWindow, Tk]
+class TkWrapper:
+    _render_state: StatefulReconciler[SwTkWidget, Widget]
+    tk: Tk
+
+    def __init__(self):
+        waiter = threading.Event()
+        tk: Tk
+
+        def ui_thread():
+            self.tk = Tk()
+            waiter.set()
+            self.tk.mainloop()
+
+        thread = threading.Thread(target=ui_thread)
+        thread.start()
+        waiter.wait()
+        # type: ignore
+
+    def schedule(
+        self,
+        action: Callable[[], Any],
+    ):
+        self.tk.after(0, action)
+
+    def destroy(self):
+        self.schedule(self.tk.destroy)
+
+    def deiconify(self):
+        self.schedule(self.tk.deiconify)
+
+    def withdraw(self):
+        self.schedule(self.tk.withdraw)
+
+    def update(self, properties: PMap[str, PMap[str, Any]]):
+        def do_update():
+            if attrs := properties.get("attributes"):
+                attributes = [item for k, v in attrs for item in (f"-{k}", v)]
+                self.tk.attributes(*attributes)
+            if geometry := properties.get("geometry"):
+                self.tk.geometry(Geometry(**geometry).to_tk())
+            if special := properties.get("special"):
+                self.tk.overrideredirect(special.override_redirect)
+            if configure := properties.get("configure"):
+                self.tk.configure(**configure)
+
+        self.schedule(do_update)
+
+
+type TkRecord = ResourceRecord[SwTkWindow, TkWrapper]
 
 
 @final
 @dataclass
-class TkWindowActions(ReconcileActions[SwTkWindow, Tk]):
-    tk: Tk
-
+class TkWindowActions(ReconcileActions[SwTkWindow, TkWrapper]):
     @override
     def create(self, node: SwTkWindow):
-        return Tk()
+        return TkWrapper()
 
     @override
     def destroy(self, existing: TkRecord):
@@ -35,7 +86,7 @@ class TkWindowActions(ReconcileActions[SwTkWindow, Tk]):
 
     @override
     def replace(self, existing: TkRecord, next: TkRecord):
-        self.unplace(existing)
+        existing.resource.withdraw()
         next.resource.deiconify()
 
     @override
@@ -44,16 +95,5 @@ class TkWindowActions(ReconcileActions[SwTkWindow, Tk]):
 
     @override
     def update(self, existing: TkRecord, next: SwTkWindow):
-        attributes = next._props.attributes.diff(existing.node._props.attributes)
-        attributes_args = [item for k, v in attributes for item in (f"-{k}", v)]
-        if attributes_args:
-            existing.resource.attributes(*attributes_args)
-        if next._props.geometry != existing.node._props.geometry:
-            existing.resource.geometry(
-                next.geometry.normalize(existing.resource).to_tk()
-            )
-        if (
-            next._props.special["override_redirect"]
-            != existing.node._props.special["override_redirect"]
-        ):
-            existing.resource.overrideredirect(next.override_redirect)
+        diff = existing.node._props.diff(next._props).compute()
+        existing.resource.update(diff)

@@ -1,4 +1,4 @@
-from src.client.ui.shadow.core.props.props_map import ApplyInfo, PropsMap
+from src.client.ui.shadow.core.props.props_map import ApplyInfo, DiffMap, PropsMap
 from src.client.ui.shadow.core.reconciler.stateful_reconciler import ResourceRecord
 
 
@@ -11,15 +11,19 @@ from dataclasses import field
 from typing import Any, Literal, Self
 
 
-@dataclass(kw_only=True)
+@dataclass()
 class ShadowNode:
     key: str = field(default="")
-    _props: PMap[str, PropsMap] = field(default_factory=PMap[str, PropsMap])
+    _props: PropsMap = field(init=False)
+
+    @abstractmethod
+    @staticmethod
+    def diff_groups() -> DiffMap: ...
 
     def __post_init__(self):
         from src.client.ui.shadow.core.props.field_apply_info import FieldApplyInfo
 
-        props_map = PMap[str, PropsMap]()
+        props_map = PropsMap(self.__class__.diff_groups())
         for key in self.__dataclass_fields__:
             field = self.__dataclass_fields__[key]
             metadata = field.metadata
@@ -33,9 +37,8 @@ class ShadowNode:
             if not isinstance(field_info, FieldApplyInfo):
                 print(f"Invalid apply info for {key} {field_info}")
                 continue
-            these_props = props_map.get(field_info.type, PropsMap())
             pair = ApplyInfo(field_info.converter, getattr(self, key))
-            props_map = props_map.transform(field_info.type, these_props.set(key, pair))
+            props_map = props_map.set((field_info.type, key), pair)
 
         self._props = props_map
 
