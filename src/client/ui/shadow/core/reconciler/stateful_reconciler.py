@@ -14,76 +14,22 @@ from typing import (
     runtime_checkable,
 )
 from src.client.ui.framework.component import Component, render_recursively
-from src.client.ui.shadow.core.base import ShadowNode, ShadowTkWidget
+from src.client.ui.shadow.core.reconciler.actions import (
+    Create,
+    Recreate,
+    Replace,
+    ReconcileActions,
+    Unplace,
+    Update,
+    Place,
+)
+from src.client.ui.shadow.core.reconciler.record import ResourceRecord
+from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 
 
 from itertools import groupby, zip_longest
 from tkinter import Label, Tk, Widget
-
-
-@dataclass
-class ResourceRecord[Node: ShadowNode, Resource]:
-    node: Node
-    resource: Resource
-    created: datetime = field(default_factory=datetime.now)
-
-
-@dataclass
-class Create[Node: ShadowNode, Resource]:
-    next: Node
-
-
-@dataclass
-class Update[Node: ShadowNode, Resource]:
-    existing: ResourceRecord[Node, Resource]
-    next: Node
-
-
-@dataclass
-class Recreate[Node: ShadowNode, Resource]:
-    old: ResourceRecord[Node, Resource]
-    next: Node
-
-
-@dataclass
-class Place[Node: ShadowNode, Resource]:
-    what: Update[Node, Resource] | Recreate[Node, Resource] | Create[Node, Resource]
-
-
-@dataclass
-class Replace[Node: ShadowNode, Resource]:
-    replaces: ResourceRecord[Node, Resource]
-    with_what: (
-        Update[Node, Resource] | Recreate[Node, Resource] | Create[Node, Resource]
-    )
-
-
-@dataclass
-class Unplace[Node: ShadowNode, Resource]:
-    what: ResourceRecord[Node, Resource]
-
-
-class ResourceActions[Node: ShadowNode, Resource]:
-    @abstractmethod
-    def create(self, node: Node) -> Resource: ...
-    @abstractmethod
-    def destroy(self, existing: ResourceRecord[Node, Resource]) -> None: ...
-
-    @abstractmethod
-    def update(self, existing: ResourceRecord[Node, Resource], next: Node) -> None: ...
-
-    @abstractmethod
-    def unplace(self, existing: ResourceRecord[Node, Resource]) -> None: ...
-
-    @abstractmethod
-    def replace(
-        self,
-        existing: ResourceRecord[Node, Resource],
-        next: ResourceRecord[Node, Resource],
-    ) -> None: ...
-
-    @abstractmethod
-    def place(self, record: ResourceRecord[Node, Resource]) -> None: ...
 
 
 class StatefulReconciler[Node: ShadowNode, Resource]:
@@ -104,9 +50,9 @@ class StatefulReconciler[Node: ShadowNode, Resource]:
             prev.node if isinstance(prev, ResourceRecord) else prev
         )
 
-    def __init__(self, actions: ResourceActions[Node, Resource]) -> None:
+    def __init__(self, actions: ReconcileActions[Node, Resource]) -> None:
         self.actions = actions
-        self._ordering = {}
+        self._placement = set()
         self._key_to_resource = {}
 
     def get_reconcile_action(self, prev: Node | None, next: Node | None):
@@ -155,7 +101,7 @@ class StatefulReconciler[Node: ShadowNode, Resource]:
     def compute_reconcile_actions(self, rendering: list[Node]):
         self.check_duplicates(rendering)
         placed = set[str]()
-        for prev, next in zip_longest(self._ordering, rendering, fillvalue=None):
+        for prev, next in zip_longest(self._placement, rendering, fillvalue=None):
             if not next and prev and prev.key in placed:
                 continue
             if next:

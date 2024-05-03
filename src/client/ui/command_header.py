@@ -4,7 +4,7 @@ from typing import Literal, override
 from src.client.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
 from src.client.ui.floating_tooltip import MediaStageMessage
 from src.client.ui.framework.component import Component
-from src.client.ui.shadow.core.nodes import TK
+from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.values.font import Font
 
 

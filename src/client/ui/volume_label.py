@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from math import trunc
 from typing import Generator, override
 from src.client.ui.framework.component import Component
-from src.client.ui.shadow.core.base import ShadowNode
-from src.client.ui.shadow.core.nodes import TK
+from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.values.font import Font
 from src.client.volume import VolumeInfo
 

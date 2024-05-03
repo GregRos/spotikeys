@@ -1,19 +1,32 @@
-from dataclasses import dataclass, field
+from dataclasses import _MISSING_TYPE, MISSING, dataclass, field
 from tkinter import Widget
 from typing import Any, Callable, Literal
 
 from pyrsistent import PVector, v
 
-from src.client.ui.shadow.core.reconciler.property_dict import ApplyInfo
-from src.client.ui.shadow.core.reconciler.property_dict import ApplyKey
+from src.client.ui.shadow.core.props.field_apply_info import FieldApplyInfo
 
 tage = Literal["configure", "place", "other"]
 
 
-@dataclass(frozen=True)
-class FieldApplyInfo[X]:
-    type: str
-    converter: Callable[[X], Any] | None = field(default=None)
+def prop[
+    X
+](
+    subtype: str,
+    /,
+    *,
+    default: X | _MISSING_TYPE = MISSING,
+    converter: Callable[[X], Any] | None = None,
+) -> X:
+    if default is MISSING:
+        return field(
+            metadata={"apply": FieldApplyInfo(type=subtype, converter=converter)}
+        )
+    else:
+        return field(
+            default=default,
+            metadata={"apply": FieldApplyInfo(type=subtype, converter=converter)},
+        )
 
 
 def configure_field[X](default: X, converter: Callable[[X], Any] | None = None) -> X:

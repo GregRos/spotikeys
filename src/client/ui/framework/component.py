@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Generator, Tuple, TypedDict, Unpack, over
 from attr import field, frozen
 
 from src.client.ui.binding.active_value import ActiveValue
-from src.client.ui.shadow.core.base import ShadowNode
+from src.client.ui.shadow.core.props.shadow_node import ShadowNode
 
 if TYPE_CHECKING:
     from src.client.ui.framework.tooltip_row import TooltipRow

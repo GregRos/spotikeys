@@ -6,24 +6,24 @@ from tkinter import Label, Tk, Widget
 from typing import TYPE_CHECKING, Any, Callable, Generator, Literal, final, override
 
 
-from src.client.ui.shadow.core.base import Mismatch, ShadowNode, ShadowTkWidget
-
-from src.client.ui.shadow.core.reconciler.stateful_reconciler import (
-    ResourceActions,
+from src.client.ui.shadow.core.reconciler.actions import (
+    ReconcileActions,
     ResourceRecord,
 )
+from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 
 
-type TkWidgetRecord = ResourceRecord[ShadowTkWidget, Widget]
+type TkWidgetRecord = ResourceRecord[SwTkWidget, Widget]
 
 
 @final
 @dataclass
-class TkWidgetActions(ResourceActions[ShadowTkWidget, Widget]):
+class TkWidgetActions(ReconcileActions[SwTkWidget, Widget]):
     tk: Tk
 
     @override
-    def create(self, node: ShadowTkWidget):
+    def create(self, node: SwTkWidget):
         match node:
             case "Label":
                 return Label(self.tk, text=node.key)
@@ -45,6 +45,6 @@ class TkWidgetActions(ResourceActions[ShadowTkWidget, Widget]):
         existing.resource.pack_forget()
 
     @override
-    def update(self, existing: TkWidgetRecord, next: ShadowTkWidget):
+    def update(self, existing: TkWidgetRecord, next: SwTkWidget):
         updates = next._props.configure.diff(existing.node._props.configure)
         existing.resource.configure(**updates)

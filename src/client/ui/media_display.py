@@ -7,7 +7,7 @@ from src.client.ui.framework.component import (
     Component,
 )
 from src.client.ui.progress_label import ProgressLabel
-from src.client.ui.shadow.core.nodes import TK
+from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.values.font import Font
 from src.client.ui.volume_label import VolumeLabel
 from src.client.volume import VolumeInfo
