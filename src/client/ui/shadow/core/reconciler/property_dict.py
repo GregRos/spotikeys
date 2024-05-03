@@ -8,18 +8,12 @@ from pyrsistent import m, pmap
 
 
 @dataclass(frozen=True)
-class ApplyInfo[X]:
-    converter: Callable[[X], Any] | None
-    value: X
-
+class ApplyInfo:
+    converter: Callable[[Any], Any] | None
+    value: Any
 
 
 @dataclass(frozen=True)
 class ApplyKey:
     stage: str
     prop_name: str
-
-
-class PropertyDict(dict[ApplyKey, ApplyInfo[Any]]):
-
-

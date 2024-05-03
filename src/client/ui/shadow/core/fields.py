@@ -15,16 +15,11 @@ class FieldApplyInfo[X]:
     type: str
     converter: Callable[[X], Any] | None = field(default=None)
 
-    def to_apply_pair(
-        self, prop_name: str, prop_value: X
-    ) -> tuple[ApplyKey, ApplyInfo[X]]:
-        return ApplyKey(self.type, prop_name), ApplyInfo[X](prop_value, self.converter)
-
 
 def configure_field[X](default: X, converter: Callable[[X], Any] | None = None) -> X:
     return field(
         default=default,
-        metadata={"apply": FieldApplyInfo(type=("configure",), converter=converter)},
+        metadata={"apply": FieldApplyInfo(type="configure", converter=converter)},
     )
 
 

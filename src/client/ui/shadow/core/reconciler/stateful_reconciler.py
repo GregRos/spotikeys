@@ -100,8 +100,8 @@ class StatefulReconciler[Node: ShadowNode, Resource]:
     def get_compatibility(
         self, prev: Node | ResourceRecord[Node, Resource], next: Node
     ):
-        return self.actions.get_compatibility(
-            prev if not isinstance(prev, ResourceRecord) else prev.node, next
+        return next.get_compatibility(
+            prev.node if isinstance(prev, ResourceRecord) else prev
         )
 
     def __init__(self, actions: ResourceActions[Node, Resource]) -> None:

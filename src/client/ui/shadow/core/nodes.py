@@ -4,14 +4,14 @@ from typing import Any, Callable, Literal, override
 from attr import dataclass
 
 from src.client.ui.framework.make_clickthrough import make_clickthrough
-from src.client.ui.shadow.core.base import ShadowNode
+from src.client.ui.shadow.core.base import ShadowNode, ShadowTkWidget
 from src.client.ui.shadow.core.fields import configure_field, pack_field
 from src.client.ui.values.font import Font
 
 
 class TK:
     @dataclass()
-    class Label(ShadowNode):
+    class Label(ShadowTkWidget):
 
         @property
         @override
@@ -30,7 +30,3 @@ class TK:
         justify: str = configure_field(default="center")
         relief: str = configure_field(default="solid")
         borderwidth: int = configure_field(default=0)
-
-        @override
-        def post_reconcile(self, widget: Widget):
-            make_clickthrough(widget)

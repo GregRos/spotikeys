@@ -4,7 +4,7 @@ from dataclasses import field
 from itertools import groupby
 from tkinter import Label, Tk, Widget
 from types import MappingProxyType
-from typing import Any, Callable, Generator, Literal, Self, override
+from typing import TYPE_CHECKING, Any, Callable, Generator, Literal, Self, override
 from attr import dataclass
 from pyrsistent import PMap, m, pmap, pset, v
 from src.client.ui.framework.component import Component
@@ -12,25 +12,50 @@ from src.client.ui.framework.make_clickthrough import make_clickthrough
 
 
 from src.client.ui.shadow.core.fields import FieldApplyInfo
-from src.client.ui.shadow.core.reconciler.property_dict import (
-    ApplyInfo,
-    PropertyDict,
-)
+from src.client.ui.shadow.core.reconciler.property_dict import ApplyInfo
+
+if TYPE_CHECKING:
+    from src.client.ui.shadow.core.reconciler.stateful_reconciler import ResourceRecord
 
 
 Mismatch = Literal["different_key", "same_key_different_type", "missing", None]
 ReconcileType = Literal["update", "get_or_create", "destroy_and_create", "create"]
 
 
+class PropsMap(Mapping[str, ApplyInfo]):
+    def __init__(self, props: PMap[str, ApplyInfo] = PMap()):
+        self._map = props
+
+    def compute(self):
+        return {
+            key: value.converter(value.value) if value.converter else value.value
+            for key, value in self._map.items()
+        }
+
+    def __getitem__(self, key: str) -> ApplyInfo:
+        return self._map[key]
+
+    def set(self, key: str, value: ApplyInfo) -> "PropsMap":
+        return PropsMap(self._map.transform(key, value))
+
+    def diff(self, other: "PropsMap") -> "PropsMap":
+        result = PMap[str, ApplyInfo]()
+        for key, value in self._map.items():
+            if key not in other._map or other[key] != value:
+                result = result.transform(key, value)
+        return PropsMap(result)
+
+
 @dataclass(kw_only=True)
 class ShadowNode:
     key: str = field(default="")
-    _props: PMap[str, PMap[str, ApplyInfo]] = field(default_factory=PMap)
+    _props: PMap[str, PropsMap] = field(default_factory=PMap[str, PropsMap])
 
     def __post_init__(self):
         from src.client.ui.shadow.core.fields import FieldApplyInfo
 
-        props = PMap[str, PMap[str, ApplyInfo]]()
+        a = PropsMap()
+        props_map = PMap[str, PropsMap]()
         for key in self.__dataclass_fields__:
             field = self.__dataclass_fields__[key]
             metadata = field.metadata
@@ -44,27 +69,15 @@ class ShadowNode:
             if not isinstance(field_info, FieldApplyInfo):
                 print(f"Invalid apply info for {key} {field_info}")
                 continue
-
+            these_props = props_map.get(field_info.type, PropsMap())
             pair = ApplyInfo(field_info.converter, getattr(self, key))
-            props = props.transform((field_info.type, key), pair)
+            props_map = props_map.transform(field_info.type, these_props.set(key, pair))
 
-        self._props = props
-
-    def _values(self, type: str):
-        return self._props.get(type, PMap[str, ApplyInfo]())
-
-    def _diff_from(self, type: str, other: "ShadowNode"):
-        my_props = self._values(type)
-        other_props = other._values(type)
-        result = dict()
-        for key, v in other_props.items():
-            if key not in my_props or my_props[key] != v:
-                result[key] = v
-        return result
+        self._props = props_map
 
     @abstractmethod
     def get_compatibility(
-        self, prev: Self | None
+        self, prev: Self | None | "ResourceRecord[Self, Any]"
     ) -> Literal["update", "replace", "recreate"]: ...
 
 
@@ -75,9 +88,8 @@ class ShadowTkWidget(ShadowNode):
     def tk_type(self) -> str: ...
 
     @override
-    def get_compatibility(
-        self, prev: Self | None
-    ) -> Literal["update", "replace", "recreate"]:
+    def get_compatibility(self, prev) -> Literal["update", "replace", "recreate"]:
+        prev = prev.node if isinstance(prev, ResourceRecord) else prev
         if prev is None:
             return "recreate"
         if self.tk_type != prev.tk_type:

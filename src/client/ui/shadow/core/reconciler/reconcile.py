@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any, Callable, Generator, Literal, final, over
 
 from src.client.ui.shadow.core.base import Mismatch, ShadowNode, ShadowTkWidget
 
-from src.client.ui.shadow.core.reconciler.property_dict import PropertyDict
 from src.client.ui.shadow.core.reconciler.stateful_reconciler import (
     ResourceActions,
     ResourceRecord,
@@ -37,7 +36,7 @@ class TkWidgetActions(ResourceActions[ShadowTkWidget, Widget]):
 
     @override
     def replace(self, existing: TkWidgetRecord, next: TkWidgetRecord):
-        pack_info = next.node._diff(None).compute()["pack"]
+        pack_info = next.node._props.pack.compute()
         next.resource.pack_configure(after=existing.resource, **pack_info)
         existing.resource.pack_forget()
 
@@ -47,14 +46,5 @@ class TkWidgetActions(ResourceActions[ShadowTkWidget, Widget]):
 
     @override
     def update(self, existing: TkWidgetRecord, next: ShadowTkWidget):
-        updates = next._diff(existing.node).compute()
-        existing.resource.configure(**updates["configure"])
-
-    @override
-    def get_compatibility(
-        self, prev: ShadowTkWidget, next: ShadowTkWidget
-    ) -> Literal["update"] | Literal["replace"] | Literal["recreate"]:
-        if prev.tk_type != next.tk_type:
-            return "recreate"
-        if prev._props
-        return "update"
+        updates = next._props.configure.diff(existing.node._props.configure)
+        existing.resource.configure(**updates)
