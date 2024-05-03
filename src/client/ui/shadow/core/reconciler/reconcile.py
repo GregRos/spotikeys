@@ -1,63 +1,60 @@
-from dataclasses import field
+from dataclasses import dataclass, field
 from itertools import zip_longest
 
 
-from tkinter import Widget
-from typing import TYPE_CHECKING, Any, Callable, Generator
+from tkinter import Label, Tk, Widget
+from typing import TYPE_CHECKING, Any, Callable, Generator, Literal, final, override
 
-from src.client.ui.shadow.core.base import Mismatch, ShadowNode
-from src.client.ui.shadow.core.reconciler.property_dict import (
-    compute_diff,
-    compute_values,
+
+from src.client.ui.shadow.core.base import Mismatch, ShadowNode, ShadowTkWidget
+
+from src.client.ui.shadow.core.reconciler.property_dict import PropertyDict
+from src.client.ui.shadow.core.reconciler.stateful_reconciler import (
+    ResourceActions,
+    ResourceRecord,
 )
 
 
-class Reconcile:
-    @property
-    def key(self) -> str:
-        return self.next.key
+type TkWidgetRecord = ResourceRecord[ShadowTkWidget, Widget]
 
-    @property
-    def tk_type(self) -> str:
-        return self.next.tk_type
 
-    def __init__(self, prev: "ShadowNode | None", next: ShadowNode):
-        self.prev = prev
-        self.next = next
+@final
+@dataclass
+class TkWidgetActions(ResourceActions[ShadowTkWidget, Widget]):
+    tk: Tk
 
-        prev_dict = prev.to_property_dict() if not self.mismatch and prev else {}
-        next_dict = next.to_property_dict() if next else {}
-        diff = compute_diff(prev_dict, next_dict)
-        values = compute_values(diff)
-        self.configure = values["configure"]
-        self.place = values["place"]
-        self.post_reconcile = next.post_reconcile
+    @override
+    def create(self, node: ShadowTkWidget):
+        match node:
+            case "Label":
+                return Label(self.tk, text=node.key)
+            case _:
+                raise ValueError(f"Unknown type: {node.tk_type}")
 
-    @property
-    def mismatch(self) -> Mismatch:
-        prev, next = self.prev, self.next
+    @override
+    def destroy(self, existing: TkWidgetRecord):
+        existing.resource.destroy()
 
-        if not prev:
-            return "missing"
-        if prev.key != next.key:
-            return "different_key"
+    @override
+    def replace(self, existing: TkWidgetRecord, next: TkWidgetRecord):
+        pack_info = next.node._diff(None).compute()["pack"]
+        next.resource.pack_configure(after=existing.resource, **pack_info)
+        existing.resource.pack_forget()
+
+    @override
+    def unplace(self, existing: TkWidgetRecord):
+        existing.resource.pack_forget()
+
+    @override
+    def update(self, existing: TkWidgetRecord, next: ShadowTkWidget):
+        updates = next._diff(existing.node).compute()
+        existing.resource.configure(**updates["configure"])
+
+    @override
+    def get_compatibility(
+        self, prev: ShadowTkWidget, next: ShadowTkWidget
+    ) -> Literal["update"] | Literal["replace"] | Literal["recreate"]:
         if prev.tk_type != next.tk_type:
-            return "same_key_different_type"
-        return None
-
-    def __bool__(self):
-        return bool(self.configure or self.place or self.mismatch)
-
-    def __call__(self, target: Widget, force_place: bool = False):
-        assert target.widgetName == self.tk_type
-        any_reconcile = False
-        if self.configure:
-            target.configure(**self.configure)
-            any_reconcile = True
-        if self.place or force_place:
-            target.place(**self.place)
-            any_reconcile = True
-
-        if any_reconcile or force_place:
-            target.update_idletasks()
-            self.post_reconcile(target) if self.post_reconcile else None
+            return "recreate"
+        if prev._props
+        return "update"

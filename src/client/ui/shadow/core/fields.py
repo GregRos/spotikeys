@@ -1,26 +1,30 @@
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from tkinter import Widget
+from typing import Any, Callable, Literal
+
+from pyrsistent import PVector, v
 
 from src.client.ui.shadow.core.reconciler.property_dict import ApplyInfo
 from src.client.ui.shadow.core.reconciler.property_dict import ApplyKey
-from src.client.ui.shadow.types import Stage
+
+tage = Literal["configure", "place", "other"]
 
 
 @dataclass(frozen=True)
 class FieldApplyInfo[X]:
-    stage: Stage = field(default="other")
-
+    type: str
     converter: Callable[[X], Any] | None = field(default=None)
 
     def to_apply_pair(
         self, prop_name: str, prop_value: X
     ) -> tuple[ApplyKey, ApplyInfo[X]]:
-        return ApplyKey(self.stage, prop_name), ApplyInfo[X](prop_value, self.converter)
+        return ApplyKey(self.type, prop_name), ApplyInfo[X](prop_value, self.converter)
 
 
 def configure_field[X](default: X, converter: Callable[[X], Any] | None = None) -> X:
     return field(
-        default=default, metadata={"apply": FieldApplyInfo("configure", converter)}
+        default=default,
+        metadata={"apply": FieldApplyInfo(type=("configure",), converter=converter)},
     )
 
 
