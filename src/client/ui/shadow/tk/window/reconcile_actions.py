@@ -10,6 +10,7 @@ import attr
 from pyrsistent import PMap, PRecord
 
 
+from src.client.ui.framework.component import Component
 from src.client.ui.shadow.core.props.props_map import PropsMap
 from src.client.ui.shadow.core.reconciler.actions import (
     ReconcileActions,
@@ -17,6 +18,7 @@ from src.client.ui.shadow.core.reconciler.actions import (
 )
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
 from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
+from src.client.ui.shadow.tk.widgets.reconcile_actions import TkWidgetActions
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 from src.client.ui.shadow.tk.window.window import SwTkWindow
 from src.client.ui.values.geometry import Geometry
@@ -38,6 +40,7 @@ class TkWrapper:
         thread = threading.Thread(target=ui_thread)
         thread.start()
         waiter.wait()
+        self._render_state = StatefulReconciler(TkWidgetActions(self.tk))
         # type: ignore
 
     def schedule(
@@ -55,10 +58,15 @@ class TkWrapper:
     def withdraw(self):
         self.schedule(self.tk.withdraw)
 
+    def update_children(self, root: Component[SwTkWidget]):
+        self.schedule(lambda: self._render_state.reconcile(root))
+
     def update(self, properties: PMap[str, PMap[str, Any]]):
         def do_update():
             if attrs := properties.get("attributes"):
-                attributes = [item for k, v in attrs for item in (f"-{k}", v)]
+                attributes = [
+                    item for k, v in attrs.items() for item in (f"-{k}", v) if v
+                ]
                 self.tk.attributes(*attributes)
             if geometry := properties.get("geometry"):
                 self.tk.geometry(Geometry(**geometry).to_tk())
@@ -78,7 +86,10 @@ type TkRecord = ResourceRecord[SwTkWindow, TkWrapper]
 class TkWindowActions(ReconcileActions[SwTkWindow, TkWrapper]):
     @override
     def create(self, node: SwTkWindow):
-        return TkWrapper()
+        wrapper = TkWrapper()
+        wrapper.update(node._props.compute())
+        wrapper.update_children(node.root)
+        return wrapper
 
     @override
     def destroy(self, existing: TkRecord):
@@ -97,3 +108,4 @@ class TkWindowActions(ReconcileActions[SwTkWindow, TkWrapper]):
     def update(self, existing: TkRecord, next: SwTkWindow):
         diff = existing.node._props.diff(next._props).compute()
         existing.resource.update(diff)
+        existing.resource.update_children(next.root)

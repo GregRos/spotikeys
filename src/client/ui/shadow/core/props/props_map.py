@@ -1,20 +1,20 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Iterator, Literal, overload
+from pyrsistent import PMap, PRecord, m, pmap
+
+
+from collections.abc import Mapping
 
 
 @dataclass(frozen=True)
 class ApplyInfo:
     converter: Callable[[Any], Any] | None
     value: Any
+    name: str
 
     def compute(self):
         return self.converter(self.value) if self.converter else self.value
 
-
-from pyrsistent import PMap, PRecord, m, pmap
-
-
-from collections.abc import Mapping
 
 type Diff = Literal["recursive", "unit", "none"]
 
@@ -25,7 +25,7 @@ class PropsMap:
     _diffs: DiffMap = dict()
 
     def __init__(self, diffs: DiffMap, props: PMap[str, PMap[str, ApplyInfo]] = m()):
-        self._map = props or PMap[str, PMap[str, ApplyInfo]]()
+        self._map = props or m()
         self._diffs = diffs
 
     def __iter__(self):
@@ -43,9 +43,13 @@ class PropsMap:
     def compute(self, /) -> PMap[str, PMap[str, Any]]: ...
 
     def compute(self, group: str | None = None, key: str | None = None, /):
+        if key:
+            assert group, "Group must be provided when key is provided"
+            return self._map[group][key].compute()
+
         def compute_group(group: str):
             return pmap(
-                {key: value.compute() for key, value in self._map[group].items()}
+                {value.name: value.compute() for key, value in self._map[group].items()}
             )
 
         if group:
@@ -60,8 +64,8 @@ class PropsMap:
     def get(self, key: str | tuple[str, str], /):
         if isinstance(key, tuple):
             group, key = key
-            return self._map[group].get(key, PMap())
-        return self._map.get(key, PMap())
+            return self._map[group].get(key, m())
+        return self._map.get(key, m())
 
     @overload
     def __getitem__(self, key: str, /) -> PMap[str, ApplyInfo]: ...
@@ -72,7 +76,7 @@ class PropsMap:
     def __getitem__(self, group: str | tuple[str, str], /):
         if isinstance(group, tuple):
             group, name = group
-            return self._map[group].get(name, PMap())
+            return self._map[group].get(name, m())
         return self._map[group]
 
     def __contains__(self, key: str | tuple[str, str]) -> bool:
@@ -98,7 +102,7 @@ class PropsMap:
             assert isinstance(value, ApplyInfo)
             return PropsMap(
                 self._diffs,
-                self._map.set(group, self._map.get(group, PMap()).set(key, value)),
+                self._map.set(group, self._map.get(group, m()).set(key, value)),
             )
         assert isinstance(value, Mapping)
         return PropsMap(self._diffs, self._map.set(key, value))

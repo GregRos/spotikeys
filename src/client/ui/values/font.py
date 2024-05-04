@@ -1,7 +1,7 @@
-from attr import dataclass, field
+from dataclasses import dataclass, field
 
 
-@dataclass
+@dataclass(frozen=True)
 class Font:
     family: str
     size: int

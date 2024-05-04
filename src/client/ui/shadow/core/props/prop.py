@@ -10,20 +10,18 @@ def prop[
     subtype: str,
     /,
     *,
+    name: str | None = None,
     default: X | _MISSING_TYPE = MISSING,
     converter: Callable[[X], Any] | None = None,
     diff=True,
 ) -> X:
+    metadata_object = {
+        "apply": FieldApplyInfo(type=subtype, name=name, converter=converter, diff=diff)
+    }
     if default is MISSING:
-        return field(
-            metadata={
-                "apply": FieldApplyInfo(type=subtype, converter=converter, diff=diff)
-            }
-        )
+        return field(metadata=metadata_object)
     else:
         return field(
             default=default,
-            metadata={
-                "apply": FieldApplyInfo(type=subtype, converter=converter, diff=diff)
-            },
+            metadata=metadata_object,
         )

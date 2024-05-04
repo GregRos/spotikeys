@@ -1,6 +1,9 @@
+import copy
 from dataclasses import dataclass, field
 from tkinter import Tk, Widget
-from typing import Iterable, Literal, override
+from typing import Iterable, Literal, Self, override
+
+from pyrsistent import PVector, pvector, v
 
 from src.client.ui.framework.component import Component
 from src.client.ui.framework.make_clickthrough import make_clickthrough
@@ -25,20 +28,30 @@ class SwTkWindow(ShadowNode):
             "configure": "recursive",
         }
 
-    root: Component[SwTkWidget]
     width: int = prop("geometry")
     height: int = prop("geometry")
     y: int = prop("geometry")
     x: int = prop("geometry")
     topmost: bool = prop("attributes", default=False)
-    transparent_color: str | None = prop("attributes", default=None)
+    transparent_color: str | None = prop(
+        "attributes", default=None, name="transparentcolor"
+    )
     override_redirect: bool = prop("special", default=False)
-    background = prop("configure", default="black")
+    background: str = prop("configure", default="black")
+    root: Component[SwTkWidget] = field(init=False)
 
     @property
     def geometry(self) -> Geometry:
         return Geometry(self.x, self.y, self.width, self.height)
 
+    def copy(self) -> Self:
+        return self.__class__(**self.__dict__)
+
     @override
     def get_compatibility(self, prev) -> Literal["update", "replace", "recreate"]:
         return "update"
+
+    def __getitem__(self, root: Component[SwTkWidget]) -> Self:
+        X = copy.copy(self)
+        X.root = root
+        return X

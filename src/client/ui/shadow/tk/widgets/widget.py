@@ -23,10 +23,12 @@ class SwTkWidget(ShadowNode):
     def tk_type(self) -> str: ...
     @staticmethod
     def diff_groups() -> DiffMap:
-        return pmap({"configure": "recursive"})
+        return {"configure": "recursive"}
 
     @override
     def get_compatibility(self, prev) -> Literal["update", "replace", "recreate"]:
+        from src.client.ui.shadow.core.reconciler.actions import ResourceRecord
+
         prev = prev.node if isinstance(prev, ResourceRecord) else prev
         if prev is None:
             return "recreate"

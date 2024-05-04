@@ -1,16 +1,27 @@
-from dataclasses import field
-from tkinter import Label, Widget
+from dataclasses import dataclass, field
+from tkinter import Label, Widget, Tk
 from typing import Any, Callable, Literal, override
-from attr import dataclass
 
+from src.client.ui.framework.component import Component
 from src.client.ui.framework.make_clickthrough import make_clickthrough
 from src.client.ui.shadow.core.props.prop import prop
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
+from src.client.ui.shadow.tk.window.reconcile_actions import TkWindowActions, TkWrapper
+from src.client.ui.shadow.tk.window.window import SwTkWindow
 from src.client.ui.values.font import Font
 
 
 class TK:
+    _render_state: StatefulReconciler[SwTkWindow, TkWrapper]
+
+    def __init__(self):
+        self._render_state = StatefulReconciler(TkWindowActions())
+
+    def mount(self, root: Component[SwTkWindow]):
+        self._render_state.reconcile(root)
+
     @dataclass()
     class Label(SwTkWidget):
 
@@ -34,5 +45,4 @@ class TK:
         relief: str = prop("configure", default="solid")
         borderwidth: int = prop("configure", default=0)
 
-
-TK.Label()
+    Window = SwTkWindow

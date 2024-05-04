@@ -10,10 +10,10 @@
       "console": "integratedTerminal"
     },
     {
-      "name": "vda",
+      "name": "ui_test",
       "type": "debugpy",
       "request": "launch",
-      "module": "src.vda_client.main",
+      "module": "src.ui_test",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
       "justMyCode": false

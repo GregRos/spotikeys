@@ -25,9 +25,9 @@ class TkWidgetActions(ReconcileActions[SwTkWidget, Widget]):
 
     @override
     def create(self, node: SwTkWidget):
-        match node:
+        match node.tk_type:
             case "Label":
-                return Label(self.tk, text=node.key)
+                return Label(self.tk, **node._props.compute("configure"))
             case _:
                 raise ValueError(f"Unknown type: {node.tk_type}")
 
@@ -41,7 +41,6 @@ class TkWidgetActions(ReconcileActions[SwTkWidget, Widget]):
         next.resource.pack_configure(after=existing.resource, **pack_info)
         existing.resource.pack_forget()
         make_clickthrough(next.resource)
-
     @override
     def place(self, record: TkWidgetRecord):
         pack_info = record.node._props.compute("pack")
@@ -54,5 +53,5 @@ class TkWidgetActions(ReconcileActions[SwTkWidget, Widget]):
 
     @override
     def update(self, existing: TkWidgetRecord, next: SwTkWidget):
-        updates = next._props.diff(existing.node._props).compute()
+        updates = existing.node._props.diff(next._props).compute()
         existing.resource.configure(**updates["configure"])

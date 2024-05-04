@@ -1,5 +1,6 @@
 {
   "python.analysis.typeCheckingMode": "standard",
   "python.analysis.autoImportCompletions": true,
-  "python.analysis.exclude": ["**/__init__.py"]
+  "python.analysis.exclude": ["**/__init__.py"],
+  "debugpy.debugJustMyCode": true
 }

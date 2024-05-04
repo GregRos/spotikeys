@@ -1,14 +1,15 @@
 from src.client.ui.shadow.core.props.props_map import ApplyInfo, DiffMap, PropsMap
-from src.client.ui.shadow.core.reconciler.stateful_reconciler import ResourceRecord
 
 
-from attr import dataclass
 from pyrsistent import PMap
 
 
 from abc import abstractmethod
-from dataclasses import field
-from typing import Any, Literal, Self
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Literal, Self
+
+if TYPE_CHECKING:
+    from src.client.ui.shadow.core.reconciler.record import ResourceRecord
 
 
 @dataclass()
@@ -16,8 +17,8 @@ class ShadowNode:
     key: str = field(default="")
     _props: PropsMap = field(init=False)
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def diff_groups() -> DiffMap: ...
 
     def __post_init__(self):
@@ -37,7 +38,9 @@ class ShadowNode:
             if not isinstance(field_info, FieldApplyInfo):
                 print(f"Invalid apply info for {key} {field_info}")
                 continue
-            pair = ApplyInfo(field_info.converter, getattr(self, key))
+            pair = ApplyInfo(
+                field_info.converter, getattr(self, key), field_info.name or key
+            )
             props_map = props_map.set((field_info.type, key), pair)
 
         self._props = props_map
