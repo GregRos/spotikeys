@@ -1,40 +1,50 @@
-from src.client.ui.shadow.core.props.props_map import ApplyInfo, Diff, DiffMap, PropsMap
+from src.client.ui.shadow.core.props.field_apply_info import PropInfo
 
 
-from pyrsistent import PMap
-
-
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 
+from src.client.ui.shadow.core.props.field_apply_info import PropInfo
+from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
+
+
+def to_prop(self, key: str, field: Any) -> Any:
+
+    metadata = field.metadata
+    if not metadata:
+        return None
+    prop_info = metadata.get("prop")
+    if not isinstance(prop_info, PropInfo):
+        print(f"Invalid apply info for {key} {prop_info}")
+        return None
+    v = UncomputedValue(prop_info.converter, getattr(self, key), prop_info.name or key)
+    return prop_info.type, key, v
+
 
 @dataclass()
-class ShadowNode:
-    key: str = field(default="")
-    diff_groups: ClassVar[DiffMap]
-    _props: PropsMap = field(init=False, compare=False, hash=False, repr=False)
+class ShadowNode(ABC):
+    @staticmethod
+    @abstractmethod
+    def props_dict() -> GroupedDict[UncomputedValue]: ...
 
-    def __init_subclass__(cls, groups: DiffMap) -> None:
-        super().__init_subclass__()
-        cls.diff_groups = groups
+    key: str = field(default="")
+    _props: GroupedDict[UncomputedValue] = field(
+        init=False,
+        compare=False,
+        hash=False,
+        repr=False,
+    )
 
     def __post_init__(self):
-        from src.client.ui.shadow.core.props.field_apply_info import PropInfo
 
-        props_map = PropsMap(self.__class__.diff_groups)
+        props = self.props_dict()
         for key in self.__dataclass_fields__:
             field = self.__dataclass_fields__[key]
-            metadata = field.metadata
-            if not metadata:
-                continue
-            prop_info = metadata.get("prop")
-            if not isinstance(prop_info, PropInfo):
-                print(f"Invalid apply info for {key} {prop_info}")
-                continue
-            pair = ApplyInfo(
-                prop_info.converter, getattr(self, key), prop_info.name or key
-            )
-            props_map = props_map.set((prop_info.type, key), pair)
+            match to_prop(self, key, field):
+                case None:
+                    continue
+                case group, key, value:
+                    props[group, key] = value
 
-        self._props = props_map
+        self._props = props

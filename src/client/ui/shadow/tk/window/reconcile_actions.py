@@ -16,11 +16,10 @@ from typing import (
 )
 
 import attr
-from pyrsistent import PMap, PRecord
 
 
 from src.client.ui.framework.component import Component, ContainerComponent
-from src.client.ui.shadow.core.props.props_map import PropsMap
+from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
 from src.client.ui.shadow.core.reconciler.actions import (
     Compat,
     ShadowedResource,
@@ -103,27 +102,25 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
         return "update"
 
     @override
-    def update(self, props: PropsMap) -> None:
-        diff = props.compute()
+    def update(self, props: GroupedDict[UncomputedValue]) -> None:
+        diff = props.transform(lambda x: x.compute())
 
         def do():
-            if (attrs := diff.attributes) is not None:
+            if attrs := diff.attributes:
                 attributes = [
                     item for k, v in attrs.items() for item in (f"-{k}", v) if v
                 ]
                 self.resource.attributes(*attributes)
-            if (configure := diff.configure) is not None:
+            if configure := diff.configure:
                 self.resource.configure(**configure)
-
-            if (special := diff.get("special")) is not None:
-                if (override_redirect := special.get("override_redirect")) is not None:
-                    self.resource.overrideredirect(override_redirect)
-                if children := special.get("children"):
-                    self._render_state.mount(
-                        ContainerComponent(
-                            key="root",
-                            children=children,
-                        )
+            if ("", "override_redirect") in diff:
+                self.resource.overrideredirect(diff["", "override_redirect"])
+            if children := diff["", "children"]:
+                self._render_state.mount(
+                    ContainerComponent(
+                        key="root",
+                        children=children,
                     )
+                )
 
         self.schedule(do)

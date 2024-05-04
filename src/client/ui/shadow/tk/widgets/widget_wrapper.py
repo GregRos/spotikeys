@@ -1,7 +1,7 @@
 from tkinter import Label, Tk, Widget
 from typing import Any, ClassVar, Self, final, override
 from src.client.ui.framework.make_clickthrough import make_clickthrough
-from src.client.ui.shadow.core.props.props_map import PropsMap
+from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
 from src.client.ui.shadow.core.reconciler.actions import Compat, ShadowedResource
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 
@@ -17,7 +17,7 @@ class WidgetWrapper(ShadowedResource[SwTkWidget]):
     def create(tk: Tk, node: SwTkWidget) -> "WidgetWrapper":
         match node.tk_type:
             case "Label":
-                return __class__(node, Label(tk, **node._props.compute("configure")))
+                return __class__(node, Label(tk))
             case _:
                 raise ValueError(f"Unknown type: {node.tk_type}")
 
@@ -47,13 +47,14 @@ class WidgetWrapper(ShadowedResource[SwTkWidget]):
         self.resource.destroy()
 
     @override
-    def update(self, props: PropsMap) -> None:
-        diff = props.compute("configure")
+    def update(self, props: GroupedDict[UncomputedValue]) -> None:
+        diff = props.transform(lambda x: x.compute()).get("configure", {})
         self.resource.configure(**diff)
 
     @override
     def place(self) -> None:
-        self.resource.pack_configure(**self.node._props.compute("pack"))
+        computed = self.node._props.transform(lambda x: x.compute())
+        self.resource.pack_configure(**computed["pack"])
         make_clickthrough(self.resource)
 
     @override
@@ -62,8 +63,8 @@ class WidgetWrapper(ShadowedResource[SwTkWidget]):
 
     @override
     def replace(self, other: Self) -> None:
-        other.resource.pack_configure(
-            after=self.resource, **other.node._props.compute("pack")
-        )
+        computed = other.node._props.transform(lambda x: x.compute())
+        other.resource.pack_configure(after=self.resource, **computed["pack"])
+
         self.resource.pack_forget()
         make_clickthrough(other.resource)

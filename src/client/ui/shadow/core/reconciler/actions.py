@@ -5,7 +5,7 @@ from typing import Any, Callable, Literal, Self
 
 from referencing import Resource
 
-from src.client.ui.shadow.core.props.props_map import PropsMap
+from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
 
 type Compat = Literal["update", "replace", "recreate"]
@@ -23,7 +23,7 @@ class ShadowedResource[Node: ShadowNode](ABC):
             and self.is_same_resource(value)
         )
 
-    def diff(self, other: Node) -> PropsMap:
+    def diff(self, other: Node) -> GroupedDict[UncomputedValue]:
         return self.node._props.diff(other._props)
 
     def __init__(self, node: Node):
@@ -36,7 +36,7 @@ class ShadowedResource[Node: ShadowNode](ABC):
     def destroy(self) -> None: ...
 
     @abstractmethod
-    def update(self, props: PropsMap) -> None: ...
+    def update(self, props: GroupedDict[UncomputedValue]) -> None: ...
 
     @abstractmethod
     def place(self) -> None: ...

@@ -8,7 +8,7 @@ from pyrsistent import PVector, pvector, v
 from src.client.ui.framework.component import Component
 from src.client.ui.framework.make_clickthrough import make_clickthrough
 from src.client.ui.shadow.core.props.prop import prop
-from src.client.ui.shadow.core.props.props_map import DiffMap
+from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
 from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
@@ -26,7 +26,7 @@ class SwTkWindowProps:
     transparent_color: str | None = prop(
         "attributes", default=None, name="transparentcolor"
     )
-    override_redirect: bool = prop("special", default=False)
+    override_redirect: bool = prop("", default=False)
     background: str = prop("configure", default="black")
 
     def __getitem__(self, *children: Component[SwTkWidget]) -> "SwTkWindow":
@@ -34,21 +34,22 @@ class SwTkWindowProps:
 
 
 @dataclass(kw_only=True)
-class SwTkWindow(
-    ShadowNode,
-    SwTkWindowProps,
-    groups={
-        "geometry": "unit",
-        "attributes": "recursive",
-        "special": "recursive",
-        "configure": "recursive",
-        "geometry": "unit",
-    },
-):
-    def __init_subclass__(cls):
-        pass
+class SwTkWindow(ShadowNode, SwTkWindowProps):
 
-    children: tuple[Component[SwTkWidget], ...] = prop("special")
+    @override
+    @staticmethod
+    def props_dict():
+        return GroupedDict[UncomputedValue](
+            {
+                "geometry": "unit",
+                "attributes": "recursive",
+                "": "recursive",
+                "configure": "recursive",
+                "geometry": "unit",
+            }
+        )
+
+    children: tuple[Component[SwTkWidget], ...] = prop("")
 
     @property
     def geometry(self) -> Geometry:
