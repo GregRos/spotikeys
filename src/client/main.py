@@ -70,6 +70,7 @@ logger.info("Starting up...")
 handler = MediaCommandHandler(
     {
         "client_id": "b996e2c82b574509bec24fbd11eda035",
+        # This client secret is obsolete.
         "client_secret": "2370df9b5a7840a183f44bbd795483fa",
         "redirect_uri": "http://localhost:12000",
     },
