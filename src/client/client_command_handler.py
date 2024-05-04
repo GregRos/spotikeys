@@ -8,6 +8,7 @@ from typing import Any, Awaitable, Callable
 
 from src.client.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
 from src.client.ui.floating_tooltip import ActionHUD
+from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.values.geometry import Geometry
 from src.client.volume import ClientVolumeControl, VolumeInfo
 from src.now_playing import MediaStatus
@@ -23,17 +24,13 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     _lock = threading.Lock()
     _last_command: TriggeredCommand | None = None
     _last_status: MediaStatus
-
+  
     def __init__(
         self,
         loop: AbstractEventLoop,
         downstream: AsyncCommandHandler[Command, Awaitable[MediaStatus]],
     ) -> None:
-        self._ui = UiRoot(Geometry(width=420, height=250, x=-450, y=-350)).mount(
-            ActionHUD
-        )
 
-        self._root = self._ui.root
         super().__init__()
 
         self._loop = loop
@@ -56,6 +53,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
                 result.volume = self._volume_control.info
             return result
 
+        self._root = TK(lambda )
         self._downstream = with_logging
 
     def busy(self, command: TriggeredCommand) -> None:

@@ -23,7 +23,6 @@ from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.shadow.tk.widgets.widget import WidgetComponent
 from src.client.ui.shadow.tk.window.window import WindowComponent
 from src.client.ui.values.geometry import Geometry
-from src.client.ui.framework.owner import UiRoot
 from src.client.ui.framework.tooltip_row import TooltipRow
 from src.client.ui.media_display import MediaDisplay
 from src.client.volume import VolumeInfo
@@ -44,6 +43,17 @@ justify = 24
 
 @dataclass
 class ActionHUD(WindowComponent):
+    executed: MediaStageMessage
+    previous: MediaStatus = field(default=None, init=False)
+
+    def render(self):
+        yield TK.Window(
+            width=420,
+            height=250,
+            x=-450,
+            y=-350,
+            topmost=True,
+        )[self.Inner(executed=self.executed)]
 
     @dataclass
     class Inner(WidgetComponent):
@@ -66,13 +76,3 @@ class ActionHUD(WindowComponent):
                 ),
             )
             yield MediaDisplay(status=self.previous)
-
-
-@dataclass
-class ActionRoot(TK):
-    def __call__(self, state: MediaStageMessage):
-        root = self.render(state)
-        self._reconciler.reconcile(root)
-
-    def render(self, state: MediaStageMessage):
-        return ActionHUD(executed=state)
