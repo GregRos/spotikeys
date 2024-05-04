@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 from tkinter import Label, Widget, Tk
 from typing import Any, Callable, Literal, override
 
-from src.client.ui.framework.component import Component
-from src.client.ui.framework.make_clickthrough import make_clickthrough
+from src.client.ui.shadow.component import Component
+from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
 from src.client.ui.shadow.core.props.prop import prop
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
 from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler

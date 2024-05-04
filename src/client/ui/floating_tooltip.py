@@ -19,14 +19,15 @@ from src.client.ui.binding.active_value import ActiveValue
 from src.client.ui.binding.bindable import bindable
 
 from src.client.ui.command_header import CommandColors, CommandHeader
-from src.client.ui.framework.component import Component
+from src.client.ui.shadow.component import Component
+from src.client.ui.shadow.tk.widgets.widget import WidgetComponent
 from src.client.ui.values.geometry import Geometry
 from src.client.ui.framework.owner import UiRoot
 from src.client.ui.framework.tooltip_row import TooltipRow
 from src.client.ui.media_display import MediaDisplay
 from src.client.volume import VolumeInfo
 from src.commanding.commands import Command
-from .framework.make_clickthrough import make_clickthrough
+from .shadow.tk.make_clickthrough import make_clickthrough
 from src.now_playing import MediaStatus
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -41,7 +42,7 @@ justify = 24
 
 
 @dataclass
-class ActionHUD(Component):
+class ActionHUD(WidgetComponent):
     executed: MediaStageMessage
     previous: MediaStatus = field(default=None, init=False)
 

@@ -3,11 +3,12 @@ from math import trunc
 from tkinter import Tk
 from src.client.kb.triggered_command import OkayCommand
 from src.client.ui.binding.active_value import ActiveValue
-from src.client.ui.framework.component import (
+from src.client.ui.shadow.component import (
     Component,
 )
 from src.client.ui.progress_label import ProgressLabel
 from src.client.ui.shadow.tk.nodes import TK
+from src.client.ui.shadow.tk.widgets.widget import WidgetComponent
 from src.client.ui.values.font import Font
 from src.client.ui.volume_label import VolumeLabel
 from src.client.volume import VolumeInfo
@@ -21,7 +22,7 @@ def truncate_text(text: str, max_length: int) -> str:
 
 
 @dataclass
-class MediaDisplay(Component):
+class MediaDisplay(WidgetComponent):
     status: MediaStatus
 
     def render(self):

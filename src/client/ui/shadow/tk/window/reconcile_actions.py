@@ -18,7 +18,7 @@ from typing import (
 import attr
 
 
-from src.client.ui.framework.component import Component, ContainerComponent
+from src.client.ui.shadow.component import Component, ContainerComponent
 from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
 from src.client.ui.shadow.core.reconciler.actions import (
     Compat,

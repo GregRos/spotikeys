@@ -4,8 +4,8 @@ from itertools import groupby
 from tkinter import Label, Tk, Widget
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Callable, Generator, Literal, Self, override
-from src.client.ui.framework.component import Component
-from src.client.ui.framework.make_clickthrough import make_clickthrough
+from src.client.ui.shadow.component import Component
+from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
 
 
 from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
