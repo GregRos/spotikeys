@@ -9,7 +9,6 @@ from typing import Any, Awaitable, Callable
 from src.client.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
 from src.client.ui.floating_tooltip import ActionHUD
 from src.client.ui.values.geometry import Geometry
-from src.client.ui.framework.owner import UiRoot
 from src.client.volume import ClientVolumeControl, VolumeInfo
 from src.now_playing import MediaStatus
 from src.commanding.commands import Command, ParamterizedCommand
@@ -33,8 +32,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         self._ui = UiRoot(Geometry(width=420, height=250, x=-450, y=-350)).mount(
             ActionHUD
         )
-        self._ui.root.change.subscribe(lambda x: self._ui.place())
-        self._ui.root.value.subscribe(lambda x: logger.info(f"Received {x}"))
+
         self._root = self._ui.root
         super().__init__()
 

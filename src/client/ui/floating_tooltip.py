@@ -15,12 +15,13 @@ from src.client.kb.triggered_command import (
     OkayCommand,
     TriggeredCommand,
 )
-from src.client.ui.binding.active_value import ActiveValue
-from src.client.ui.binding.bindable import bindable
+
 
 from src.client.ui.command_header import CommandColors, CommandHeader
 from src.client.ui.shadow.core.component import Component
+from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.shadow.tk.widgets.widget import WidgetComponent
+from src.client.ui.shadow.tk.window.window import WindowComponent
 from src.client.ui.values.geometry import Geometry
 from src.client.ui.framework.owner import UiRoot
 from src.client.ui.framework.tooltip_row import TooltipRow
@@ -42,23 +43,36 @@ justify = 24
 
 
 @dataclass
-class ActionHUD(WidgetComponent):
-    executed: MediaStageMessage
-    previous: MediaStatus = field(default=None, init=False)
+class ActionHUD(WindowComponent):
 
-    @override
-    def render(self):
-        if isinstance(self.executed, FailedCommand):
-            raise ValueError("Failed command should not be rendered")
-        if isinstance(self.executed, OkayCommand):
-            self.previous = self.executed.result
-        yield CommandHeader(
-            input=self.executed,
-            justify=justify,
-            colors=CommandColors(
-                status="red",
-                trigger="grey",
-                okay="green",
-            ),
-        )
-        yield MediaDisplay(status=self.previous)
+    @dataclass
+    class Inner(WidgetComponent):
+        executed: MediaStageMessage
+        previous: MediaStatus = field(default=None, init=False)
+
+        @override
+        def render(self):
+            if isinstance(self.executed, FailedCommand):
+                raise ValueError("Failed command should not be rendered")
+            if isinstance(self.executed, OkayCommand):
+                self.previous = self.executed.result
+            yield CommandHeader(
+                input=self.executed,
+                justify=justify,
+                colors=CommandColors(
+                    status="red",
+                    trigger="grey",
+                    okay="green",
+                ),
+            )
+            yield MediaDisplay(status=self.previous)
+
+
+@dataclass
+class ActionRoot(TK):
+    def __call__(self, state: MediaStageMessage):
+        root = self.render(state)
+        self._reconciler.reconcile(root)
+
+    def render(self, state: MediaStageMessage):
+        return ActionHUD(executed=state)

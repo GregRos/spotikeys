@@ -44,7 +44,7 @@ class CommandHeader(Component):
                 )
 
     @override
-    def render(self):
+    def render(self, state):
         yield TK.Label(
             text=self.get_text(),
             background=self.get_color(),
