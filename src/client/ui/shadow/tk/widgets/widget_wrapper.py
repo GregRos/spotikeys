@@ -2,7 +2,7 @@ from tkinter import Label, Tk, Widget
 from typing import Any, ClassVar, Self, final, override
 from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
 from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
-from src.client.ui.shadow.core.reconciler.actions import Compat, ShadowedResource
+from src.client.ui.shadow.core.reconciler.resource import Compat, ShadowedResource
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 
 

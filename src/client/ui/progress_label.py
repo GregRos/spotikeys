@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Generator, override
-from src.client.ui.shadow.component import Component
+from src.client.ui.shadow.core.component import Component
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
 from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.shadow.tk.widgets.widget import WidgetComponent

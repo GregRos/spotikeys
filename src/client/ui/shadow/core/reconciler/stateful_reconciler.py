@@ -16,8 +16,8 @@ from typing import (
     TypedDict,
     runtime_checkable,
 )
-from src.client.ui.shadow.component import Component, render_recursively
-from src.client.ui.shadow.core.reconciler.actions import (
+from src.client.ui.shadow.core.component import Component, render_recursively
+from src.client.ui.shadow.core.reconciler.resource import (
     ShadowedResource,
 )
 from src.client.ui.shadow.core.reconciler.future_actions import (
@@ -149,8 +149,8 @@ class StatefulReconciler[Node: ShadowNode]:
             case _:
                 assert False, f"Unknown action: {action}"
 
-    def mount(self, root: "Component[Node]"):
-        from src.client.ui.shadow.component import Component
+    def reconcile(self, root: "Component[Node]"):
+        from src.client.ui.shadow.core.component import Component
 
         rendering = list(render_recursively(self.resource_type.node_type(), "", root))
         reconcile = [*self.compute_reconcile_actions(rendering)]

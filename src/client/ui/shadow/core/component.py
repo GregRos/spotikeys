@@ -2,9 +2,11 @@ from __future__ import annotations
 import abc
 from dataclasses import dataclass, field
 from tkinter import Tk, Widget
+from types import SimpleNamespace
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Generator,
     Self,
     Tuple,
@@ -21,14 +23,11 @@ if TYPE_CHECKING:
 
 
 @dataclass(kw_only=True)
-class Component[Node: ShadowNode]:
-
+class Component[Node: ShadowNode](abc.ABC):
     key: str = field(default="")
 
     @abc.abstractmethod
-    def render(
-        self,
-    ) -> Generator[Node | Component[Node], None, None]: ...
+    def render(self) -> Generator[Node | Component[Node], None, None]: ...
 
 
 @dataclass(kw_only=True)
@@ -54,10 +53,15 @@ class ContainerComponent[Node: ShadowNode](Component[Node]):
 
 def render_recursively[
     Node: ShadowNode
-](node_type: type[Node], prefix: str, component: "Component[Node]") -> Generator[
+](
+    node_type: type[Node],
+    prefix: str,
+    component: "Component[Node]",
+) -> Generator[
     Node, None, None
 ]:
     prefix = ".".join([prefix, component.__class__.__name__])
+
     for i, child in enumerate(component.render()):
         cur_prefix = ":".join([prefix, child.key or str(i)])
         if isinstance(child, node_type):

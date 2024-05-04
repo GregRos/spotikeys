@@ -1,11 +1,11 @@
-from src.client.ui.shadow.core.props.field_apply_info import PropInfo
+from src.client.ui.shadow.core.props.prop_info import PropInfo
 
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 
-from src.client.ui.shadow.core.props.field_apply_info import PropInfo
+from src.client.ui.shadow.core.props.prop_info import PropInfo
 from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
 
 

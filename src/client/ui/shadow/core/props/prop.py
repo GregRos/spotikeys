@@ -1,7 +1,7 @@
 from dataclasses import _MISSING_TYPE, MISSING, field
 from typing import Any, Callable, Literal
 
-from src.client.ui.shadow.core.props.field_apply_info import PropInfo
+from src.client.ui.shadow.core.props.prop_info import PropInfo
 
 
 def prop[

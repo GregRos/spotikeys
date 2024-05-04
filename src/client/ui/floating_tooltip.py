@@ -19,7 +19,7 @@ from src.client.ui.binding.active_value import ActiveValue
 from src.client.ui.binding.bindable import bindable
 
 from src.client.ui.command_header import CommandColors, CommandHeader
-from src.client.ui.shadow.component import Component
+from src.client.ui.shadow.core.component import Component
 from src.client.ui.shadow.tk.widgets.widget import WidgetComponent
 from src.client.ui.values.geometry import Geometry
 from src.client.ui.framework.owner import UiRoot

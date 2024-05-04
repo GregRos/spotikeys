@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from time import sleep
-from src.client.ui.shadow.component import Component
+from src.client.ui.shadow.core.component import Component
 from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 from src.client.ui.shadow.tk.window.window import SwTkWindow
@@ -31,8 +31,8 @@ class WindowComponent(Component[SwTkWindow]):
         )[StuffComponent(text=self.text), StuffComponent(text=self.text)]
 
 
-MyTK = TK()
+MyTK = TK[str](lambda s: WindowComponent(text=s))
 
-MyTK.mount(WindowComponent(text="Hello, World!"))
-sleep(10)
-MyTK.mount(WindowComponent(text="Boo!"))
+MyTK("Hello, World!")
+sleep(2)
+MyTK("Hello again!")

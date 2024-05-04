@@ -18,9 +18,9 @@ from typing import (
 import attr
 
 
-from src.client.ui.shadow.component import Component, ContainerComponent
+from src.client.ui.shadow.core.component import Component, ContainerComponent
 from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
-from src.client.ui.shadow.core.reconciler.actions import (
+from src.client.ui.shadow.core.reconciler.resource import (
     Compat,
     ShadowedResource,
 )
@@ -121,7 +121,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
             if ("", "override_redirect") in diff:
                 self.resource.overrideredirect(diff["", "override_redirect"])
             if children := diff["", "children"]:
-                self._render_state.mount(
+                self._render_state.reconcile(
                     ContainerComponent(
                         key="root",
                         children=children,

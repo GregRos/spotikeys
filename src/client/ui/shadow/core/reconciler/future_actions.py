@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
-from src.client.ui.shadow.core.reconciler.actions import ShadowedResource
+from src.client.ui.shadow.core.reconciler.resource import ShadowedResource
 
 
 @dataclass
