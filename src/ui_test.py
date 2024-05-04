@@ -9,7 +9,7 @@ from src.log_config import setup_logging
 setup_logging()
 
 
-@dataclass
+@dataclass(kw_only=True)
 class StuffComponent(Component[SwTkWidget]):
     text: str
 
@@ -17,7 +17,7 @@ class StuffComponent(Component[SwTkWidget]):
         yield TK.Label(text=self.text, background="#000001", foreground="#ffffff")
 
 
-@dataclass
+@dataclass(kw_only=True)
 class WindowComponent(Component[SwTkWindow]):
     text: str
 
@@ -33,6 +33,6 @@ class WindowComponent(Component[SwTkWindow]):
 
 MyTK = TK()
 
-MyTK.mount(WindowComponent("Hello, World!"))
+MyTK.mount(WindowComponent(text="Hello, World!"))
 sleep(10)
-MyTK.mount(WindowComponent("Boo!"))
+MyTK.mount(WindowComponent(text="Boo!"))

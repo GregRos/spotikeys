@@ -1,4 +1,5 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
+from ast import TypeAlias
 from dataclasses import dataclass, field
 from datetime import datetime
 from imghdr import what
@@ -8,6 +9,7 @@ from re import T
 from typing import (
     Any,
     Callable,
+    ClassVar,
     Literal,
     Protocol,
     TypeVar,
@@ -16,15 +18,16 @@ from typing import (
 )
 from src.client.ui.framework.component import Component, render_recursively
 from src.client.ui.shadow.core.reconciler.actions import (
+    ShadowedResource,
+)
+from src.client.ui.shadow.core.reconciler.future_actions import (
     Create,
     Recreate,
     Replace,
-    ReconcileActions,
     Unplace,
     Update,
     Place,
 )
-from src.client.ui.shadow.core.reconciler.record import ResourceRecord
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 
@@ -35,28 +38,18 @@ from tkinter import Label, Tk, Widget
 logger = logging.getLogger("reconciler")
 
 
-class StatefulReconciler[Node: ShadowNode, Resource]:
-    type ReconcileAction = Place[Node, Resource] | Replace[Node, Resource] | Unplace[
-        Node, Resource
-    ] | Update[Node, Resource]
-    type CreateAction = Create[Node, Resource] | Recreate[Node, Resource] | Update[
-        Node, Resource
-    ]
+class StatefulReconciler[Node: ShadowNode]:
+
+    type ReconcileAction = Place[Node] | Replace[Node] | Unplace[Node] | Update[Node]
+    type CreateAction = Create[Node] | Recreate[Node] | Update[Node]
 
     _placement: list[Node]
-    _key_to_resource: dict[str, ResourceRecord[Node, Resource]]
+    _key_to_resource: dict[str, ShadowedResource[Node]]
 
-    def _get_compatibility(
-        self, prev: Node | ResourceRecord[Node, Resource], next: Node
-    ):
-        return next.get_compatibility(
-            prev.node if isinstance(prev, ResourceRecord) else prev
-        )
-
-    def __init__(self, actions: ReconcileActions[Node, Resource]) -> None:
-        self.actions = actions
-        self._placement = set()
+    def __init__(self, create: Callable[[Node], ShadowedResource[Node]]):
+        self._placement = []
         self._key_to_resource = {}
+        self.create = create
 
     def _get_reconcile_action(self, prev: Node | None, next: Node | None):
 
@@ -70,7 +63,7 @@ class StatefulReconciler[Node: ShadowNode, Resource]:
         if not prev:
             if not old_next_placement:
                 return Place(Create(next))
-            if self._get_compatibility(old_next_placement, next) == "recreate":
+            if old_next_placement.get_compatibility(next) == "recreate":
                 return Place(Recreate(old_next_placement, next))
             return Place(Update(old_next_placement, next))
 
@@ -79,12 +72,12 @@ class StatefulReconciler[Node: ShadowNode, Resource]:
         if prev.key != next.key:
             if not old_next_placement:
                 return Replace(old_prev_placement, Create(next))
-            if self._get_compatibility(old_next_placement, next) == "recreate":
+            if old_next_placement.get_compatibility(next) == "recreate":
                 return Replace(old_prev_placement, Recreate(old_next_placement, next))
             return Replace(old_prev_placement, Update(old_next_placement, next))
 
         assert old_next_placement
-        if not self._get_compatibility(prev, next) == "update":
+        if not old_next_placement.get_compatibility(next) == "update":
             return Replace(old_prev_placement, Recreate(old_next_placement, next))
         return Update(old_next_placement, next)
 
@@ -111,49 +104,47 @@ class StatefulReconciler[Node: ShadowNode, Resource]:
                 placed.add(next.key)
             yield self._get_reconcile_action(prev, next)
 
-    def _do_create_action(
-        self, action: Update[Node, Resource] | Create[Node, Resource]
-    ):
+    def _do_create_action(self, action: Update[Node] | Create[Node]):
         match action:
             case Create(next):
-                new_resource = self.actions.create(next)
-                record = ResourceRecord(next, new_resource)
-                self._key_to_resource[next.key] = record
-                return record
+                new_resource = self.create(next)
+                new_resource.update(next._props)
+                self._key_to_resource[next.key] = new_resource
+                return new_resource
             case Update(existing, next):
-                self.actions.update(existing, next)
-                return ResourceRecord(next, existing.resource)
+                diff = existing.diff(next)
+                existing.update(diff)
+                return existing.migrate(next)
             case _:
                 assert False, f"Unknown action: {action}"
 
     def _do_reconcile_action(self, action: ReconcileAction):
-        actions = self.actions
         logger.info(f"Reconcile action: {action}")
         match action:
             case Update(existing, next):
-                actions.update(existing, next)
-            case Unplace(x):
-                actions.unplace(x)
+                self._do_create_action(action)
+            case Unplace(existing):
+                existing.unplace()
             case Place(Recreate(old, next)):
                 new_resource = self._do_create_action(Create(next))
-                actions.destroy(old)
-                actions.place(new_resource)
+                old.destroy()
+                new_resource.place()
             case Place(createAction) if not isinstance(createAction, Recreate):
-                item = self._do_create_action(createAction)
-                actions.place(item)
-            case Replace(replaces, Recreate(old, next)):
-                item = self._do_create_action(Create(next))
-                actions.replace(replaces, item)
-                actions.destroy(old)
-            case Replace(replaces, createAction) if not isinstance(
+                resource = self._do_create_action(createAction)
+                resource.place()
+            case Replace(existing, Recreate(old, next)):
+                resource = self._do_create_action(Create(next))
+                existing.replace(resource)
+                old.destroy()
+            case Replace(existing, createAction) if not isinstance(
                 createAction, Recreate
             ):
-                item = self._do_create_action(createAction)
-                actions.replace(replaces, item)
+                resource = self._do_create_action(createAction)
+                existing.replace(resource)
             case _:
                 assert False, f"Unknown action: {action}"
 
-    def reconcile(self, root: "Component[Node]"):
+    def mount(self, root: "Component[Node]"):
         from src.client.ui.framework.component import Component
 
         rendering = list(render_recursively("", root))

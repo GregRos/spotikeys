@@ -1,7 +1,7 @@
 from dataclasses import _MISSING_TYPE, MISSING, field
 from typing import Any, Callable, Literal
 
-from src.client.ui.shadow.core.props.field_apply_info import FieldApplyInfo
+from src.client.ui.shadow.core.props.field_apply_info import PropInfo
 
 
 def prop[
@@ -13,11 +13,8 @@ def prop[
     name: str | None = None,
     default: X | _MISSING_TYPE = MISSING,
     converter: Callable[[X], Any] | None = None,
-    diff=True,
 ) -> X:
-    metadata_object = {
-        "apply": FieldApplyInfo(type=subtype, name=name, converter=converter, diff=diff)
-    }
+    metadata_object = {"prop": PropInfo(type=subtype, name=name, converter=converter)}
     if default is MISSING:
         return field(metadata=metadata_object)
     else:

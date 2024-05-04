@@ -40,7 +40,9 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
     def __init__(self, node: SwTkWindow, resource: Tk):
         super().__init__(node)
         self.resource = resource
-        self._render_state = StatefulReconciler(WidgetWrapper)
+        self._render_state = StatefulReconciler(
+            lambda x: WidgetWrapper.create(resource, x)
+        )
 
     @override
     def is_same_resource(self, other: Self) -> bool:

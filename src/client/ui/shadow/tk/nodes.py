@@ -8,19 +8,21 @@ from src.client.ui.shadow.core.props.prop import prop
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
 from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
-from src.client.ui.shadow.tk.window.reconcile_actions import TkWindowActions, TkWrapper
-from src.client.ui.shadow.tk.window.window import SwTkWindow
+
+
+from src.client.ui.shadow.tk.window.reconcile_actions import TkWrapper
+from src.client.ui.shadow.tk.window.window import SwTkWindow, SwTkWindowProps
 from src.client.ui.values.font import Font
 
 
 class TK:
-    _render_state: StatefulReconciler[SwTkWindow, TkWrapper]
+    _render_state: StatefulReconciler[SwTkWindow]
 
     def __init__(self):
-        self._render_state = StatefulReconciler(TkWindowActions())
+        self._render_state = StatefulReconciler(lambda x: TkWrapper.create(x))
 
     def mount(self, root: Component[SwTkWindow]):
-        self._render_state.reconcile(root)
+        self._render_state.mount(root)
 
     @dataclass()
     class Label(SwTkWidget):
@@ -45,4 +47,4 @@ class TK:
         relief: str = prop("configure", default="solid")
         borderwidth: int = prop("configure", default=0)
 
-    Window = SwTkWindow
+    Window = SwTkWindowProps

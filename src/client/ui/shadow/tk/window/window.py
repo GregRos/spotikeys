@@ -10,24 +10,14 @@ from src.client.ui.framework.make_clickthrough import make_clickthrough
 from src.client.ui.shadow.core.props.prop import prop
 from src.client.ui.shadow.core.props.props_map import DiffMap
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
-from src.client.ui.shadow.core.reconciler.record import ResourceRecord
 from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
-from src.client.ui.shadow.tk.widgets.reconcile_actions import TkWidgetActions
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 from src.client.ui.values.geometry import Geometry
 
 
 @dataclass(kw_only=True)
-class SwTkWindow(ShadowNode):
-    @staticmethod
-    def diff_groups() -> DiffMap:
-        return {
-            "geometry": "unit",
-            "attributes": "recursive",
-            "special": "recursive",
-            "configure": "recursive",
-        }
-
+class SwTkWindowProps:
+    key: str = field(default="")
     width: int = prop("geometry")
     height: int = prop("geometry")
     y: int = prop("geometry")
@@ -38,7 +28,27 @@ class SwTkWindow(ShadowNode):
     )
     override_redirect: bool = prop("special", default=False)
     background: str = prop("configure", default="black")
-    root: Component[SwTkWidget] = field(init=False)
+
+    def __getitem__(self, *children: Component[SwTkWidget]) -> "SwTkWindow":
+        return SwTkWindow(**self.__dict__, children=children)
+
+
+@dataclass(kw_only=True)
+class SwTkWindow(
+    ShadowNode,
+    SwTkWindowProps,
+    groups={
+        "geometry": "unit",
+        "attributes": "recursive",
+        "special": "recursive",
+        "configure": "recursive",
+        "geometry": "unit",
+    },
+):
+    def __init_subclass__(cls):
+        pass
+
+    children: tuple[Component[SwTkWidget], ...]
 
     @property
     def geometry(self) -> Geometry:
@@ -46,12 +56,3 @@ class SwTkWindow(ShadowNode):
 
     def copy(self) -> Self:
         return self.__class__(**self.__dict__)
-
-    @override
-    def get_compatibility(self, prev) -> Literal["update", "replace", "recreate"]:
-        return "update"
-
-    def __getitem__(self, root: Component[SwTkWidget]) -> Self:
-        X = copy.copy(self)
-        X.root = root
-        return X

@@ -1,66 +1,51 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any, Callable, Literal, Self
 
-from src.client.ui.shadow.core.reconciler.record import ResourceRecord
+from referencing import Resource
+
+from src.client.ui.shadow.core.props.props_map import PropsMap
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
 
-
-@dataclass
-class Create[Node: ShadowNode, Resource]:
-    next: Node
+type Compat = Literal["update", "replace", "recreate"]
 
 
-@dataclass
-class Update[Node: ShadowNode, Resource]:
-    existing: ResourceRecord[Node, Resource]
-    next: Node
-
-
-@dataclass
-class Recreate[Node: ShadowNode, Resource]:
-    old: ResourceRecord[Node, Resource]
-    next: Node
-
-
-@dataclass
-class Place[Node: ShadowNode, Resource]:
-    what: Update[Node, Resource] | Recreate[Node, Resource] | Create[Node, Resource]
-
-
-@dataclass
-class Replace[Node: ShadowNode, Resource]:
-    replaces: ResourceRecord[Node, Resource]
-    with_what: (
-        Update[Node, Resource] | Recreate[Node, Resource] | Create[Node, Resource]
-    )
-
-
-@dataclass
-class Unplace[Node: ShadowNode, Resource]:
-    what: ResourceRecord[Node, Resource]
-
-
-class ReconcileActions[Node: ShadowNode, Resource]:
+class ShadowedResource[Node: ShadowNode](ABC):
 
     @abstractmethod
-    def create(self, node: Node) -> Resource: ...
-    @abstractmethod
-    def destroy(self, existing: ResourceRecord[Node, Resource]) -> None: ...
+    def is_same_resource(self, other: Self) -> bool: ...
+
+    def __eq__(self, value: object) -> bool:
+        return (
+            isinstance(value, self.__class__)
+            and self.node == value.node
+            and self.is_same_resource(value)
+        )
+
+    def diff(self, other: Node) -> PropsMap:
+        return self.node._props.diff(other._props)
+
+    def __init__(self, node: Node):
+        self.node = node
 
     @abstractmethod
-    def update(self, existing: ResourceRecord[Node, Resource], next: Node) -> None: ...
+    def migrate(self, node: Node) -> Self: ...
 
     @abstractmethod
-    def unplace(self, existing: ResourceRecord[Node, Resource]) -> None: ...
+    def destroy(self) -> None: ...
 
     @abstractmethod
-    def replace(
-        self,
-        existing: ResourceRecord[Node, Resource],
-        next: ResourceRecord[Node, Resource],
-    ) -> None: ...
+    def update(self, props: PropsMap) -> None: ...
 
     @abstractmethod
-    def place(self, record: ResourceRecord[Node, Resource]) -> None: ...
+    def place(self) -> None: ...
+
+    @abstractmethod
+    def unplace(self) -> None: ...
+
+    @abstractmethod
+    def replace(self, other: Self) -> None: ...
+
+    @abstractmethod
+    def get_compatibility(self, other: Node) -> Compat: ...
