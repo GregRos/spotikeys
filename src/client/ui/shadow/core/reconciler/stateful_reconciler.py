@@ -46,10 +46,15 @@ class StatefulReconciler[Node: ShadowNode]:
     _placement: list[Node]
     _key_to_resource: dict[str, ShadowedResource[Node]]
 
-    def __init__(self, create: Callable[[Node], ShadowedResource[Node]]):
+    def __init__(
+        self,
+        node_type: type[ShadowedResource[Node]],
+        create: Callable[[Node], ShadowedResource[Node]],
+    ):
         self._placement = []
         self._key_to_resource = {}
         self.create = create
+        self.resource_type = node_type
 
     def _get_reconcile_action(self, prev: Node | None, next: Node | None):
 
@@ -147,7 +152,7 @@ class StatefulReconciler[Node: ShadowNode]:
     def mount(self, root: "Component[Node]"):
         from src.client.ui.framework.component import Component
 
-        rendering = list(render_recursively("", root))
+        rendering = list(render_recursively(self.resource_type.node_type(), "", root))
         reconcile = [*self.compute_reconcile_actions(rendering)]
         for reconcile in reconcile:
             self._do_reconcile_action(reconcile)

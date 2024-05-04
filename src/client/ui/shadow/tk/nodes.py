@@ -11,7 +11,7 @@ from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 
 
 from src.client.ui.shadow.tk.window.reconcile_actions import TkWrapper
-from src.client.ui.shadow.tk.window.window import SwTkWindow, SwTkWindowProps
+from src.client.ui.shadow.tk.window.window import SwTkWindow
 from src.client.ui.values.font import Font
 
 
@@ -19,7 +19,9 @@ class TK:
     _render_state: StatefulReconciler[SwTkWindow]
 
     def __init__(self):
-        self._render_state = StatefulReconciler(lambda x: TkWrapper.create(x))
+        self._render_state = StatefulReconciler(
+            TkWrapper, lambda x: TkWrapper.create(x)
+        )
 
     def mount(self, root: Component[SwTkWindow]):
         self._render_state.mount(root)
@@ -47,4 +49,4 @@ class TK:
         relief: str = prop("configure", default="solid")
         borderwidth: int = prop("configure", default=0)
 
-    Window = SwTkWindowProps
+    Window = SwTkWindow

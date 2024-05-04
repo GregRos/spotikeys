@@ -22,3 +22,8 @@ class SwTkWidget(ShadowNode):
     @property
     @abstractmethod
     def tk_type(self) -> str: ...
+
+
+@dataclass(kw_only=True)
+class WidgetComponent(Component[SwTkWidget]):
+    pass

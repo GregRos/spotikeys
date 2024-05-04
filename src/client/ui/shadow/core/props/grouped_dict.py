@@ -40,19 +40,20 @@ class GroupedDict[V](Mapping[str, dict[str, V]]):
     def __getitem__(self, group: str, /) -> dict[str, V]: ...
 
     @overload
-    def __getitem__(self, group: str, key: str, /) -> V | None: ...
-
-    @overload
     def __getitem__(self, group: tuple[str, str], /) -> V | None: ...
 
-    def __getitem__(self, *args):
-        match args:
-            case (group, key),:
-                assert isinstance(key, str), "Key must be string"
-                assert isinstance(group, str), "Group must be string"
+    def __getitem__(self, arg):
+        match arg:
+            case (group, key):
+                assert isinstance(key, str), f"Key must be string, not {type(key)}"
+                assert isinstance(
+                    group, str
+                ), f"Group must be string, not {type(group)}"
                 return self._map.get(group, {}).get(key, None)
-            case group,:
-                assert isinstance(group, str), "Group must be string"
+            case str(group):
+                assert isinstance(
+                    group, str
+                ), f"Group must be string, not {type(group)}"
                 return self._map.get(group, {})
             case _:
                 raise ValueError("Invalid arguments")

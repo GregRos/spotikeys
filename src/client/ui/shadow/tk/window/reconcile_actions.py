@@ -36,11 +36,16 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
     resource: Tk
     _render_state: StatefulReconciler
 
+    @staticmethod
+    @override
+    def node_type() -> type[SwTkWindow]:
+        return SwTkWindow
+
     def __init__(self, node: SwTkWindow, resource: Tk):
         super().__init__(node)
         self.resource = resource
         self._render_state = StatefulReconciler(
-            lambda x: WidgetWrapper.create(resource, x)
+            WidgetWrapper, lambda x: WidgetWrapper.create(resource, x)
         )
 
     @override

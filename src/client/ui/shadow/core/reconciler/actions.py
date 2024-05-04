@@ -13,6 +13,9 @@ type Compat = Literal["update", "replace", "recreate"]
 
 class ShadowedResource[Node: ShadowNode](ABC):
 
+    @staticmethod
+    @abstractmethod
+    def node_type() -> type[Node]: ...
     @abstractmethod
     def is_same_resource(self, other: Self) -> bool: ...
 

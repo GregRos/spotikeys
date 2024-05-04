@@ -1,11 +1,11 @@
 import copy
 from dataclasses import dataclass, field
 from tkinter import Tk, Widget
-from typing import Iterable, Literal, Self, override
+from typing import Generator, Iterable, Literal, Self, override
 
 from pyrsistent import PVector, pvector, v
 
-from src.client.ui.framework.component import Component
+from src.client.ui.framework.component import Component, ContainerComponent
 from src.client.ui.framework.make_clickthrough import make_clickthrough
 from src.client.ui.shadow.core.props.prop import prop
 from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
@@ -16,7 +16,7 @@ from src.client.ui.values.geometry import Geometry
 
 
 @dataclass(kw_only=True)
-class SwTkWindowProps:
+class SwTkWindow(ShadowNode, ContainerComponent[SwTkWidget]):
     key: str = field(default="")
     width: int = prop("geometry")
     height: int = prop("geometry")
@@ -28,13 +28,7 @@ class SwTkWindowProps:
     )
     override_redirect: bool = prop("", default=False)
     background: str = prop("configure", default="black")
-
-    def __getitem__(self, *children: Component[SwTkWidget]) -> "SwTkWindow":
-        return SwTkWindow(**self.__dict__, children=children)
-
-
-@dataclass(kw_only=True)
-class SwTkWindow(ShadowNode, SwTkWindowProps):
+    children: tuple[Component[SwTkWidget], ...] = prop("", default=())
 
     @override
     @staticmethod
@@ -49,7 +43,9 @@ class SwTkWindow(ShadowNode, SwTkWindowProps):
             }
         )
 
-    children: tuple[Component[SwTkWidget], ...] = prop("")
+    @override
+    def render(self) -> Generator[SwTkWidget | Component[SwTkWidget], None, None]:
+        yield from self.children
 
     @property
     def geometry(self) -> Geometry:
@@ -57,3 +53,8 @@ class SwTkWindow(ShadowNode, SwTkWindowProps):
 
     def copy(self) -> Self:
         return self.__class__(**self.__dict__)
+
+
+@dataclass(kw_only=True)
+class WindowComponent(Component[SwTkWindow]):
+    pass

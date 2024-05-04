@@ -28,7 +28,7 @@ class WindowComponent(Component[SwTkWindow]):
             x=100,
             y=100,
             topmost=True,
-        )[StuffComponent(text=self.text)]
+        )[StuffComponent(text=self.text), StuffComponent(text=self.text)]
 
 
 MyTK = TK()

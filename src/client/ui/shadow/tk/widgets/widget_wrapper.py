@@ -7,6 +7,12 @@ from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 
 
 class WidgetWrapper(ShadowedResource[SwTkWidget]):
+
+    @staticmethod
+    @override
+    def node_type() -> type[SwTkWidget]:
+        return SwTkWidget
+
     @final
     @override
     def migrate(self, node: SwTkWidget) -> Self:
