@@ -23,8 +23,8 @@ class WindowComponent(Component[SwTkWindow]):
 
     def render(self):
         yield TK.Window(
-            width=800,
-            height=600,
+            width=1200,
+            height=1200,
             x=100,
             y=100,
             topmost=True,

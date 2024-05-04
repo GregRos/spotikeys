@@ -5,8 +5,8 @@ from typing import Tuple
 
 @dataclass
 class Geometry:
-    height: int
     width: int
+    height: int
     x: int
     y: int
 

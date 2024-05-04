@@ -77,7 +77,7 @@ class StatefulReconciler[Node: ShadowNode]:
             return Replace(old_prev_placement, Update(old_next_placement, next))
 
         assert old_next_placement
-        if not old_next_placement.get_compatibility(next) == "update":
+        if old_next_placement.get_compatibility(next) == "recreate":
             return Replace(old_prev_placement, Recreate(old_next_placement, next))
         return Update(old_next_placement, next)
 

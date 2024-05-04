@@ -40,7 +40,9 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
     def __init__(self, node: SwTkWindow, resource: Tk):
         super().__init__(node)
         self.resource = resource
-        self._render_state = StatefulReconciler(WidgetWrapper)
+        self._render_state = StatefulReconciler(
+            lambda x: WidgetWrapper.create(resource, x)
+        )
 
     @override
     def is_same_resource(self, other: Self) -> bool:
@@ -80,17 +82,21 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
 
     @override
     def replace(self, other: "TkWrapper") -> None:
-        self.resource.withdraw()
-        other.resource.deiconify()
+        self.schedule(self.resource.deiconify)
+        other.unplace()
 
     @override
     def unplace(self) -> None:
-        self.resource.withdraw()
+        self.schedule(self.resource.withdraw)
 
     @override
     def place(self) -> None:
-        self.resource.wm_geometry(self.node.geometry.to_tk())
-        self.resource.deiconify()
+        def do():
+            geo = self.node.geometry.normalize(self.resource).to_tk()
+            self.resource.wm_geometry(geo)
+            self.resource.deiconify()
+
+        self.schedule(do)
 
     @override
     def get_compatibility(self, other: SwTkWindow) -> Compat:
@@ -99,18 +105,25 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
     @override
     def update(self, props: PropsMap) -> None:
         diff = props.compute()
-        if attrs := diff.attributes:
-            attributes = [item for k, v in attrs.items() for item in (f"-{k}", v) if v]
-            self.resource.attributes(*attributes)
-        if geometry := diff.geometry:
-            self.resource.geometry(Geometry(**geometry).to_tk())
-        if special := diff.special:
-            self.resource.overrideredirect(special.override_redirect)
-        if configure := diff.configure:
-            self.resource.configure(**configure)
-        self._render_state.mount(
-            ContainerComponent(
-                key="root",
-                children=self.node.children,
-            )
-        )
+
+        def do():
+            if (attrs := diff.attributes) is not None:
+                attributes = [
+                    item for k, v in attrs.items() for item in (f"-{k}", v) if v
+                ]
+                self.resource.attributes(*attributes)
+            if (configure := diff.configure) is not None:
+                self.resource.configure(**configure)
+
+            if (special := diff.get("special")) is not None:
+                if (override_redirect := special.get("override_redirect")) is not None:
+                    self.resource.overrideredirect(override_redirect)
+                if children := special.get("children"):
+                    self._render_state.mount(
+                        ContainerComponent(
+                            key="root",
+                            children=children,
+                        )
+                    )
+
+        self.schedule(do)

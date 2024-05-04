@@ -110,15 +110,13 @@ class PropsMap:
     def diff(self, other: "PropsMap") -> "PropsMap":
         result = PropsMap(self._diffs)
         for group_name, group in other:
+            result = result.set(group_name, m())
             diff_type = self.get_diff_type(group_name)
             if group_name not in self or diff_type == "none":
                 result = result.set(group_name, group)
-                continue
-
-            if diff_type == "unit" and group != self[group_name]:
+            elif diff_type == "unit" and group != self[group_name]:
                 result = result.set(group_name, group)
-
-            if diff_type == "recursive":
+            elif diff_type == "recursive":
                 for key, value in group.items():
                     key_pair = (group_name, key)
                     if key_pair not in self or self[key_pair] != value:

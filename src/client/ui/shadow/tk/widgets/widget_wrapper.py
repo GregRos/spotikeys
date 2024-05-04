@@ -23,7 +23,7 @@ class WidgetWrapper(ShadowedResource[SwTkWidget]):
 
     @override
     def get_compatibility(self, other: SwTkWidget) -> Compat:
-        if self.node.tk_type == other.tk_type:
+        if self.node.tk_type != other.tk_type:
             return "recreate"
         elif self.node._props.pack != other._props.pack:
             return "replace"
@@ -48,7 +48,7 @@ class WidgetWrapper(ShadowedResource[SwTkWidget]):
 
     @override
     def update(self, props: PropsMap) -> None:
-        diff = self.node._props.diff(props).compute("configure")
+        diff = props.compute("configure")
         self.resource.configure(**diff)
 
     @override

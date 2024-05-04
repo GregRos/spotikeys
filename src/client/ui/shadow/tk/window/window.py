@@ -48,11 +48,11 @@ class SwTkWindow(
     def __init_subclass__(cls):
         pass
 
-    children: tuple[Component[SwTkWidget], ...]
+    children: tuple[Component[SwTkWidget], ...] = prop("special")
 
     @property
     def geometry(self) -> Geometry:
-        return Geometry(self.x, self.y, self.width, self.height)
+        return Geometry(self.width, self.height, self.x, self.y)
 
     def copy(self) -> Self:
         return self.__class__(**self.__dict__)
