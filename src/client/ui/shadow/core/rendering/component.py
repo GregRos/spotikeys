@@ -16,37 +16,51 @@ from typing import (
 )
 
 
+from src.client.ui.shadow.core.props.prop import prop
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.core.state import Ctx, Updatable
 
 if TYPE_CHECKING:
     from src.client.ui.framework.tooltip_row import TooltipRow
 
 
+class WithState[S]:
+    state: S
+class Stat:
+    a: int
+
+
+class aaaa(WithState[Stat]):
+    b: int
+    pass
+
+
+a = aaaa()
+
+a.
+
+
 @dataclass(kw_only=True)
 class Component[Node: ShadowNode](abc.ABC):
     key: str = field(default="")
+    children: tuple[Component[Node], ...] = prop("", default=())
+
+    def as_dict(self) -> dict[str, Any]:
+        my_dict = {
+            k: v
+            for k, v in self.__dict__.items()
+            if (x := self.__dataclass_fields__.get(k, None)) and "prop" in x.metadata
+        }
+        return my_dict
 
     @abc.abstractmethod
-    def render(self) -> Generator[Node | Component[Node], None, None]: ...
-
-
-@dataclass(kw_only=True)
-class ContainerComponent[Node: ShadowNode](Component[Node]):
-    children: tuple[Component[Node], ...]
-
-    def render(self) -> Generator[Node | Component[Node], None, None]:
-        for child in self.children:
-            yield child
+    def render(self, ctx: Ctx) -> Generator[Node | Component[Node], None, None]: ...
 
     def __getitem__(
         self, children: tuple[Component[Node], ...] | Component[Node]
     ) -> Self:
         children = children if isinstance(children, tuple) else (children,)
-        my_dict = {
-            k: v
-            for k, v in self.__dict__.items()
-            if (x := self.__dataclass_fields__.get(k, None)) and x.metadata
-        }
+        my_dict = self.as_dict()
         my_dict["children"] = children
         return self.__class__(**my_dict)
 

@@ -3,7 +3,7 @@ from math import trunc
 from tkinter import Tk
 from src.client.kb.triggered_command import OkayCommand
 from src.client.ui.binding.active_value import ActiveValue
-from src.client.ui.shadow.core.component import (
+from src.client.ui.shadow.core.rendering.component import (
     Component,
 )
 from src.client.ui.progress_label import ProgressLabel

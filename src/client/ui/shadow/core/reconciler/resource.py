@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Literal, Self
 
-from referencing import Resource
 
 from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
@@ -26,7 +25,7 @@ class ShadowedResource[Node: ShadowNode](ABC):
             and self.is_same_resource(value)
         )
 
-    def diff(self, other: Node) -> GroupedDict[UncomputedValue]:
+    def props(self, other: Node | None = None) -> GroupedDict[UncomputedValue]:
         return self.node._props.diff(other._props)
 
     def __init__(self, node: Node):

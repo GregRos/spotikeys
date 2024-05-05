@@ -14,11 +14,19 @@ class Update[Node: ShadowNode]:
     existing: ShadowedResource[Node]
     next: Node
 
+    @property
+    def props(self):
+        return self.existing.diff(self.next)
+
 
 @dataclass
 class Recreate[Node: ShadowNode]:
     old: ShadowedResource[Node]
     next: Node
+
+    @property
+    def props(self):
+        return self.next._props
 
 
 @dataclass

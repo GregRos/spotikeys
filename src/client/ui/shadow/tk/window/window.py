@@ -5,7 +5,7 @@ from typing import Generator, Iterable, Literal, Self, override
 
 from pyrsistent import PVector, pvector, v
 
-from src.client.ui.shadow.core.component import Component, ContainerComponent
+from src.client.ui.shadow.core.rendering.component import Component, ContainerComponent
 from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
 from src.client.ui.shadow.core.props.prop import prop
 from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue

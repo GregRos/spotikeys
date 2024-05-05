@@ -18,7 +18,7 @@ from typing import (
 import attr
 
 
-from src.client.ui.shadow.core.component import Component, ContainerComponent
+from src.client.ui.shadow.core.rendering.component import Component, ContainerComponent
 from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
 from src.client.ui.shadow.core.reconciler.resource import (
     Compat,
@@ -108,7 +108,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
 
     @override
     def update(self, props: GroupedDict[UncomputedValue]) -> None:
-        diff = props.transform(lambda x: x.compute())
+        diff = props.map(lambda x: x.compute())
 
         def do():
             if attrs := diff.attributes:

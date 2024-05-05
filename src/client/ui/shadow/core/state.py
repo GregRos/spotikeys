@@ -2,8 +2,8 @@ from threading import Lock
 from typing import Any, Callable
 
 
-class State:
-    def __init__(self, on_change: Callable[["State"], None]):
+class Updatable:
+    def __init__(self, on_change: Callable[["Updatable"], None]):
         self.__on_change = on_change
         self.__map = dict[str, Any]()
 
@@ -24,3 +24,7 @@ class State:
     def __setattr__(self, key: str, value: Any) -> None:
         self.__map[key] = value
         self.__on_change(self)
+
+
+class Ctx(Updatable):
+    pass

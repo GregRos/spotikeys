@@ -94,7 +94,7 @@ class GroupedDict[V](Mapping[str, dict[str, V]]):
     def to_dict(self) -> dict[str, dict[str, V]]:
         return self._map
 
-    def transform[U](self, operator: Callable[[V], U]) -> "GroupedDict[U]":
+    def map[U](self, operator: Callable[[V], U]) -> "GroupedDict[U]":
         d = GroupedDict[U](self._diff_policy)
         for group, values in self._map.items():
             for key, value in values.items():

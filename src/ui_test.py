@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from time import sleep
-from src.client.ui.shadow.core.component import Component
+from src.client.ui.shadow.core.rendering.component import Component
 from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
 from src.client.ui.shadow.tk.window.window import SwTkWindow

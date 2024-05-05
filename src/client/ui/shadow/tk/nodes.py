@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from tkinter import Label, Widget, Tk
 from typing import Any, Callable, Literal, override
 
-from src.client.ui.shadow.core.component import Component
+from src.client.ui.shadow.core.rendering.component import Component
 from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
 from src.client.ui.shadow.core.props.prop import prop
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
