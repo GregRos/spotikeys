@@ -24,7 +24,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     _lock = threading.Lock()
     _last_command: TriggeredCommand | None = None
     _last_status: MediaStatus
-  
+
     def __init__(
         self,
         loop: AbstractEventLoop,
@@ -53,7 +53,6 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
                 result.volume = self._volume_control.info
             return result
 
-        self._root = TK(lambda )
         self._downstream = with_logging
 
     def busy(self, command: TriggeredCommand) -> None:

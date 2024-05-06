@@ -24,22 +24,6 @@ if TYPE_CHECKING:
     from src.client.ui.framework.tooltip_row import TooltipRow
 
 
-class WithState[S]:
-    state: S
-class Stat:
-    a: int
-
-
-class aaaa(WithState[Stat]):
-    b: int
-    pass
-
-
-a = aaaa()
-
-a.
-
-
 @dataclass(kw_only=True)
 class Component[Node: ShadowNode](abc.ABC):
     key: str = field(default="")
@@ -53,8 +37,8 @@ class Component[Node: ShadowNode](abc.ABC):
         }
         return my_dict
 
-    @abc.abstractmethod
-    def render(self, ctx: Ctx) -> Generator[Node | Component[Node], None, None]: ...
+    def render(self, ctx: Ctx, /) -> Generator[Node | Component[Node], None, None]:
+        yield from self.children
 
     def __getitem__(
         self, children: tuple[Component[Node], ...] | Component[Node]
@@ -76,7 +60,7 @@ def render_recursively[
 ]:
     prefix = ".".join([prefix, component.__class__.__name__])
 
-    for i, child in enumerate(component.render()):
+    for i, child in enumerate(component.render(Ctx())):
         cur_prefix = ":".join([prefix, child.key or str(i)])
         if isinstance(child, node_type):
             child.key = cur_prefix

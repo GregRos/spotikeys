@@ -3,7 +3,8 @@ from typing import Any, Callable
 
 
 class Updatable:
-    def __init__(self, on_change: Callable[["Updatable"], None]):
+
+    def __init__(self, on_change: Callable[["Updatable"], None] | None = None):
         self.__on_change = on_change
         self.__map = dict[str, Any]()
 
@@ -19,11 +20,13 @@ class Updatable:
     def __call__(self, **kwargs: Any) -> None:
         for k, v in kwargs.items():
             setattr(self, k, v)
-        self.__on_change(self)
+        if self.__on_change:
+            self.__on_change(self)
 
     def __setattr__(self, key: str, value: Any) -> None:
         self.__map[key] = value
-        self.__on_change(self)
+        if self.__on_change:
+            self.__on_change(self)
 
 
 class Ctx(Updatable):

@@ -54,12 +54,12 @@ class WidgetWrapper(ShadowedResource[SwTkWidget]):
 
     @override
     def update(self, props: GroupedDict[UncomputedValue]) -> None:
-        diff = props.map(lambda x: x.compute()).get("configure", {})
+        diff = {key: value.compute() for key, value in props["configure"].items()}
         self.resource.configure(**diff)
 
     @override
     def place(self) -> None:
-        computed = self.node._props.map(lambda x: x.compute())
+        computed = {key: value.compute() for key, value in self.props().items()}
         self.resource.pack_configure(**computed["pack"])
         make_clickthrough(self.resource)
 

@@ -24,27 +24,5 @@ def to_prop(self, key: str, field: Any) -> Any:
 
 @dataclass()
 class ShadowNode(ABC):
-    @staticmethod
-    @abstractmethod
-    def props_dict() -> GroupedDict[UncomputedValue]: ...
 
     key: str = field(default="")
-    _props: GroupedDict[UncomputedValue] = field(
-        init=False,
-        compare=False,
-        hash=False,
-        repr=False,
-    )
-
-    def __post_init__(self):
-
-        props = self.props_dict()
-        for key in self.__dataclass_fields__:
-            field = self.__dataclass_fields__[key]
-            match to_prop(self, key, field):
-                case None:
-                    continue
-                case group, key, value:
-                    props[group, key] = value
-
-        self._props = props

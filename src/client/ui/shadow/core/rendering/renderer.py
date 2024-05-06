@@ -13,7 +13,6 @@ class RenderRecord[Node: ShadowNode]:
 
 class Rendered:
     _last_render: dict[str, RenderRecord]
-    _
 
 
 class RecursiveRenderer:
