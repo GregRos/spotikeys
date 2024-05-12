@@ -1,28 +1,53 @@
-from src.client.ui.shadow.core.props.prop_info import PropInfo
+from dataclasses import field
+from turtle import title
+from pydantic import Field
 
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    ClassVar,
+    Literal,
+    NotRequired,
+    Self,
+    TypedDict,
+)
 
-from src.client.ui.shadow.core.props.prop_info import PropInfo
-from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
+from pydantic.dataclasses import dataclass
 
-
-def to_prop(self, key: str, field: Any) -> Any:
-
-    metadata = field.metadata
-    if not metadata:
-        return None
-    prop_info = metadata.get("prop")
-    if not isinstance(prop_info, PropInfo):
-        print(f"Invalid apply info for {key} {prop_info}")
-        return None
-    v = UncomputedValue(prop_info.converter, getattr(self, key), prop_info.name or key)
-    return prop_info.type, key, v
+from src.client.ui.shadow.core.props.props import PropDef
+from src.client.ui.shadow.core.props.props_dict import PropsDict
 
 
-@dataclass()
-class ShadowNode(ABC):
+@dataclass(kw_only=True)
+class Prop[T]:
+    name: str = field(default="")
+    diff: bool = Field(default=True)
+    default: T = Field(default="")
+    title: str = Field(default="")
+    converter: Any = Field(default=None)
 
-    key: str = field(default="")
+
+class InitPropsBase(TypedDict):
+    key: Annotated[NotRequired[str], PropDef()]
+
+
+class ShadowProps(TypedDict):
+    key: Annotated[NotRequired[str], PropDef(default="")]
+    children: Annotated[NotRequired[tuple[Self]], PropDef(default=())]
+
+
+class ShadowNode:
+    _props: PropsDict
+
+    def __init__(self, props: PropsDict = PropsDict({}), /) -> None:
+        self._props = props
+
+    @property
+    def key(self) -> str:
+        return self._props["key"]
+
+    @abstractmethod
+    def _copy(self, **overrides: Any) -> Self: ...

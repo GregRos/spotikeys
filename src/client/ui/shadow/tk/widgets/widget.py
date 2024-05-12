@@ -8,16 +8,12 @@ from src.client.ui.shadow.core.rendering.component import Component
 from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
 
 
-from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
-from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.core.props.operators import GroupedDict, UncomputedValue
+from src.client.ui.shadow.core.props.shadow_node import ShadowNode, ShadowProps
 
 
 @dataclass(kw_only=True)
-class SwTkWidget(ShadowNode):
-    @override
-    @staticmethod
-    def props_dict() -> GroupedDict[UncomputedValue]:
-        return GroupedDict({"configure": "recursive", "pack": "unit"})
+class WidgetNode(ShadowNode["WidgetNode"]):
 
     @property
     @abstractmethod
@@ -25,5 +21,5 @@ class SwTkWidget(ShadowNode):
 
 
 @dataclass(kw_only=True)
-class WidgetComponent(Component[SwTkWidget]):
+class WidgetComponent(Component[WidgetNode]):
     pass

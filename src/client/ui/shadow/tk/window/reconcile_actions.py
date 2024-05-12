@@ -17,14 +17,14 @@ from typing import (
 
 
 from src.client.ui.shadow.core.rendering.component import Component
-from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
+from src.client.ui.shadow.core.props.operators import GroupedDict, UncomputedValue
 from src.client.ui.shadow.core.reconciler.resource import (
     Compat,
     ShadowedResource,
 )
-from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.core.props.shadow_node import ShadowProps
 from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
-from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
+from src.client.ui.shadow.tk.widgets.widget import WidgetNode
 from src.client.ui.shadow.tk.widgets.widget_wrapper import WidgetWrapper
 from src.client.ui.shadow.tk.window.window import SwTkWindow
 from src.client.ui.values.geometry import Geometry

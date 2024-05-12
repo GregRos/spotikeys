@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from src.client.ui.shadow.core.props.operators import diff
 from src.client.ui.shadow.core.props.shadow_node import ShadowNode
 from src.client.ui.shadow.core.reconciler.resource import ShadowedResource
 
@@ -16,7 +17,7 @@ class Update[Node: ShadowNode]:
 
     @property
     def props(self):
-        return self.existing.diff(self.next)
+        return diff(self.existing.node._props, self.next._props)
 
 
 @dataclass

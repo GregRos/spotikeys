@@ -6,6 +6,15 @@
       "type": "debugpy",
       "cwd": "${workspaceFolder}",
       "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Python: Current File (Module)",
+
+      "type": "debugpy",
+      "cwd": "${workspaceFolder}",
+      "request": "launch",
       "module": "${relativeFileDirname}.${fileBasenameNoExtension}",
       "console": "integratedTerminal"
     },

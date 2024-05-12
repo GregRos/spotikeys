@@ -16,7 +16,6 @@ from typing import (
     TypedDict,
     runtime_checkable,
 )
-from src.client.ui.shadow.core.rendering.component import Component, render_recursively
 from src.client.ui.shadow.core.reconciler.resource import (
     ShadowedResource,
 )
@@ -28,8 +27,8 @@ from src.client.ui.shadow.core.reconciler.future_actions import (
     Update,
     Place,
 )
-from src.client.ui.shadow.core.props.shadow_node import ShadowNode
-from src.client.ui.shadow.tk.widgets.widget import SwTkWidget
+from src.client.ui.shadow.core.props.shadow_node import ShadowNode, ShadowProps
+from src.client.ui.shadow.tk.widgets.widget import WidgetNode
 
 
 from itertools import groupby, zip_longest
@@ -48,13 +47,17 @@ class StatefulReconciler[Node: ShadowNode]:
 
     def __init__(
         self,
-        node_type: type[ShadowedResource[Node]],
+        resource_type: type[ShadowedResource[Node]],
         create: Callable[[Node], ShadowedResource[Node]],
     ):
         self._placement = []
         self._key_to_resource = {}
         self.create = create
-        self.resource_type = node_type
+        self.resource_type = resource_type
+
+    @property
+    def node_type(self) -> type[ShadowNode]:
+        return self.resource_type.node_type()
 
     def _get_reconcile_action(self, prev: Node | None, next: Node | None):
 
@@ -149,10 +152,7 @@ class StatefulReconciler[Node: ShadowNode]:
             case _:
                 assert False, f"Unknown action: {action}"
 
-    def reconcile(self, root: "Component[Node]"):
-        from src.client.ui.shadow.core.rendering.component import Component
-
-        rendering = list(render_recursively(self.resource_type.node_type(), "", root))
+    def reconcile(self, rendering: list[Node]):
         reconcile = [*self.compute_reconcile_actions(rendering)]
         for reconcile in reconcile:
             self._do_reconcile_action(reconcile)

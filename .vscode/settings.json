@@ -22,17 +22,7 @@
     "**/__pycache__": true,
     "**/dist": true,
     "**/dist_aux": true,
-    "dfdf": true,
-    "[!s]*/**": true,
-    "s[!r]*/**": true,
-    "sr[!c]*/**": true,
-    "src/[!c]*/**": true,
-    "src/c[!l]*/**": true,
-    "src/cl[!i]*/**": true,
-    "src/cli[!e]*/**": true,
-    "src/clie[!n]*/**": true,
-    "src/clien[!t]*/**": true,
-    "src/client/[!u]*/**": true,
-    "src/client/u[!i]*/**": true
-  }
+    "dfdf": true
+  },
+  "python.REPL.enableREPLSmartSend": false
 }

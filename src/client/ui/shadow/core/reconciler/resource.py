@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import Any, Callable, Literal, Self
 
 
-from src.client.ui.shadow.core.props.grouped_dict import GroupedDict, UncomputedValue
-from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.core.props.props_dict import PropsDict
+from src.client.ui.shadow.core.props.shadow_node import ShadowNode, ShadowProps
 
 type Compat = Literal["update", "replace", "recreate"]
 
@@ -25,8 +25,8 @@ class ShadowedResource[Node: ShadowNode](ABC):
             and self.is_same_resource(value)
         )
 
-    def props(self, other: Node | None = None) -> GroupedDict[UncomputedValue]:
-        return self.node._props.diff(other._props)
+    def props(self, other: Node | None = None) -> PropsDict:
+        return self.node._props.merge(other._props if other else PropsDict({}))
 
     def __init__(self, node: Node):
         self.node = node
@@ -38,7 +38,7 @@ class ShadowedResource[Node: ShadowNode](ABC):
     def destroy(self) -> None: ...
 
     @abstractmethod
-    def update(self, props: GroupedDict[UncomputedValue]) -> None: ...
+    def update(self, props: PropsDict) -> None: ...
 
     @abstractmethod
     def place(self) -> None: ...

@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from math import trunc
 from typing import Generator, override
 from src.client.ui.shadow.core.rendering.component import Component
-from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.core.props.shadow_node import ShadowProps
 from src.client.ui.shadow.tk.nodes import TK
-from src.client.ui.shadow.tk.widgets.widget import SwTkWidget, WidgetComponent
+from src.client.ui.shadow.tk.widgets.widget import WidgetNode, WidgetComponent
 from src.client.ui.values.font import Font
 from src.client.volume import VolumeInfo
 
