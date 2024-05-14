@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Callable, Generator
 
-from src.client.ui.shadow.core.reconciler.shadow_node import ShadowNode
-from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
-from src.client.ui.shadow.core.rendering.component import Component
+from src.client.ui.shadow.model.nodes.shadow_node import ShadowNode
+from src.client.ui.shadow.core.stateful_reconciler import StatefulReconciler
+from src.client.ui.shadow.model.components.component import Component
 from src.client.ui.shadow.core.context import Ctx, Updatable
 
 

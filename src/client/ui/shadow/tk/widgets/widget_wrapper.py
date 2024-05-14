@@ -1,9 +1,9 @@
 from tkinter import Label, Tk, Widget
 from typing import Any, ClassVar, Self, final, override
-from src.client.ui.shadow.core.props.operators import compute
-from src.client.ui.shadow.core.props.dict.props_dict import PropsDict
+from src.client.ui.shadow.model.props.operators import compute
+from src.client.ui.shadow.model.props.dict.props_dict import PropsDict
 from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
-from src.client.ui.shadow.core.reconciler.resource import Compat, ShadowedResource
+from src.client.ui.shadow.model.nodes.resource import Compat, ShadowedResource
 from src.client.ui.shadow.tk.widgets.widget import WidgetNode
 
 
@@ -32,7 +32,7 @@ class WidgetWrapper(ShadowedResource[WidgetNode]):
     def get_compatibility(self, other: WidgetNode) -> Compat:
         if self.node.tk_type != other.tk_type:
             return "recreate"
-        elif self.node._props.pack != other._props.pack:
+        elif self.node._props["pack"] != other._props["pack"]:
             return "replace"
         else:
             return "update"
@@ -55,13 +55,14 @@ class WidgetWrapper(ShadowedResource[WidgetNode]):
 
     @override
     def update(self, props: PropsDict) -> None:
-        diff = compute(props)
+        _, diff = compute("", props["configure"]) or {}
         self.resource.configure(**diff)
 
     @override
     def place(self) -> None:
-        computed = {key: value.compute() for key, value in self.props().items()}
-        self.resource.pack_configure(**computed["pack"])
+        _, d = compute("", self.node._props["pack"]) or {}
+
+        self.resource.pack_configure(**d["pack"])
         make_clickthrough(self.resource)
 
     @override
@@ -70,8 +71,10 @@ class WidgetWrapper(ShadowedResource[WidgetNode]):
 
     @override
     def replace(self, other: Self) -> None:
-        computed = other.node._props.map(lambda x: x.compute())
-        other.resource.pack_configure(after=self.resource, **computed["pack"])
+        p = compute("", other.node._props["pack"])
+        assert p
+        _, computed = p
+        other.resource.pack_configure(after=self.resource, **computed)
 
         self.resource.pack_forget()
         make_clickthrough(other.resource)

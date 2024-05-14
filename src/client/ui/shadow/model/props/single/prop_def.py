@@ -1,5 +1,5 @@
-from src.client.ui.shadow.core.props.operators import SAME, Computable, Diffable
-from src.client.ui.shadow.core.props.single.prop_value import PropValue
+from src.client.ui.shadow.model.props.operators import SAME, Computable, Diffable
+from src.client.ui.shadow.model.props.single.prop_value import PropValue
 
 
 from pydantic import Field
@@ -7,7 +7,7 @@ from pydantic.dataclasses import dataclass
 
 
 from copy import copy
-from typing import Any, Callable, cast, override
+from typing import Any, Callable, Literal, Self, cast, override
 
 DiffMode = Literal["simple", "recursive", "never"]
 

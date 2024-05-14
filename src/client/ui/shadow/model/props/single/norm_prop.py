@@ -1,8 +1,8 @@
 from typing import Literal, overload
 
-from src.client.ui.shadow.core.props.single.just_value import JustValue
-from src.client.ui.shadow.core.props.single.prop_def import PropDef
-from src.client.ui.shadow.core.props.single.prop_value import PropValue
+from src.client.ui.shadow.model.props.single.just_value import JustValue
+from src.client.ui.shadow.model.props.single.prop_def import PropDef
+from src.client.ui.shadow.model.props.single.prop_value import PropValue
 
 
 type SomeProp[X] = PropValue[X] | PropDef[X] | JustValue[X]

@@ -17,17 +17,8 @@ from typing import (
 
 from pydantic.dataclasses import dataclass
 
-from src.client.ui.shadow.core.props.single.prop_def import PropDef
-from src.client.ui.shadow.core.props.dict.props_dict import PropsDict
-
-
-@dataclass(kw_only=True)
-class Prop[T]:
-    name: str = field(default="")
-    diff: bool = Field(default=True)
-    default: T = Field(default="")
-    title: str = Field(default="")
-    converter: Any = Field(default=None)
+from src.client.ui.shadow.model.props.single.prop_def import PropDef
+from src.client.ui.shadow.model.props.dict.props_dict import PropsDict
 
 
 class InitPropsBase(TypedDict):

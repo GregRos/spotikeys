@@ -5,7 +5,7 @@ from tkinter import CENTER, SOLID, Label, Tk, Widget
 from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, TypeGuard, override
 
 from src.client.ui.binding.bindable import bindable
-from src.client.ui.shadow.core.rendering.component import Component
+from src.client.ui.shadow.model.components.component import Component
 from src.client.ui.framework.owner import UiRoot
 
 if TYPE_CHECKING:

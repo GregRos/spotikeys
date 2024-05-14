@@ -20,16 +20,16 @@ from typing import (
     runtime_checkable,
 )
 
-from src.client.ui.shadow.core.props.single.just_value import JustValue
-from src.client.ui.shadow.core.props.single.prop_def import PropDef
-from src.client.ui.shadow.core.props.single.prop_value import PropValue
-from src.client.ui.shadow.core.props.operators import (
+from src.client.ui.shadow.model.props.single.just_value import JustValue
+from src.client.ui.shadow.model.props.single.prop_def import PropDef
+from src.client.ui.shadow.model.props.single.prop_value import PropValue
+from src.client.ui.shadow.model.props.operators import (
     SAME,
     Computable,
     Diffable,
     diff,
 )
-from src.client.ui.shadow.core.props.dict.norm_props import (
+from src.client.ui.shadow.model.props.dict.norm_props import (
     norm_props,
 )
 from src.client.ui.values.geometry import Geometry
@@ -45,6 +45,10 @@ class PropsDict(Mapping[str, PropValue]):
     def copy(self) -> "PropsDict":
         return PropsDict(copy(self._props))
 
+    def __and__(self, other: Mapping[str, PropDef | PropValue | Any]) -> "PropsDict":
+        other = {}
+        return self.merge(other)
+
     @validate_call
     def merge(self, other: Mapping[str, PropDef | PropValue | Any]) -> "PropsDict":
         normalize_other = {
@@ -56,14 +60,14 @@ class PropsDict(Mapping[str, PropValue]):
     def set(self, key: str, value: PropValue | Any | PropDef) -> "PropsDict":
         return self.merge({key: value})
 
-    @validate_call
+    @validate_call()
     def __len__(self) -> int:
         return len(self._props)
 
     def __iter__(self) -> Iterator[str]:
         return iter(self._props)
 
-    @validate_call
+    @validate_call()
     def __getitem__(self, key: str | tuple[str, ...]) -> Any:
         cur = self._props
         path = []

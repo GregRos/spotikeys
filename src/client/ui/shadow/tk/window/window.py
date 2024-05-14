@@ -1,33 +1,22 @@
-import copy
-from tkinter import Tk, Widget
 from typing import (
     Annotated,
     Any,
-    Generator,
-    Iterable,
-    Literal,
     NotRequired,
     Self,
-    TypedDict,
     Unpack,
     override,
 )
 
 
-from src.client.ui.shadow.core.props.single.prop_def import PropDef
-from src.client.ui.shadow.core.props.dict.prop_section import PropSection
-from src.client.ui.shadow.core.props.dict.read_annotations import section_setter
-from src.client.ui.shadow.core.rendering.component import Component
-from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
-from src.client.ui.shadow.core.reconciler.shadow_node import (
+from src.client.ui.shadow.model.props.single.prop_def import PropDef
+from src.client.ui.shadow.model.props.dict.prop_section import PropSection
+from src.client.ui.shadow.model.components.component import Component
+from src.client.ui.shadow.model.nodes.shadow_node import (
     InitPropsBase,
     ShadowNode,
-    ShadowProps,
 )
-from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
 from src.client.ui.shadow.tk.widgets.widget import WidgetNode
 from pydantic.dataclasses import dataclass
-from pydantic import Field
 
 
 class WindowProps(InitPropsBase):
@@ -44,7 +33,7 @@ class Geometry(InitPropsBase):
     height: int
 
 
-class SwTkWindow(ShadowNode, Component[WidgetNode]):
+class SwTkWindow(ShadowNode, Component[WidgetNode]):  # type: ignore
 
     @PropSection(diff_mode="recursive").section_setter
     def __init__(self, **props: Unpack[WindowProps]): ...

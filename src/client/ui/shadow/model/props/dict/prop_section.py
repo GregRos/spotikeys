@@ -1,6 +1,6 @@
-from src.client.ui.shadow.core.props.single.prop_def import PropDef
-from src.client.ui.shadow.core.props.dict.props_dict import PropsDict
-from src.client.ui.shadow.core.props.dict.read_annotations import (
+from src.client.ui.shadow.model.props.single.prop_def import PropDef
+from src.client.ui.shadow.model.props.dict.props_dict import PropsDict
+from src.client.ui.shadow.model.props.dict.read_annotations import (
     make_props_from_annotated,
 )
 

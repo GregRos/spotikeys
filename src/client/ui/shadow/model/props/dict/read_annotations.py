@@ -10,8 +10,8 @@ from typing import (
     get_type_hints,
 )
 
-from src.client.ui.shadow.core.props.dict.props_dict import PropsDict
-from src.client.ui.shadow.core.props.single.prop_def import PropDef
+from src.client.ui.shadow.model.props.dict.props_dict import PropsDict
+from src.client.ui.shadow.model.props.single.prop_def import PropDef
 
 UNSET = object()
 
@@ -46,8 +46,7 @@ def get_section_type(f: Callable):
     return arg
 
 
-def get_props(obj: Callable):
-    section_type = get_section_type(obj)
+def get_props(section_type: dict[str, Type]):
     for k, v in section_type.items():
         inner_type = get_inner_type_value(v) or v
         annotations = get_metadata(v)
@@ -58,8 +57,9 @@ def get_props(obj: Callable):
             yield k, PropDef(value_type=inner_type)
 
 
-def make_props_from_annotated(obj: Callable):
-    return PropsDict({k: v for k, v in get_props(obj)})
+def make_props_from_annotated(obj: Callable | Type):
+    section_type = get_section_type(obj) if callable(obj) else obj
+    return PropsDict({k: v for k, v in get_props(section_type)})
 
 
 def section_setter[

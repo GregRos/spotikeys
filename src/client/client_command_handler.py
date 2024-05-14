@@ -8,7 +8,6 @@ from typing import Any, Awaitable, Callable
 
 from src.client.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
 from src.client.ui.floating_tooltip import ActionHUD
-from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.values.geometry import Geometry
 from src.client.volume import ClientVolumeControl, VolumeInfo
 from src.now_playing import MediaStatus

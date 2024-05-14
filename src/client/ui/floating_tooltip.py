@@ -18,7 +18,7 @@ from src.client.kb.triggered_command import (
 
 
 from src.client.ui.command_header import CommandColors, CommandHeader
-from src.client.ui.shadow.core.rendering.component import Component
+from src.client.ui.shadow.model.components.component import Component
 from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.shadow.tk.widgets.widget import WidgetComponent
 from src.client.ui.shadow.tk.window.window import WindowComponent

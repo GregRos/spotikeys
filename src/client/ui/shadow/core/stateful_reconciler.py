@@ -17,10 +17,10 @@ from typing import (
     TypedDict,
     runtime_checkable,
 )
-from src.client.ui.shadow.core.reconciler.resource import (
+from src.client.ui.shadow.model.nodes.resource import (
     ShadowedResource,
 )
-from src.client.ui.shadow.core.reconciler.future_actions import (
+from src.client.ui.shadow.core.future_actions import (
     Create,
     Recreate,
     Replace,
@@ -28,7 +28,7 @@ from src.client.ui.shadow.core.reconciler.future_actions import (
     Update,
     Place,
 )
-from src.client.ui.shadow.core.reconciler.shadow_node import ShadowNode, ShadowProps
+from src.client.ui.shadow.model.nodes.shadow_node import ShadowNode, ShadowProps
 from src.client.ui.shadow.tk.widgets.widget import WidgetNode
 
 
@@ -38,7 +38,7 @@ from tkinter import Label, Tk, Widget
 logger = logging.getLogger("reconciler")
 
 
-class StatefulReconciler:
+class StatefulReconciler[Node: ShadowNode]:
 
     type ReconcileAction = Place | Replace | Unplace | Update
     type CreateAction = Create | Recreate | Update
@@ -48,10 +48,10 @@ class StatefulReconciler:
 
     def __init__(
         self,
-        resource_type: type[ShadowedResource],
-        create: Callable[[ShadowNode], ShadowedResource],
+        resource_type: type[ShadowedResource[Node]],
+        create: Callable[[Node], ShadowedResource[Node]],
     ):
-        self._placement = []
+        self._placement = ()
         self._key_to_resource = {}
         self.create = create
         self.resource_type = resource_type
@@ -116,12 +116,12 @@ class StatefulReconciler:
     def _do_create_action(self, action: Update | Create):
         match action:
             case Create(next):
-                new_resource = self.create(next)
+                new_resource = self.create(next)  # type: ignore
                 new_resource.update(next._props)
                 self._key_to_resource[next.key] = new_resource
                 return new_resource
             case Update(existing, next):
-                diff = existing.diff(next)
+                diff = existing.props(next)
                 existing.update(diff)
                 return existing.migrate(next)
             case _:

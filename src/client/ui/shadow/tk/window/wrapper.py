@@ -16,17 +16,18 @@ from typing import (
 )
 
 
-from src.client.ui.shadow.core.props.operators import compute
-from src.client.ui.shadow.core.props.dict.props_dict import PropsDict
-from src.client.ui.shadow.core.rendering.component import Component
-from src.client.ui.shadow.core.reconciler.resource import (
+from src.client.ui.shadow.model.props.operators import compute
+from src.client.ui.shadow.model.props.dict.props_dict import PropsDict
+from src.client.ui.shadow.model.components.component import Component
+from src.client.ui.shadow.model.nodes.resource import (
     Compat,
     ShadowedResource,
 )
-from src.client.ui.shadow.core.reconciler.shadow_node import ShadowProps
-from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
-from src.client.ui.shadow.core.rendering.renderer import ComponentMount
+from src.client.ui.shadow.model.nodes.shadow_node import ShadowProps
+from src.client.ui.shadow.core.stateful_reconciler import StatefulReconciler
+from src.client.ui.shadow.core.renderer import ComponentMount
 from src.client.ui.shadow.core.context import Ctx
+from src.client.ui.shadow.tk.widgets.component_mount import WidgetComponentMount
 from src.client.ui.shadow.tk.widgets.widget import WidgetNode
 from src.client.ui.shadow.tk.widgets.widget_wrapper import WidgetWrapper
 from src.client.ui.shadow.tk.window.window import SwTkWindow
@@ -35,7 +36,7 @@ from src.client.ui.values.geometry import Geometry
 
 class TkWrapper(ShadowedResource[SwTkWindow]):
     resource: Tk
-    _component_mount: ComponentMount
+    _component_mount: WidgetComponentMount
 
     @staticmethod
     @override
@@ -45,17 +46,15 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
     def __init__(self, node: SwTkWindow, resource: Tk, context: Ctx):
         super().__init__(node)
         self.resource = resource
-        reconciler = StatefulReconciler(
-            WidgetWrapper, lambda x: WidgetWrapper.create(self.resource, x)
-        )
-        self._component_mount = ComponentMount(reconciler, context)
+        self.context = context
+        self._component_mount = WidgetComponentMount(resource, context)
 
     @override
     def is_same_resource(self, other: Self) -> bool:
         return self.resource is other.resource
 
     @staticmethod
-    def create(node: SwTkWindow) -> "TkWrapper":
+    def create(node: SwTkWindow, context: Ctx) -> "TkWrapper":
         waiter = threading.Event()
         tk: Tk = None  # type: ignore
 
@@ -69,7 +68,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
         thread.start()
         waiter.wait()
 
-        wrapper = TkWrapper(node, tk)
+        wrapper = TkWrapper(node, tk, context)
         return wrapper
 
     def schedule(
@@ -80,7 +79,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
 
     @override
     def migrate(self, node: SwTkWindow) -> Self:
-        return self.__class__(node, self.resource)
+        return self.__class__(node, self.resource, self.context)
 
     @override
     def destroy(self) -> None:
@@ -110,7 +109,11 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
 
     @override
     def update(self, props: PropsDict) -> None:
-        _, computed = compute("", props)
+        x = compute("", props)
+        if not x:
+            return
+        _, computed = x
+        assert isinstance(computed, dict)
 
         def do():
             if attrs := computed["attributes"]:
@@ -122,7 +125,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
                 self.resource.configure(**configure)
             if ("", "override_redirect") in computed:
                 self.resource.overrideredirect(computed["", "override_redirect"])
-            if children := computed["", "children"]:
-                self._component_mount
+            if children := computed["children"]:
+                self._component_mount.mount(Component(key="WidgetRoot")[*children])
 
         self.schedule(do)

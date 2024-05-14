@@ -1,7 +1,7 @@
-from src.client.ui.shadow.core.props.single.norm_prop import norm_prop
-from src.client.ui.shadow.core.props.single.just_value import JustValue
-from src.client.ui.shadow.core.props.single.prop_def import PropDef
-from src.client.ui.shadow.core.props.single.prop_value import PropValue
+from src.client.ui.shadow.model.props.single.norm_prop import norm_prop
+from src.client.ui.shadow.model.props.single.just_value import JustValue
+from src.client.ui.shadow.model.props.single.prop_def import PropDef
+from src.client.ui.shadow.model.props.single.prop_value import PropValue
 
 
 from collections.abc import Mapping

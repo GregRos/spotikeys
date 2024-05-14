@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import Any, Callable, Literal, Self
 
 
-from src.client.ui.shadow.core.props.dict.props_dict import PropsDict
-from src.client.ui.shadow.core.reconciler.shadow_node import ShadowNode, ShadowProps
+from src.client.ui.shadow.model.props.dict.props_dict import PropsDict
+from src.client.ui.shadow.model.nodes.shadow_node import ShadowNode, ShadowProps
 
 type Compat = Literal["update", "replace", "recreate"]
 

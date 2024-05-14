@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from src.client.ui.shadow.core.props.operators import diff
-from src.client.ui.shadow.core.reconciler.shadow_node import ShadowNode
-from src.client.ui.shadow.core.reconciler.resource import ShadowedResource
+from src.client.ui.shadow.model.props.operators import diff
+from src.client.ui.shadow.model.nodes.shadow_node import ShadowNode
+from src.client.ui.shadow.model.nodes.resource import ShadowedResource
 
 
 @dataclass

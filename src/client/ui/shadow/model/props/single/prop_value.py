@@ -1,6 +1,6 @@
-from src.client.ui.shadow.core.props.single.prop_def import PropDef
-from src.client.ui.shadow.core.props.operators import SAME, Computable, Diffable, diff
-from src.client.ui.shadow.core.props.single.just_value import JustValue
+from src.client.ui.shadow.model.props.single.prop_def import PropDef
+from src.client.ui.shadow.model.props.operators import SAME, Computable, Diffable, diff
+from src.client.ui.shadow.model.props.single.just_value import JustValue
 
 
 from pydantic import Field
@@ -11,13 +11,13 @@ from typing import Any
 
 
 @dataclass(kw_only=True)
-class PropValue[X](Computable, Diffable, JustValue[X]):
+class PropValue[X](Computable, Diffable):
     __match_args__ = ("value", "prop")
     __slots__ = ("_cached", "value")
     _cached: tuple[str, X] | None = Field(default=None)
 
     def __init__(self, value: X, prop: PropDef[X]):
-        JustValue.__init__(self, value)
+        self.value = value
         self.prop = prop
         self._cached = None
 

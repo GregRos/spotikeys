@@ -1,6 +1,5 @@
 from __future__ import annotations
 import abc
-from dataclasses import dataclass, field
 from tkinter import Tk, Widget
 from types import SimpleNamespace
 from typing import (
@@ -8,6 +7,7 @@ from typing import (
     Annotated,
     Any,
     Callable,
+    ClassVar,
     Generator,
     NotRequired,
     Self,
@@ -17,15 +17,22 @@ from typing import (
     override,
 )
 
+from pydantic import Field
 
-from src.client.ui.shadow.core.props.single.prop_def import PropDef
-from src.client.ui.shadow.core.props.dict.props_dict import PropsDict
-from src.client.ui.shadow.core.reconciler.shadow_node import (
+
+from src.client.ui.shadow.model.props.dict.prop_section import PropSection
+from src.client.ui.shadow.model.props.dict.read_annotations import (
+    make_props_from_annotated,
+)
+from src.client.ui.shadow.model.props.single.prop_def import PropDef
+from src.client.ui.shadow.model.props.dict.props_dict import PropsDict
+from src.client.ui.shadow.model.nodes.shadow_node import (
     InitPropsBase,
     ShadowNode,
     ShadowProps,
 )
 from src.client.ui.shadow.core.context import Ctx, Updatable
+from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from src.client.ui.framework.tooltip_row import TooltipRow
@@ -38,29 +45,17 @@ class ComponentProps(InitPropsBase):
 
 @dataclass(kw_only=True)
 class Component[Node: ShadowNode](abc.ABC):
-    _props: PropsDict
-
-    def __post_init__(self) -> None:
-        my_dict = {
-            k: v
-            for k, v in self.__dict__.items()
-            if (x := self.__dataclass_fields__.get(k, None)) and "prop" in x.metadata
-        }
-        self._props = PropsDict(my_dict)
-
-    @property
-    def key(self) -> str:
-        return self._props["key"]
+    key: str = Field(default="")
+    children: Tuple[Component[Node], ...] = Field(default=())
 
     def _copy(self, **overrides: Any) -> Self:
-        return self.__class__(**self._props.merge(overrides))
+        return self.__class__(**{**self.__dict__, **overrides})
 
     def render(self, ctx: Ctx, /) -> Generator[Node | Component[Node], None, None]:
-        yield from self._props["children"]
+        yield from self.children
 
     def __getitem__(
         self, children: tuple[Component[Node], ...] | Component[Node]
     ) -> Self:
         children = children if isinstance(children, tuple) else (children,)
-        new_props = self._props.set("children", children)
-        return self._copy(_props=new_props)
+        return self._copy(children=children)
