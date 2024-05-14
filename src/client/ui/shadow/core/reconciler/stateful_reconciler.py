@@ -10,6 +10,7 @@ from typing import (
     Any,
     Callable,
     ClassVar,
+    Iterable,
     Literal,
     Protocol,
     TypeVar,
@@ -27,7 +28,7 @@ from src.client.ui.shadow.core.reconciler.future_actions import (
     Update,
     Place,
 )
-from src.client.ui.shadow.core.props.shadow_node import ShadowNode, ShadowProps
+from src.client.ui.shadow.core.reconciler.shadow_node import ShadowNode, ShadowProps
 from src.client.ui.shadow.tk.widgets.widget import WidgetNode
 
 
@@ -37,18 +38,18 @@ from tkinter import Label, Tk, Widget
 logger = logging.getLogger("reconciler")
 
 
-class StatefulReconciler[Node: ShadowNode]:
+class StatefulReconciler:
 
-    type ReconcileAction = Place[Node] | Replace[Node] | Unplace[Node] | Update[Node]
-    type CreateAction = Create[Node] | Recreate[Node] | Update[Node]
+    type ReconcileAction = Place | Replace | Unplace | Update
+    type CreateAction = Create | Recreate | Update
 
-    _placement: list[Node]
-    _key_to_resource: dict[str, ShadowedResource[Node]]
+    _placement: tuple[ShadowNode, ...]
+    _key_to_resource: dict[str, ShadowedResource]
 
     def __init__(
         self,
-        resource_type: type[ShadowedResource[Node]],
-        create: Callable[[Node], ShadowedResource[Node]],
+        resource_type: type[ShadowedResource],
+        create: Callable[[ShadowNode], ShadowedResource],
     ):
         self._placement = []
         self._key_to_resource = {}
@@ -59,7 +60,7 @@ class StatefulReconciler[Node: ShadowNode]:
     def node_type(self) -> type[ShadowNode]:
         return self.resource_type.node_type()
 
-    def _get_reconcile_action(self, prev: Node | None, next: Node | None):
+    def _get_reconcile_action(self, prev: ShadowNode | None, next: ShadowNode | None):
 
         if not next:
             assert prev, "Neither prev nor next exists"
@@ -90,7 +91,7 @@ class StatefulReconciler[Node: ShadowNode]:
         return Update(old_next_placement, next)
 
     @staticmethod
-    def _check_duplicates(rendering: "list[Node]"):
+    def _check_duplicates(rendering: Iterable[ShadowNode]):
         key_to_nodes = {
             key: list(group) for key, group in groupby(rendering, key=lambda x: x.key)
         }
@@ -102,7 +103,7 @@ class StatefulReconciler[Node: ShadowNode]:
         if messages:
             raise ValueError(messages)
 
-    def compute_reconcile_actions(self, rendering: list[Node]):
+    def compute_reconcile_actions(self, rendering: Iterable[ShadowNode]):
         self._check_duplicates(rendering)
         placed = set[str]()
         for prev, next in zip_longest(self._placement, rendering, fillvalue=None):
@@ -112,7 +113,7 @@ class StatefulReconciler[Node: ShadowNode]:
                 placed.add(next.key)
             yield self._get_reconcile_action(prev, next)
 
-    def _do_create_action(self, action: Update[Node] | Create[Node]):
+    def _do_create_action(self, action: Update | Create):
         match action:
             case Create(next):
                 new_resource = self.create(next)
@@ -152,7 +153,7 @@ class StatefulReconciler[Node: ShadowNode]:
             case _:
                 assert False, f"Unknown action: {action}"
 
-    def reconcile(self, rendering: list[Node]):
+    def reconcile(self, rendering: tuple[ShadowNode, ...]):
         reconcile = [*self.compute_reconcile_actions(rendering)]
         for reconcile in reconcile:
             self._do_reconcile_action(reconcile)

@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Callable, Generator
 
-from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.core.reconciler.shadow_node import ShadowNode
 from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
 from src.client.ui.shadow.core.rendering.component import Component
-from src.client.ui.shadow.core.state import Ctx, Updatable
+from src.client.ui.shadow.core.context import Ctx, Updatable
 
 
 @dataclass
@@ -24,12 +24,15 @@ def with_key(node: ShadowNode, key: str) -> ShadowNode:
 class ComponentMount:
     _reconciler: StatefulReconciler
     _mounted: Component
-    _on_ctx_changed: Callable[[Ctx], None]
 
     def __init__(self, reconciler: StatefulReconciler, context: Ctx):
         self._reconciler = reconciler
         self.context = context
         self.context += self._on_ctx_changed
+
+    def _on_ctx_changed(self, updatable: Updatable):
+        if self._mounted:
+            self.rerender()
 
     def compute_render(self):
         def _render(
@@ -56,22 +59,4 @@ class ComponentMount:
 
     def mount(self, root: Component):
         self._mounted = root
-        self._on_ctx_changed += lambda _: self.compute_render()
-
-    def render(self, root: Component):
-        node_type = self._reconciler.node_type
-
-        def do(cur_prefix: str, root: Component):
-            cur_prefix = ".".join([cur_prefix, root.__class__.__name__])
-            for i, child in enumerate(root.render(self.context)):
-                cur_prefix = ":".join([cur_prefix, child.key or str(i)])
-                if isinstance(child, node_type):
-                    yield with_key(child.render, cur_prefix)
-                elif isinstance(child, Component):
-                    yield from do(cur_prefix, child)
-                else:
-                    raise TypeError(
-                        f"Expected render method to return {node_type} or Component, but got {type(child)}"
-                    )
-
-        return tuple(do("", root))
+        self.rerender()

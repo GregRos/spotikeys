@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from numbers import Number
 from typing import Any, Callable, Protocol, runtime_checkable
 
-from src.client.ui.shadow.core.props.operators import Diff
 from functools import wraps
 from typing import Any, Callable, TypeVar
 

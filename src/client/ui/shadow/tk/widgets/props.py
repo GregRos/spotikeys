@@ -1,5 +1,5 @@
-from src.client.ui.shadow.core.props.props import PropDef
-from src.client.ui.shadow.core.props.shadow_node import ShadowProps
+from src.client.ui.shadow.core.props.single.prop_def import PropDef
+from src.client.ui.shadow.core.reconciler.shadow_node import ShadowProps
 from src.client.ui.values.font import Font
 
 

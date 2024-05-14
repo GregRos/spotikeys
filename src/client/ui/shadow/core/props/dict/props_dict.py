@@ -20,16 +20,16 @@ from typing import (
     runtime_checkable,
 )
 
+from src.client.ui.shadow.core.props.single.just_value import JustValue
+from src.client.ui.shadow.core.props.single.prop_def import PropDef
+from src.client.ui.shadow.core.props.single.prop_value import PropValue
 from src.client.ui.shadow.core.props.operators import (
     SAME,
     Computable,
     Diffable,
     diff,
 )
-from src.client.ui.shadow.core.props.props import (
-    JustValue,
-    PropDef,
-    PropValue,
+from src.client.ui.shadow.core.props.dict.norm_props import (
     norm_props,
 )
 from src.client.ui.values.geometry import Geometry

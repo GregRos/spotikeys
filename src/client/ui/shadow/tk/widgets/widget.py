@@ -9,7 +9,7 @@ from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
 
 
 from src.client.ui.shadow.core.props.operators import GroupedDict, UncomputedValue
-from src.client.ui.shadow.core.props.shadow_node import ShadowNode, ShadowProps
+from src.client.ui.shadow.core.reconciler.shadow_node import ShadowNode, ShadowProps
 
 
 @dataclass(kw_only=True)

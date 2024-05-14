@@ -17,8 +17,8 @@ from typing import (
 
 from pydantic.dataclasses import dataclass
 
-from src.client.ui.shadow.core.props.props import PropDef
-from src.client.ui.shadow.core.props.props_dict import PropsDict
+from src.client.ui.shadow.core.props.single.prop_def import PropDef
+from src.client.ui.shadow.core.props.dict.props_dict import PropsDict
 
 
 @dataclass(kw_only=True)

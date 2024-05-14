@@ -1,5 +1,7 @@
 from tkinter import Label, Tk, Widget
 from typing import Any, ClassVar, Self, final, override
+from src.client.ui.shadow.core.props.operators import compute
+from src.client.ui.shadow.core.props.dict.props_dict import PropsDict
 from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
 from src.client.ui.shadow.core.reconciler.resource import Compat, ShadowedResource
 from src.client.ui.shadow.tk.widgets.widget import WidgetNode
@@ -52,8 +54,8 @@ class WidgetWrapper(ShadowedResource[WidgetNode]):
         self.resource.destroy()
 
     @override
-    def update(self, props: GroupedDict[UncomputedValue]) -> None:
-        diff = {key: value.compute() for key, value in props["configure"].items()}
+    def update(self, props: PropsDict) -> None:
+        diff = compute(props)
         self.resource.configure(**diff)
 
     @override

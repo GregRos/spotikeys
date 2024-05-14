@@ -10,7 +10,8 @@ from typing import (
     get_type_hints,
 )
 
-from src.client.ui.shadow.core.props.props_dict import PropDef, PropsDict
+from src.client.ui.shadow.core.props.dict.props_dict import PropsDict
+from src.client.ui.shadow.core.props.single.prop_def import PropDef
 
 UNSET = object()
 
@@ -63,7 +64,7 @@ def make_props_from_annotated(obj: Callable):
 
 def section_setter[
     **P, R, X
-](*, prop_def: PropDef = PropDef(value_type=PropsDict)) -> Callable[
+](prop_def: PropDef = PropDef(value_type=PropsDict)) -> Callable[
     [Callable[Concatenate[R, P], Any]], Callable[Concatenate[R, P], R]
 ]:
     def init_props_dict(target: Any):

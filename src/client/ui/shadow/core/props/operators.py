@@ -46,7 +46,7 @@ REMOVED = Result("REMOVED", False)
 @runtime_checkable
 class Computable(Protocol):
     @abstractmethod
-    def compute(self, key: str) -> tuple[str, Any]: ...
+    def compute(self, key: str) -> tuple[str, Any] | None: ...
 
     @abstractmethod
     def __eq__(self, other: object) -> bool: ...
@@ -62,23 +62,35 @@ class Diffable(Protocol):
         return isinstance(other, self.__class__) and self.delta_from(other) is SAME
 
 
-def compute(key: str, value: object, /) -> tuple[str, object]:
+def compute(key: str, value: object, /) -> tuple[str, Any] | None:
     def compute_dict(key: str, value: Mapping[str, Any], /):
         result = {}
         for key2, val in value.items():
-            key2_r, v = compute(key2, val)
+            p = compute(key2, val)
+            if not p:
+                continue
+            key2_r, v = p
             result[key2_r] = v
+        if not result:
+            return None
         return key, result
 
     def compute_list(key: str, value: Iterable[object], /):
         result = []
         for i, val in enumerate(value):
-            _, v = compute(str(i), val)
+            p = compute(str(i), val)
+            if not p:
+                continue
+            _, v = p
             result.append(v)
+        if not result:
+            return None
         return key, result
 
     if isinstance(value, Computable):
-        key, value = value.compute(key)
+        result = value.compute(key)
+        if not result:
+            return result
         return compute(key, value)
     if isinstance(value, list) or isinstance(value, tuple) or isinstance(value, set):
         return compute_list(key, value)

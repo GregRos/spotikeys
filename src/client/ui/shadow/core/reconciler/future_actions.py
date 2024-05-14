@@ -1,19 +1,19 @@
 from dataclasses import dataclass
 
 from src.client.ui.shadow.core.props.operators import diff
-from src.client.ui.shadow.core.props.shadow_node import ShadowNode
+from src.client.ui.shadow.core.reconciler.shadow_node import ShadowNode
 from src.client.ui.shadow.core.reconciler.resource import ShadowedResource
 
 
 @dataclass
-class Create[Node: ShadowNode]:
-    next: Node
+class Create:
+    next: ShadowNode
 
 
 @dataclass
-class Update[Node: ShadowNode]:
-    existing: ShadowedResource[Node]
-    next: Node
+class Update:
+    existing: ShadowedResource
+    next: ShadowNode
 
     @property
     def props(self):
@@ -21,9 +21,9 @@ class Update[Node: ShadowNode]:
 
 
 @dataclass
-class Recreate[Node: ShadowNode]:
-    old: ShadowedResource[Node]
-    next: Node
+class Recreate:
+    old: ShadowedResource
+    next: ShadowNode
 
     @property
     def props(self):
@@ -31,16 +31,16 @@ class Recreate[Node: ShadowNode]:
 
 
 @dataclass
-class Place[Node: ShadowNode]:
-    what: Update[Node] | Recreate[Node] | Create[Node]
+class Place:
+    what: Update | Recreate | Create
 
 
 @dataclass
-class Replace[Node: ShadowNode]:
-    replaces: ShadowedResource[Node]
-    with_what: Update[Node] | Recreate[Node] | Create[Node]
+class Replace:
+    replaces: ShadowedResource
+    with_what: Update | Recreate | Create
 
 
 @dataclass
-class Unplace[Node: ShadowNode]:
-    what: ShadowedResource[Node]
+class Unplace:
+    what: ShadowedResource

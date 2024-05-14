@@ -16,14 +16,17 @@ from typing import (
 )
 
 
+from src.client.ui.shadow.core.props.operators import compute
+from src.client.ui.shadow.core.props.dict.props_dict import PropsDict
 from src.client.ui.shadow.core.rendering.component import Component
-from src.client.ui.shadow.core.props.operators import GroupedDict, UncomputedValue
 from src.client.ui.shadow.core.reconciler.resource import (
     Compat,
     ShadowedResource,
 )
-from src.client.ui.shadow.core.props.shadow_node import ShadowProps
+from src.client.ui.shadow.core.reconciler.shadow_node import ShadowProps
 from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
+from src.client.ui.shadow.core.rendering.renderer import ComponentMount
+from src.client.ui.shadow.core.context import Ctx
 from src.client.ui.shadow.tk.widgets.widget import WidgetNode
 from src.client.ui.shadow.tk.widgets.widget_wrapper import WidgetWrapper
 from src.client.ui.shadow.tk.window.window import SwTkWindow
@@ -32,19 +35,20 @@ from src.client.ui.values.geometry import Geometry
 
 class TkWrapper(ShadowedResource[SwTkWindow]):
     resource: Tk
-    _render_state: StatefulReconciler
+    _component_mount: ComponentMount
 
     @staticmethod
     @override
     def node_type() -> type[SwTkWindow]:
         return SwTkWindow
 
-    def __init__(self, node: SwTkWindow, resource: Tk):
+    def __init__(self, node: SwTkWindow, resource: Tk, context: Ctx):
         super().__init__(node)
         self.resource = resource
-        self._render_state = StatefulReconciler(
-            WidgetWrapper, lambda x: WidgetWrapper.create(resource, x)
+        reconciler = StatefulReconciler(
+            WidgetWrapper, lambda x: WidgetWrapper.create(self.resource, x)
         )
+        self._component_mount = ComponentMount(reconciler, context)
 
     @override
     def is_same_resource(self, other: Self) -> bool:
@@ -94,7 +98,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
     @override
     def place(self) -> None:
         def do():
-            geo = self.node.geometry.normalize(self.resource).to_tk()
+            geo = self.props()["geometry"].normalize(self.resource).to_tk()
             self.resource.wm_geometry(geo)
             self.resource.deiconify()
 
@@ -105,25 +109,20 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
         return "update"
 
     @override
-    def update(self, props: GroupedDict[UncomputedValue]) -> None:
-        diff = props.map(lambda x: x.compute())
+    def update(self, props: PropsDict) -> None:
+        _, computed = compute("", props)
 
         def do():
-            if attrs := diff.attributes:
+            if attrs := computed["attributes"]:
                 attributes = [
                     item for k, v in attrs.items() for item in (f"-{k}", v) if v
                 ]
                 self.resource.attributes(*attributes)
-            if configure := diff.configure:
+            if configure := computed["configure"]:
                 self.resource.configure(**configure)
-            if ("", "override_redirect") in diff:
-                self.resource.overrideredirect(diff["", "override_redirect"])
-            if children := diff["", "children"]:
-                self._render_state.reconcile(
-                    Component(
-                        key="root",
-                        children=children,
-                    )
-                )
+            if ("", "override_redirect") in computed:
+                self.resource.overrideredirect(computed["", "override_redirect"])
+            if children := computed["", "children"]:
+                self._component_mount
 
         self.schedule(do)

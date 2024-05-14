@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Generator, override
 from src.client.ui.shadow.core.rendering.component import Component
-from src.client.ui.shadow.core.props.shadow_node import ShadowProps
+from src.client.ui.shadow.core.reconciler.shadow_node import ShadowProps
 from src.client.ui.shadow.tk.nodes import TK
 from src.client.ui.shadow.tk.widgets.widget import WidgetComponent
 from src.client.ui.values.font import Font

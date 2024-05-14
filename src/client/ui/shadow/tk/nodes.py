@@ -4,7 +4,6 @@ from typing import Callable, override
 
 from src.client.ui.shadow.core.rendering.component import Component
 from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
-from src.client.ui.shadow.core.props.prop import prop
 from src.client.ui.shadow.core.reconciler.stateful_reconciler import StatefulReconciler
 
 
