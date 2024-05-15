@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import List
+from typing import List, cast
 
 from spotipy import Spotify
 
@@ -28,7 +28,7 @@ class Track(SpotifyResource):
     def album(self):
         if not self._data.get("album"):
             return None
-        return Album(self._spotify, self.get("album"))
+        return Album(self._spotify, cast(dict, self._data.get_dict("album")))
 
     @property
     def tracks(self):
@@ -40,9 +40,9 @@ class Track(SpotifyResource):
     def recommend(self):
         result = [
             Track(self._spotify, track_data)
-            for track_data in self._spotify.recommendations(seed_tracks=[self.id]).get(
-                "tracks"
-            )
+            for track_data in not_none(
+                self._spotify.recommendations(seed_tracks=[self.id])
+            ).get("tracks")
         ]
         logger.info(f"Recommended {len(result)} tracks for {self.name}")
         return result
@@ -56,7 +56,7 @@ class Track(SpotifyResource):
 
     @property
     def duration(self) -> float:
-        return float(self.get("duration_ms")) / 1000
+        return float(self._data.get_int("duration_ms")) / 1000
 
     async def set_saved(self, saved: bool):
         if saved:
@@ -73,7 +73,7 @@ class Track(SpotifyResource):
     @property
     @asyncify
     def is_saved(self):
-        return self._spotify.current_user_saved_tracks_contains([self.id])[0]
+        return not_none(self._spotify.current_user_saved_tracks_contains([self.id]))[0]
 
     async def unsave(self):
         if await self.is_saved:

@@ -22,7 +22,7 @@ class WidgetWrapper(ShadowedResource[WidgetNode]):
 
     @staticmethod
     def create(tk: Tk, node: WidgetNode) -> "WidgetWrapper":
-        match node.tk_type:
+        match node.__class__.tk_type:
             case "Label":
                 return __class__(node, Label(tk))
             case _:

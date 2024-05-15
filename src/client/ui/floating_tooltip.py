@@ -1,13 +1,7 @@
+from asyncio import sleep
 import ctypes
 from dataclasses import dataclass
-from logging import getLogger
-from math import trunc
-from threading import Thread
-from time import sleep
-from tkinter import Tk, Label, SOLID, LEFT, CENTER, Widget
-from typing import Generator, Tuple, override
-
-from attr import field
+from typing import override
 
 
 from src.client.kb.triggered_command import (
@@ -17,17 +11,11 @@ from src.client.kb.triggered_command import (
 )
 
 
-from src.client.ui.command_header import CommandColors, CommandHeader
-from src.client.ui.shadow.model.components.component import Component
-from src.client.ui.shadow.tk.nodes import TK
+from src.client.ui.command_header import CommandHeader
+from src.client.ui.shadow.core.context import Ctx
 from src.client.ui.shadow.tk.widgets.widget import WidgetComponent
-from src.client.ui.shadow.tk.window.window import WindowComponent
-from src.client.ui.values.geometry import Geometry
-from src.client.ui.framework.tooltip_row import TooltipRow
+from src.client.ui.shadow.tk.window.window import SwTkWindow, WindowComponent
 from src.client.ui.media_display import MediaDisplay
-from src.client.volume import VolumeInfo
-from src.commanding.commands import Command
-from .shadow.tk.make_clickthrough import make_clickthrough
 from src.now_playing import MediaStatus
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -43,36 +31,43 @@ justify = 24
 
 @dataclass
 class ActionHUD(WindowComponent):
-    executed: MediaStageMessage
-    previous: MediaStatus = field(default=None, init=False)
 
-    def render(self):
-        yield TK.Window(
+    def render(self, ctx):
+        if ctx.hidden == True:
+            return
+        yield SwTkWindow(
+            background="#000001",
+            topmost=True,
+            transparent_color="black",
+            override_redirect=True,
+            alpha=85 if isinstance(ctx.executed, TriggeredCommand) else 100,
+        ).geometry(
             width=420,
             height=250,
             x=-450,
             y=-350,
-            topmost=True,
-        )[self.Inner(executed=self.executed)]
+        )[
+            self.Inner(executed=ctx.executed, previous=ctx.last_status)
+        ]
 
     @dataclass
     class Inner(WidgetComponent):
         executed: MediaStageMessage
-        previous: MediaStatus = field(default=None, init=False)
+        previous: MediaStatus
 
         @override
-        def render(self):
+        def render(self, ctx: Ctx):
             if isinstance(self.executed, FailedCommand):
                 raise ValueError("Failed command should not be rendered")
-            if isinstance(self.executed, OkayCommand):
-                self.previous = self.executed.result
+            if ctx.hidden:
+                return
             yield CommandHeader(
                 input=self.executed,
                 justify=justify,
-                colors=CommandColors(
-                    status="red",
-                    trigger="grey",
-                    okay="green",
-                ),
+                colors={
+                    "status": "red",
+                    "trigger": "grey",
+                    "okay": "green",
+                },
             )
             yield MediaDisplay(status=self.previous)

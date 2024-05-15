@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from typing import Generator, override
 from src.client.ui.shadow.model.components.component import Component
 from src.client.ui.shadow.model.nodes.shadow_node import ShadowProps
-from src.client.ui.shadow.tk.nodes import TK
-from src.client.ui.shadow.tk.widgets.widget import WidgetComponent
+from src.client.ui.shadow.tk.widgets.widget import LabelNode, WidgetComponent
 from src.client.ui.values.font import Font
 from src.now_playing import MediaStatus
 
@@ -24,8 +23,8 @@ class ProgressLabel(WidgetComponent):
         return round(100 * self.position / self.duration)
 
     @override
-    def render(self):
-        yield TK.Label(
+    def render(self, _):
+        yield LabelNode(
             text=self.get_progress_line(),
             background="#000001",
             foreground="#ffffff",
@@ -34,6 +33,7 @@ class ProgressLabel(WidgetComponent):
                 size=14,
                 style="normal",
             ),
+        ).pack(
             ipadx=20,
             ipady=15,
             fill="both",

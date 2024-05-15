@@ -21,9 +21,10 @@ from pydantic.dataclasses import dataclass
 
 class WindowProps(InitPropsBase):
     topmost: Annotated[NotRequired[bool], PropDef(section="configure")]
-    background: Annotated[NotRequired[bool], PropDef(section="configure")]
-    transparent_color: Annotated[NotRequired[str], PropDef(section="configure")]
+    background: Annotated[NotRequired[str], PropDef(section="attributes")]
+    transparent_color: Annotated[NotRequired[str], PropDef(section="attributes")]
     override_redirect: NotRequired[bool]
+    alpha: Annotated[NotRequired[float], PropDef(section="attributes")]
 
 
 class Geometry(InitPropsBase):

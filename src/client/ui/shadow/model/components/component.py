@@ -34,9 +34,6 @@ from src.client.ui.shadow.model.nodes.shadow_node import (
 from src.client.ui.shadow.core.context import Ctx, Updatable
 from pydantic.dataclasses import dataclass
 
-if TYPE_CHECKING:
-    from src.client.ui.framework.tooltip_row import TooltipRow
-
 
 class ComponentProps(InitPropsBase):
     key: Annotated[NotRequired[str], PropDef(default="")]

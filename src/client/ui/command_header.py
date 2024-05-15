@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import Literal, override
+from typing import Literal, TypedDict, override
 
 from src.client.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
 from src.client.ui.floating_tooltip import MediaStageMessage
 from src.client.ui.shadow.model.components.component import Component
-from src.client.ui.shadow.tk.nodes import TK
+from src.client.ui.shadow.tk.widgets.widget import LabelNode
 from src.client.ui.values.font import Font
 
 
@@ -44,8 +44,8 @@ class CommandHeader(Component):
                 )
 
     @override
-    def render(self, state):
-        yield TK.Label(
+    def render(self, _):
+        yield LabelNode(
             text=self.get_text(),
             background=self.get_color(),
             foreground="#dddddd",
@@ -54,6 +54,7 @@ class CommandHeader(Component):
                 size=12,
                 style="normal",
             ),
+        ).pack(
             ipadx=20,
             ipady=5,
             fill="both",

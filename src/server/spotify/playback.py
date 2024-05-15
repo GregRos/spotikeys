@@ -33,7 +33,7 @@ class NothingPlayingError(Exception):
 class Playback(SpotifyBase):
 
     def allows(self, action: str):
-        disallows = self.get("actions").get("disallows").get(action)
+        disallows = self._data.get_bool(("actions", "disallows", action))
         return not disallows
 
     def must_allow(self, action: str):
@@ -48,19 +48,19 @@ class Playback(SpotifyBase):
 
     @property
     def track(self):
-        return Track(self._spotify, self.get("item"))
+        return Track(self._spotify, self._data.get_dict("item"))  # type: ignore
 
     @property
     def is_playing(self) -> bool:
-        return self.get("is_playing")
+        return self._data.get_bool("is_playing")
 
     @property
     def progress(self) -> float:
-        return float(self.get("progress_ms")) / 1000
+        return float(self._data.get_int("progress_ms")) / 1000
 
     @property
     def device(self):
-        return Device(**self.get("device"))
+        return Device(**self._data.get_dict("device"))  # type: ignore
 
     @asyncify
     def start(self, uri: str | Playlist | Track | Album | Artist):
@@ -75,7 +75,7 @@ class Playback(SpotifyBase):
         return MediaStatus(
             title=self.track.name,
             artist=self.track.artists[0].name,
-            album=self.track.album.name,
+            album=self.track.album.name if self.track.album else "",
             duration=self.track.duration,
             is_playing=self.is_playing,
             position=self.progress,
@@ -100,13 +100,13 @@ class Playback(SpotifyBase):
 
     @property
     def volume(self) -> int:
-        return self._data["device"]["volume_percent"]
+        return self._data.get_int(("device", "volume_percent"))
 
     @asyncify
     def set_volume(self, volume: int):
         volume = max(0, min(volume, 100))
-        self._spotify.volume(volume, self._data["device"]["id"])
-        self._data["device"]["volume_percent"] = volume
+        self._spotify.volume(volume, self._data["device", "id"])
+        self._data["device", "volume_percent"] = volume
 
     @asyncify
     def play(self):
@@ -120,7 +120,7 @@ class Playback(SpotifyBase):
 
     @property
     def shuffle(self) -> bool:
-        return self.get("shuffle_state")
+        return self._data.get_bool("shuffle_state")
 
     @shuffle.setter
     def shuffle(self, shuffle=False):
@@ -129,7 +129,7 @@ class Playback(SpotifyBase):
 
     @property
     def repeat(self) -> Literal["track", "context", False]:
-        match self.get("repeat_state"):
+        match self._data.get_str("repeat_state"):
             case "off":
                 return False
             case repeat:

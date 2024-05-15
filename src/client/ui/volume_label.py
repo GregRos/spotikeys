@@ -3,8 +3,11 @@ from math import trunc
 from typing import Generator, override
 from src.client.ui.shadow.model.components.component import Component
 from src.client.ui.shadow.model.nodes.shadow_node import ShadowProps
-from src.client.ui.shadow.tk.nodes import TK
-from src.client.ui.shadow.tk.widgets.widget import WidgetNode, WidgetComponent
+from src.client.ui.shadow.tk.widgets.widget import (
+    LabelNode,
+    WidgetNode,
+    WidgetComponent,
+)
 from src.client.ui.values.font import Font
 from src.client.volume import VolumeInfo
 
@@ -23,8 +26,8 @@ class VolumeLabel(WidgetComponent):
         return f"🔊 {full * full_boxes}{empty * (16 - full_boxes)}"
 
     @override
-    def render(self):
-        yield TK.Label(
+    def render(self, _):
+        yield LabelNode(
             text=self.get_volume_line(),
             background="#000001",
             foreground="#00ff00",
@@ -33,6 +36,7 @@ class VolumeLabel(WidgetComponent):
                 size=13,
                 style="normal",
             ),
+        ).pack(
             ipadx=40,
             ipady=13,
             fill="both",

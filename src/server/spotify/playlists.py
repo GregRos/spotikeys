@@ -5,6 +5,8 @@ from src.server.spotify.current_user import CurrentUser
 from src.server.spotify.playlist import Playlist
 from spotipy import Spotify
 
+from src.server.spotify.utils import not_none
+
 logger = getLogger("server")
 
 
@@ -28,7 +30,7 @@ class Playlists(SpotifyBacked):
 
     async def items(self):
         playlists_result = await self.asyncily(
-            lambda spot: spot.current_user_playlists().get("items")
+            lambda spot: not_none(spot.current_user_playlists()).get("items")
         )
         playlists = [Playlist(self._spotify, p) for p in playlists_result]
         logger.info(f"Loaded {len(playlists)} playlists")

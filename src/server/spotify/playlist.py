@@ -1,13 +1,13 @@
 from logging import getLogger
-from typing import List
+from typing import List, cast
 
+from benedict import benedict
 from spotipy import Spotify
 
 from src.server.spotify.asyncify import asyncify
 from src.server.spotify.track import Track
 from src.server.spotify.resource import SpotifyResource
 from src.server.spotify.artist import Artist
-from benedict import BeneDict as benedict
 
 from src.server.spotify.utils import not_none
 
@@ -32,7 +32,7 @@ class Playlist(SpotifyResource):
 
     @property
     def name(self) -> str:
-        return not_none(self._data.get("name"))
+        return not_none(self._data.get_str("name"))
 
     @asyncify
     def follow(self):
@@ -54,7 +54,7 @@ class Playlist(SpotifyResource):
 
     @property
     def images(self) -> List[dict]:
-        return not_none(self._data.get("images"))
+        return not_none(self._data.get_list("images"))
 
     def reload(self):
         self._data = benedict(self._spotify.playlist(self.id))
@@ -71,9 +71,9 @@ class Playlist(SpotifyResource):
     @asyncify
     def remove_tracks(self, tracks: List[str]):
         self._spotify.playlist_remove_all_occurrences_of_items(self.id, tracks)
-        self._data["tracks"]["items"] = [
+        self._data["tracks", "items"] = [
             track
-            for track in self._data.get("tracks").get("items") 
+            for track in self._data["tracks", "items"]
             if track.get("track").get("id") not in tracks
         ]
 
@@ -84,24 +84,24 @@ class Playlist(SpotifyResource):
                 self.id, [track.id for track in tracks]
             )
         )
-        self._data["tracks"]["items"] = []
+        self._data["tracks", "items"] = []
         logger.info(f"Cleared {self.name}")
 
     @property
     def owner(self) -> Artist:
-        return Artist(self._spotify, not_none(self._data.get("owner")))
+        return Artist(self._spotify, cast(dict, not_none(self._data.get_dict("owner"))))
 
     @property
     @asyncify
     def tracks(self) -> List[Track]:
         return [
             Track(self._spotify, track.get("track"))
-            for track in self._spotify.playlist_tracks(self.id).get("items")
+            for track in not_none(self._spotify.playlist_tracks(self.id)).get("items")
         ]
 
     @property
     def total_tracks(self) -> int:
-        return self.get("tracks").get("total")
+        return self._data.get_int(("tracks", "total"))
 
     @property
     def public(self):

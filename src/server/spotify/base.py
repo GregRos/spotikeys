@@ -2,7 +2,7 @@ from datetime import datetime
 from time import sleep
 from typing import Callable
 
-from benedict import BeneDict as benedict
+from benedict import benedict
 from spotipy import Spotify
 
 from src.server.spotify.asyncify import asyncify
@@ -36,8 +36,8 @@ class SpotifyBase(SpotifyBacked):
         self._reload = reload
         self._data = benedict(data)
 
-    def get(self, key):
-        return self._data[key]
+    def get(self, *keys):
+        return self._data[keys]
 
     def set(self, key, value):
         if not key in self._data:
