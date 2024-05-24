@@ -27,7 +27,7 @@ class WindowComponent(Component[SwTkWindow]):
         )[StuffComponent(text=ctx.text), StuffComponent(text=ctx.text)]
 
 
-MyTK = WindowComponentMount()
+MyTK = WindowComponentMount(WindowComponent())
 
 MyTK(text="Hello, World!")
 sleep(2)

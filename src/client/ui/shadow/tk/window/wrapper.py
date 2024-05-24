@@ -1,4 +1,6 @@
-from dataclasses import dataclass, field
+from pydantic import ConfigDict
+from pydantic.dataclasses import dataclass
+
 from itertools import zip_longest
 
 
@@ -35,6 +37,7 @@ from src.client.ui.values.geometry import Geometry
 
 
 class TkWrapper(ShadowedResource[SwTkWindow]):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     resource: Tk
     _component_mount: WidgetComponentMount
 
@@ -43,11 +46,11 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
     def node_type() -> type[SwTkWindow]:
         return SwTkWindow
 
-    def __init__(self, node: SwTkWindow, resource: Tk, context: Ctx):
+    def __init__(self, node: SwTkWindow, resource: Tk, context: Ctx, root: Component):
         super().__init__(node)
         self.resource = resource
         self.context = context
-        self._component_mount = WidgetComponentMount(resource, context)
+        self._component_mount = WidgetComponentMount(resource, context, root)
 
     @override
     def is_same_resource(self, other: Self) -> bool:
@@ -67,8 +70,9 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
         thread = threading.Thread(target=ui_thread)
         thread.start()
         waiter.wait()
+        root = Component(key="WidgetRoot")[*node.children]
 
-        wrapper = TkWrapper(node, tk, context)
+        wrapper = TkWrapper(node, tk, context, root=root)
         return wrapper
 
     def schedule(
@@ -79,7 +83,9 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
 
     @override
     def migrate(self, node: SwTkWindow) -> Self:
-        return self.__class__(node, self.resource, self.context)
+        return self.__class__(
+            node, self.resource, self.context, self._component_mount._mounted
+        )
 
     @override
     def destroy(self) -> None:
@@ -126,6 +132,6 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
             if ("", "override_redirect") in computed:
                 self.resource.overrideredirect(computed["", "override_redirect"])
             if children := computed["children"]:
-                self._component_mount.mount(Component(key="WidgetRoot")[*children])
+                self._component_mount.remount(children)
 
         self.schedule(do)

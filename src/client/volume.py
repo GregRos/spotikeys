@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from pydantic.dataclasses import dataclass
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from pydantic.dataclasses import dataclass
 from typing import Literal, TypedDict, override
 
 from src.client.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand

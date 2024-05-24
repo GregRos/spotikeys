@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from pydantic.dataclasses import dataclass
 from math import trunc
 from tkinter import Tk
 from src.client.kb.triggered_command import OkayCommand

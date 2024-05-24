@@ -1,16 +1,17 @@
-from dataclasses import dataclass
+from pydantic import ConfigDict
+from pydantic.dataclasses import dataclass
 
 from src.client.ui.shadow.model.props.operators import diff
 from src.client.ui.shadow.model.nodes.shadow_node import ShadowNode
 from src.client.ui.shadow.model.nodes.resource import ShadowedResource
 
 
-@dataclass
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Create:
     next: ShadowNode
 
 
-@dataclass
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Update:
     existing: ShadowedResource
     next: ShadowNode
@@ -20,7 +21,7 @@ class Update:
         return diff(self.existing.node._props, self.next._props)
 
 
-@dataclass
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Recreate:
     old: ShadowedResource
     next: ShadowNode
@@ -30,17 +31,17 @@ class Recreate:
         return self.next._props
 
 
-@dataclass
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Place:
     what: Update | Recreate | Create
 
 
-@dataclass
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Replace:
     replaces: ShadowedResource
     with_what: Update | Recreate | Create
 
 
-@dataclass
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Unplace:
     what: ShadowedResource

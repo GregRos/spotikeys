@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from pydantic.dataclasses import dataclass
 from typing import Generator, override
 from src.client.ui.shadow.model.components.component import Component
 from src.client.ui.shadow.model.nodes.shadow_node import ShadowProps

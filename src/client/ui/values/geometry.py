@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from tkinter import Tk
 from typing import Tuple, TypedDict
 

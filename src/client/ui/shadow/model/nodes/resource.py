@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Literal, Self
+
+from pydantic import BaseModel
 
 
 from src.client.ui.shadow.model.props.dict.props_dict import PropsDict

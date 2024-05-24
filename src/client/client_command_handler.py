@@ -35,7 +35,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     ) -> None:
 
         super().__init__()
-        self._root = WindowComponentMount()
+        self._root = WindowComponentMount(ActionHUD())
         self._root.ctx(
             executed=None,
             last_status=MediaStatus(

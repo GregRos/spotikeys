@@ -1,7 +1,7 @@
 from src.commanding.commands import Command
 
 
-from dataclasses import dataclass, field
+from pydantic.dataclasses import dataclass, field
 
 
 @dataclass()

@@ -1,21 +1,7 @@
-from abc import ABC, abstractmethod
-from ast import TypeAlias
-from dataclasses import dataclass, field
-from datetime import datetime
-from imghdr import what
 import logging
-from platform import node
-from re import T
 from typing import (
-    Any,
     Callable,
-    ClassVar,
     Iterable,
-    Literal,
-    Protocol,
-    TypeVar,
-    TypedDict,
-    runtime_checkable,
 )
 from src.client.ui.shadow.model.nodes.resource import (
     ShadowedResource,
@@ -28,12 +14,10 @@ from src.client.ui.shadow.core.future_actions import (
     Update,
     Place,
 )
-from src.client.ui.shadow.model.nodes.shadow_node import ShadowNode, ShadowProps
-from src.client.ui.shadow.tk.widgets.widget import WidgetNode
+from src.client.ui.shadow.model.nodes.shadow_node import ShadowNode
 
 
 from itertools import groupby, zip_longest
-from tkinter import Label, Tk, Widget
 
 logger = logging.getLogger("reconciler")
 

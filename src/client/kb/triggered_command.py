@@ -1,16 +1,18 @@
 from datetime import date
 import datetime
 import time
+
+from pydantic import Field
 from src.client.kb.key import Key
 from src.client.kb.key_combination import KeyCombination
 from src.commanding.commands import Command
 
 
-from dataclasses import dataclass, field
+from pydantic.dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable, Coroutine, Literal, TypeGuard
 
 
-@dataclass
+@dataclass()
 class TriggeredCommand:
     command: Command
     trigger: Key
@@ -55,9 +57,9 @@ class TriggeredCommand:
 
 @dataclass()
 class OkayCommand[T]:
-    success: Literal[True] = field(default=True, init=False)
+    success: Literal[True] = Field(default=True, init=False)
     triggered: TriggeredCommand
-    command: Command = field(init=False)
+    command: Command = Field(init=False)
     duration: float
     result: T
 
@@ -67,7 +69,7 @@ class OkayCommand[T]:
 
 @dataclass
 class FailedCommand:
-    success: Literal[False] = field(default=False, init=False)
+    success: Literal[False] = Field(default=False, init=False)
     triggered: TriggeredCommand
     duration: float
     exception: Exception

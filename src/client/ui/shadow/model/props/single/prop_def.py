@@ -1,32 +1,60 @@
+from dataclasses import dataclass, field
 from src.client.ui.shadow.model.props.operators import SAME, Computable, Diffable
-from src.client.ui.shadow.model.props.single.prop_value import PropValue
 
 
 from pydantic import Field
-from pydantic.dataclasses import dataclass
 
 
 from copy import copy
-from typing import Any, Callable, Literal, Self, cast, override
+from typing import TYPE_CHECKING, Any, Callable, Literal, Self, cast, override
 
 DiffMode = Literal["simple", "recursive", "never"]
+if TYPE_CHECKING:
+    from src.client.ui.shadow.model.props.single.prop_value import PropValue
 
 
 @dataclass(kw_only=True)
-class PropDef[X](Computable, Diffable):
-    diff_mode: DiffMode = Field(default="recursive")
-    section: str = Field(default=None)
-    alias: str = Field(default=None)
-    default: X = Field(default=None)
-    converter: Callable[[X], Any] = Field(default=None)
-    value_type: type[X] = Field(default=None)
+class PropDef(Computable, Diffable):
+    section: str | None = field(default=None)
+    alias: str | None = field(default=None)
+    default: Any | None = field(default=None)
+    converter: Callable[[Any], Any] | None = field(default=None)
+    value_type: type[Any] | None = field(default=None)
+
+    @property
+    def prop(self) -> "PropDef":
+        return self
+
+    @property
+    def has_default(self) -> bool:
+        return self.default is not None
+
+    @property
+    def is_dict(self) -> bool:
+        from src.client.ui.shadow.model.props.dict.props_dict import PropsDict
+
+        return self.value_type is PropsDict
+
+    def is_valid(self, input: Any):
+        if self.value_type:
+            return isinstance(input, self.value_type)
+        return True
+
+    @property
+    def value(self) -> Any:
+        if self.default is None:
+            raise ValueError("No default value set")
+        return self.default
 
     @override
     def delta_from(self, other: Self) -> Any:
         return self if self != other else SAME
 
-    def set(self, **kwargs: Any) -> "PropDef[X]":
-        return copy(self, **kwargs)
+    def set(self, **kwargs: Any) -> "PropDef":
+        clone = copy(self)
+        for k, v in kwargs.items():
+            setattr(clone, k, v)
+        return clone
 
     def transform(self, key: str, value: Any) -> tuple[str, Any]:
         return (self.alias or key, self.converter(value) if self.converter else value)
@@ -34,11 +62,9 @@ class PropDef[X](Computable, Diffable):
     def __bool__(self) -> bool:
         return False
 
-    def wrap[Y](self, value: Y) -> "PropValue[Y]":
-        return PropValue[Y](value, cast(PropDef[Y], self))
-
-    def merge(self, other: "PropDef[X]") -> "PropDef[X]":
+    def merge(self, other: "PropDef") -> "PropDef":
         return self.set(**{k: v for k, v in other.__dict__.items() if v is not None})
 
     def compute(self, key: str) -> tuple[str, Any] | None:
         return self.alias if self.alias else key, self.default
+

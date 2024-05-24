@@ -1,5 +1,6 @@
 from __future__ import annotations
 import abc
+from dataclasses import dataclass, field
 from tkinter import Tk, Widget
 from types import SimpleNamespace
 from typing import (
@@ -20,9 +21,8 @@ from typing import (
 from pydantic import Field
 
 
-from src.client.ui.shadow.model.props.dict.prop_section import PropSection
-from src.client.ui.shadow.model.props.dict.read_annotations import (
-    make_props_from_annotated,
+from src.client.ui.shadow.model.props.from_type.read_annotations import (
+    get_sections,
 )
 from src.client.ui.shadow.model.props.single.prop_def import PropDef
 from src.client.ui.shadow.model.props.dict.props_dict import PropsDict
@@ -32,7 +32,6 @@ from src.client.ui.shadow.model.nodes.shadow_node import (
     ShadowProps,
 )
 from src.client.ui.shadow.core.context import Ctx, Updatable
-from pydantic.dataclasses import dataclass
 
 
 class ComponentProps(InitPropsBase):
@@ -42,8 +41,8 @@ class ComponentProps(InitPropsBase):
 
 @dataclass(kw_only=True)
 class Component[Node: ShadowNode](abc.ABC):
-    key: str = Field(default="")
-    children: Tuple[Component[Node], ...] = Field(default=())
+    key: str = field(default="")
+    children: Tuple[Component[Node], ...] = field(default=())
 
     def _copy(self, **overrides: Any) -> Self:
         return self.__class__(**{**self.__dict__, **overrides})

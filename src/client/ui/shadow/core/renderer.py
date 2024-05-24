@@ -1,45 +1,41 @@
-from dataclasses import dataclass
 from typing import Callable, Generator
 
 from src.client.ui.shadow.model.nodes.shadow_node import ShadowNode
 from src.client.ui.shadow.core.stateful_reconciler import StatefulReconciler
 from src.client.ui.shadow.model.components.component import Component
 from src.client.ui.shadow.core.context import Ctx, Updatable
-
-
-@dataclass
-class RenderRecord[Node: ShadowNode]:
-    component: Component
-    rendered: tuple[Node, ...]
-
-
-class Rendered:
-    _last_render: dict[str, RenderRecord]
+from pydantic.dataclasses import dataclass
 
 
 def with_key(node: ShadowNode, key: str) -> ShadowNode:
     return node._copy(key=key)
 
 
+def wrap_root(children: tuple[Component, ...] | Component) -> Component:
+    return (
+        Component(key="GenericRoot", children=children)
+        if isinstance(children, tuple)
+        else children
+    )
+
+
 class ComponentMount:
     _reconciler: StatefulReconciler
     _mounted: Component
 
-    def __init__(self, reconciler: StatefulReconciler, context: Ctx):
+    def __init__(self, reconciler: StatefulReconciler, context: Ctx, root: Component):
         self._reconciler = reconciler
         self.context = context
-        self.context += self._on_ctx_changed
+        self._mounted = root
+        self.context += lambda _: self.force_rerender
+        self.force_rerender()
 
-    def _on_ctx_changed(self, updatable: Updatable):
-        if self._mounted:
-            self.rerender()
-
-    def compute_render(self):
+    def _compute_render(self):
         def _render(
-            cur_prefix: str, root: Component
+            cur_prefix: str, root: Component | tuple[Component, ...]
         ) -> Generator[ShadowNode, None, None]:
             node_type = self._reconciler.node_type
-
+            root = root if isinstance(root, Component) else wrap_root(root)
             cur_prefix = ".".join([cur_prefix, root.__class__.__name__])
             for i, child in enumerate(root.render(self.context)):
                 cur_prefix = ":".join([cur_prefix, child.key or str(i)])
@@ -54,9 +50,9 @@ class ComponentMount:
 
         return (*_render("", self._mounted),)
 
-    def rerender(self):
-        self._reconciler.reconcile(self.compute_render())
+    def remount(self, root: tuple[Component, ...] | Component):
+        self._mounted = wrap_root(root)
+        self.force_rerender()
 
-    def mount(self, root: Component):
-        self._mounted = root
-        self.rerender()
+    def force_rerender(self):
+        self._reconciler.reconcile(self._compute_render())

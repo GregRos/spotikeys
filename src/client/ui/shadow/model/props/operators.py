@@ -91,6 +91,7 @@ def compute(key: str, value: object, /) -> tuple[str, Any] | None:
         result = value.compute(key)
         if not result:
             return result
+        key, value = result
         return compute(key, value)
     if isinstance(value, list) or isinstance(value, tuple) or isinstance(value, set):
         return compute_list(key, value)

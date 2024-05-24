@@ -5,6 +5,7 @@ from tkinter import Label, Tk, Widget
 from types import MappingProxyType
 from typing import (
     TYPE_CHECKING,
+    Any,
     Callable,
     ClassVar,
     Generator,
@@ -25,7 +26,6 @@ from src.client.ui.shadow.model.nodes.shadow_node import ShadowNode, ShadowProps
 from src.client.ui.shadow.tk.widgets.props import PackProps, WidgetProps
 
 
-@dataclass(kw_only=True)
 class WidgetNode(ShadowNode):
     tk_type: ClassVar[str]
 
@@ -33,7 +33,7 @@ class WidgetNode(ShadowNode):
         cls.tk_type = tk_type
         return super().__init_subclass__()
 
-    @PropSection(diff_mode="recursive").section_setter
+    @PropSection(diff_mode="simple").section_setter
     def __init__(self, **props: Unpack[WidgetProps]): ...
 
     @PropSection(diff_mode="simple").section_setter
@@ -42,7 +42,9 @@ class WidgetNode(ShadowNode):
 
 
 class LabelNode(WidgetNode, tk_type="Label"):
-    pass
+    @override
+    def _copy(self, **overrides: Any) -> Self:
+        return self.__class__(*self._props.merge(overrides))
 
 
 @dataclass(kw_only=True)

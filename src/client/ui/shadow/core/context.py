@@ -4,11 +4,8 @@ from typing import Any, Callable, Self
 
 
 class Updatable:
-    _listeners: list[Callable[[Self], None]]
-
-    @classmethod
-    def is_class_key(cls, key: str) -> bool:
-        return key in cls.__dict__
+    _listeners: list[Callable[[Self], None]] = []
+    _map: dict[str, Any] = {}
 
     def snapshot(self) -> "Updatable":
         return Updatable(**self._map.copy())
@@ -31,8 +28,12 @@ class Updatable:
         self._listeners = []
 
     def __getattr__(self, key: str) -> Any:
-        if __class__.is_class_key(key):
+        if key in ["_map", "_listeners", "__annotations__"]:
             return super().__getattribute__(key)
+        if key in self.__annotations__:
+            return super().__getattribute__(key)
+        if not key in self._map:
+            return None
         return self._map[key]
 
     def __contains__(self, key: str) -> bool:
@@ -50,8 +51,11 @@ class Updatable:
             listener(self)
 
     def _try_set(self, key: str, value: Any) -> None:
-        if __class__.is_class_key(key):
-            raise AttributeError(f"Cannot set attribute {key} on {__class__.__name__}")
+        if key in ["_map", "_listeners", "__annotations__"]:
+            return super().__setattr__(key, value)
+        if key in self.__annotations__:
+            return super().__setattr__(key, value)
+
         self._map[key] = value
 
     def __call__(self, **kwargs: Any) -> Self:

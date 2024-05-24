@@ -1,3 +1,5 @@
+from copy import copy
+from dataclasses import dataclass
 from typing import (
     Annotated,
     Any,
@@ -8,15 +10,14 @@ from typing import (
 )
 
 
+from src.client.ui.shadow.model.props.dict.props_dict import PropsSection
 from src.client.ui.shadow.model.props.single.prop_def import PropDef
-from src.client.ui.shadow.model.props.dict.prop_section import PropSection
 from src.client.ui.shadow.model.components.component import Component
 from src.client.ui.shadow.model.nodes.shadow_node import (
     InitPropsBase,
     ShadowNode,
 )
 from src.client.ui.shadow.tk.widgets.widget import WidgetNode
-from pydantic.dataclasses import dataclass
 
 
 class WindowProps(InitPropsBase):
@@ -36,17 +37,19 @@ class Geometry(InitPropsBase):
 
 class SwTkWindow(ShadowNode, Component[WidgetNode]):  # type: ignore
 
-    @PropSection(diff_mode="recursive").section_setter
+    @PropsSection(recurse=True).section_setter
     def __init__(self, **props: Unpack[WindowProps]): ...
-
-    @PropSection(diff_mode="simple").section_setter
-    def geometry(self, **props: Unpack[Geometry]): ...
-
     @override
     def _copy(self, **overrides: Any) -> Self:
-        return self.__class__(**self._props.merge(overrides))
+        clone = copy(self)
+        clone._props = self._props.merge(overrides)
+        return clone
+
+    @PropsSection(recurse=False).section_setter
+    def geometry(self, **props: Unpack[Geometry]): ...
 
 
 @dataclass(kw_only=True)
 class WindowComponent(Component[SwTkWindow]):
+
     pass
