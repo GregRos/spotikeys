@@ -12,6 +12,7 @@ from typing import (
     Callable,
     Generator,
     Literal,
+    Mapping,
     Self,
     final,
     override,
@@ -19,7 +20,7 @@ from typing import (
 
 
 from src.client.ui.shadow.model.props.operators import compute
-from src.client.ui.shadow.model.props.dict.props_dict import PropsDict
+from src.client.ui.shadow.model.props.dict.props_dict import PropVals, PropsDict
 from src.client.ui.shadow.model.components.component import Component
 from src.client.ui.shadow.model.nodes.resource import (
     Compat,
@@ -100,10 +101,19 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
     def unplace(self) -> None:
         self.schedule(self.resource.withdraw)
 
+    def normalize_geo(self, geo: Mapping[str, Any]) -> str:
+        x, y, width, height = (geo[k] for k in ("x", "y", "width", "height"))
+        if x < 0:
+            x = self.resource.winfo_screenwidth() + x
+        if y < 0:
+            y = self.resource.winfo_screenheight() + y
+        return f"{width}x{height}+{x}+{y}"
+
     @override
     def place(self) -> None:
         def do():
-            geo = self.props()["geometry"].normalize(self.resource).to_tk()
+            geo = self.node._props["geometry"].value
+            geo = self.normalize_geo(geo)
             self.resource.wm_geometry(geo)
             self.resource.deiconify()
 
@@ -114,7 +124,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
         return "update"
 
     @override
-    def update(self, props: PropsDict) -> None:
+    def update(self, props: PropVals) -> None:
         x = compute("", props)
         if not x:
             return

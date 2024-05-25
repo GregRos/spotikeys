@@ -18,7 +18,7 @@ from src.client.ui.shadow.core.context import Ctx
 from src.client.ui.shadow.core.renderer import ComponentMount
 from src.client.ui.shadow.core.stateful_reconciler import StatefulReconciler
 from src.client.ui.shadow.model.components.component import Component
-from src.client.ui.shadow.model.props.dict.prop_section import PropSection
+from src.client.ui.shadow.model.props.dict.props_dict import section
 from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
 
 
@@ -33,10 +33,10 @@ class WidgetNode(ShadowNode):
         cls.tk_type = tk_type
         return super().__init_subclass__()
 
-    @PropSection(diff_mode="simple").section_setter
+    @section(recurse=True).setter
     def __init__(self, **props: Unpack[WidgetProps]): ...
 
-    @PropSection(diff_mode="simple").section_setter
+    @section(recurse=False).setter
     def pack(self, **props: Unpack[PackProps]) -> None:
         pass
 

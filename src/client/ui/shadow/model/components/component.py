@@ -21,9 +21,6 @@ from typing import (
 from pydantic import Field
 
 
-from src.client.ui.shadow.model.props.from_type.read_annotations import (
-    get_sections,
-)
 from src.client.ui.shadow.model.props.single.prop_def import PropDef
 from src.client.ui.shadow.model.props.dict.props_dict import PropsDict
 from src.client.ui.shadow.model.nodes.shadow_node import (
@@ -54,4 +51,6 @@ class Component[Node: ShadowNode](abc.ABC):
         self, children: tuple[Component[Node], ...] | Component[Node]
     ) -> Self:
         children = children if isinstance(children, tuple) else (children,)
-        return self._copy(children=children)
+        clone = self._copy()
+        clone.children = children
+        return clone

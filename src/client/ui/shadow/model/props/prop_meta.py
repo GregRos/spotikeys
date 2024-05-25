@@ -1,0 +1,2 @@
+class PropMeta:
+    pass

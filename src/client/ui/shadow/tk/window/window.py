@@ -10,7 +10,7 @@ from typing import (
 )
 
 
-from src.client.ui.shadow.model.props.dict.props_dict import PropsSection
+from src.client.ui.shadow.model.props.dict.props_dict import section
 from src.client.ui.shadow.model.props.single.prop_def import PropDef
 from src.client.ui.shadow.model.components.component import Component
 from src.client.ui.shadow.model.nodes.shadow_node import (
@@ -21,11 +21,11 @@ from src.client.ui.shadow.tk.widgets.widget import WidgetNode
 
 
 class WindowProps(InitPropsBase):
-    topmost: Annotated[NotRequired[bool], PropDef(section="configure")]
-    background: Annotated[NotRequired[str], PropDef(section="attributes")]
-    transparent_color: Annotated[NotRequired[str], PropDef(section="attributes")]
+    topmost: Annotated[NotRequired[bool], PropDef(parent="configure")]
+    background: Annotated[NotRequired[str], PropDef(parent="attributes")]
+    transparent_color: Annotated[NotRequired[str], PropDef(parent="attributes")]
     override_redirect: NotRequired[bool]
-    alpha: Annotated[NotRequired[float], PropDef(section="attributes")]
+    alpha: Annotated[NotRequired[float], PropDef(parent="attributes")]
 
 
 class Geometry(InitPropsBase):
@@ -37,15 +37,16 @@ class Geometry(InitPropsBase):
 
 class SwTkWindow(ShadowNode, Component[WidgetNode]):  # type: ignore
 
-    @PropsSection(recurse=True).section_setter
+    @section(recurse=True).setter
     def __init__(self, **props: Unpack[WindowProps]): ...
+
     @override
     def _copy(self, **overrides: Any) -> Self:
         clone = copy(self)
         clone._props = self._props.merge(overrides)
         return clone
 
-    @PropsSection(recurse=False).section_setter
+    @section(recurse=False).setter
     def geometry(self, **props: Unpack[Geometry]): ...
 
 

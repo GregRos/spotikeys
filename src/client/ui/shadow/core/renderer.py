@@ -39,7 +39,7 @@ class ComponentMount:
             cur_prefix = ".".join([cur_prefix, root.__class__.__name__])
             for i, child in enumerate(root.render(self.context)):
                 cur_prefix = ":".join([cur_prefix, child.key or str(i)])
-                if isinstance(child, node_type):
+                if isinstance(child, node_type):  # type: ignore
                     yield with_key(child, cur_prefix)
                 elif isinstance(child, Component):
                     yield from _render(cur_prefix, child)
