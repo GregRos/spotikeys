@@ -4,7 +4,7 @@ from time import sleep
 
 import keyboard
 
-from src.client.hotkeys.layout import Layout
+from src.kb.layout import Layout
 from src.commands.desktop_commands import DesktopCommands
 from src.vda_client.client import VdaClient
 from .keys import (

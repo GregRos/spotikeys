@@ -6,12 +6,11 @@ import time
 import traceback
 from typing import Any, Awaitable, Callable
 
-from src.client.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
-from src.client.ui.floating_tooltip import ActionHUD, MediaExecuted, MediaStageMessage
-from src.client.ui.shadow.core.context import Ctx
-from src.client.ui.shadow.core.renderer import ComponentMount
-from src.client.ui.shadow.tk.window.component_mount import WindowComponentMount
-from src.client.ui.values.geometry import Geometry
+from src.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
+from src.client.floating_tooltip import ActionHUD, MediaExecuted, MediaStageMessage
+from src.ui.core.context import Ctx
+from src.ui.core.renderer import ComponentMount
+from src.ui.tk.window.component_mount import WindowComponentMount
 from src.client.volume import ClientVolumeControl, VolumeInfo
 from src.now_playing import MediaStatus
 from src.commanding.commands import Command, ParamterizedCommand

@@ -1,4 +1,4 @@
-from src.client.kb.key import Key
+from src.kb.key import Key
 
 
 key_1 = Key("1")

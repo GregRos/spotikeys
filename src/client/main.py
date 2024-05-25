@@ -12,7 +12,7 @@ from src.server.command_handler import MediaCommandHandler
 from .keys import *
 from src.now_playing import MediaStatus
 from src.commands import *
-from src.client.hotkeys.layout import Layout
+from src.kb.layout import Layout
 
 from src.log_config import setup_logging
 

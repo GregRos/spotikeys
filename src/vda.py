@@ -3,7 +3,7 @@ from typing import Any
 import keyboard
 from pyvda import AppView, VirtualDesktop, get_virtual_desktops
 
-from src.client.kb.key import Key
+from src.kb.key import Key
 
 number_of_active_desktops = len(get_virtual_desktops())
 print(f"There are {number_of_active_desktops} active desktops")

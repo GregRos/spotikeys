@@ -7,7 +7,7 @@ from typing import Any, Awaitable
 
 from flask import current_app
 import win32com
-from src.client.kb.triggered_command import TriggeredCommand
+from src.kb.triggered_command import TriggeredCommand
 from src.commanding.commands import Command, ParamterizedCommand
 from src.commanding.handler import AsyncCommandHandler, handles
 from src.commands.desktop_commands import DesktopCommands

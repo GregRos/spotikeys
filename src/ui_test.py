@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from time import sleep
-from src.client.ui.shadow.core.context import Ctx
-from src.client.ui.shadow.model.components.component import Component
-from src.client.ui.shadow.tk.widgets.widget import LabelNode, WidgetNode
-from src.client.ui.shadow.tk.window.component_mount import WindowComponentMount
-from src.client.ui.shadow.tk.window.window import SwTkWindow
+from src.ui.core.context import Ctx
+from src.ui.model.component import Component
+from src.ui.tk.widgets.widget import LabelNode, WidgetNode
+from src.ui.tk.window.component_mount import WindowComponentMount
+from src.ui.tk.window.window import SwTkWindow
 from src.log_config import setup_logging
 
 setup_logging()
