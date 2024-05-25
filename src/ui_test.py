@@ -15,7 +15,9 @@ class StuffComponent(Component[WidgetNode]):
     text: str
 
     def render(self, _):
-        yield LabelNode(text=self.text, background="#000001", foreground="#ffffff")
+        yield LabelNode(
+            text=self.text, background="#000001", foreground="#ffffff"
+        ).pack(ipadx=20, ipady=15, fill="both")
 
 
 @dataclass(kw_only=True)
@@ -24,7 +26,9 @@ class WindowComponent(Component[SwTkWindow]):
     def render(self, ctx: Ctx):
         yield SwTkWindow(
             topmost=True, background="black", transparent_color="black", alpha=85
-        )[StuffComponent(text=ctx.text), StuffComponent(text=ctx.text)]
+        ).geometry(width=100, height=200, x=500, y=500)[
+            StuffComponent(text=ctx.text), StuffComponent(text=ctx.text)
+        ]
 
 
 MyTK = WindowComponentMount(WindowComponent())

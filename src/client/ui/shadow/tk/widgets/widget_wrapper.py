@@ -1,6 +1,5 @@
 from tkinter import Label, Tk, Widget
 from typing import Any, ClassVar, Self, final, override
-from src.client.ui.shadow.model.props.operators import compute
 from src.client.ui.shadow.model.props.dict.props_dict import PropVals, PropsDict
 from src.client.ui.shadow.tk.make_clickthrough import make_clickthrough
 from src.client.ui.shadow.model.nodes.resource import Compat, ShadowedResource
@@ -55,14 +54,14 @@ class WidgetWrapper(ShadowedResource[WidgetNode]):
 
     @override
     def update(self, props: PropVals) -> None:
-        _, diff = compute("", props["configure"]) or {}
-        self.resource.configure(**diff)
+        _, diff = props.compute("")
+        self.resource.configure(**diff.get("configure", {}))
 
     @override
     def place(self) -> None:
-        _, d = compute("", self.node._props["pack"]) or {}
+        _, d = self.node._props.compute("")
 
-        self.resource.pack_configure(**d["pack"])
+        self.resource.pack_configure(**d.get("pack", {}))
         make_clickthrough(self.resource)
 
     @override
@@ -71,10 +70,9 @@ class WidgetWrapper(ShadowedResource[WidgetNode]):
 
     @override
     def replace(self, other: Self) -> None:
-        p = compute("", other.node._props["pack"])
-        assert p
-        _, computed = p
-        other.resource.pack_configure(after=self.resource, **computed)
+        _, p = other.node._props.compute("")
+
+        other.resource.pack_configure(after=self.resource, **p.get("pack", {}))
 
         self.resource.pack_forget()
         make_clickthrough(other.resource)

@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from src.client.ui.shadow.model.props.operators import SAME, Computable, Diffable
 
 
 from pydantic import Field
@@ -8,6 +7,9 @@ from pydantic import Field
 from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Literal, Self, cast, override
 
+from src.client.ui.shadow.model.annotations.get_annotation_name import (
+    get_annotation_name,
+)
 from src.client.ui.shadow.model.props.prop_meta import PropMeta
 
 DiffMode = Literal["simple", "recursive", "never"]
@@ -16,7 +18,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(kw_only=True)
-class PropDef(Computable, Diffable):
+class PropDef:
     parent: str | None = field(default=None)
     alias: str | None = field(default=None)
     default: Any | None = field(default=None)
@@ -42,6 +44,8 @@ class PropDef(Computable, Diffable):
         if self.value_type:
             if self.value_type is float:
                 return isinstance(input, int) or isinstance(input, float)
+            if get_annotation_name(self.value_type) == "Literal":
+                return True
             return isinstance(input, self.value_type)
         return True
 
@@ -54,10 +58,6 @@ class PropDef(Computable, Diffable):
         if self.default is None:
             raise ValueError("No default value set")
         return self.default
-
-    @override
-    def delta_from(self, other: Self) -> Any:
-        return self if self != other else SAME
 
     def set(self, **kwargs: Any) -> "PropDef":
         clone = copy(self)

@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from src.client.ui.shadow.model.props.single.prop_def import PropDef
-from src.client.ui.shadow.model.props.operators import SAME, Computable, Diffable, diff
 
 
 from typing import Any, TypeGuard, override

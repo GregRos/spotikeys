@@ -26,24 +26,20 @@ from typing import (
 from pyrsistent import v
 
 
-from src.client.ui.shadow.model.annotations.get_annotation_name import (
+from src.client.ui.shadow.model.annotations.get_prop_meta import (
     get_props_type_from_callable,
 )
 from src.client.ui.shadow.model.annotations.get_type_annotation import AnnotationReader
 from src.client.ui.shadow.model.annotations.read_annotations import get_props
 from src.client.ui.shadow.model.props.single.prop_def import PropDef
 from src.client.ui.shadow.model.props.single.prop_value import PropValue
-from src.client.ui.shadow.model.props.operators import (
-    SAME,
-    Computable,
-    Diffable,
-    diff,
-)
+
 
 from src.client.ui.values.geometry import Geometry
 
 
 type SomeProp = PropDef | section
+SAME = object()
 
 
 class PropsDict(Mapping[str, SomeProp]):
@@ -176,14 +172,13 @@ class section(Mapping[str, SomeProp]):
             return self._props
 
         def apply(f):
-            AnnotationReader(f).section = self
-            sect = get_section(f)
+            sect = get_section(f, self)
 
             def set_section(self, **args: Any):
                 if f.__name__ == "__init__":
                     self._props = get_or_init_prop_values(self).merge(args)
                     return
-                return self._copy(**args)
+                return self._copy(**{f.__name__: args})
 
             AnnotationReader(set_section).section = sect
 
@@ -240,21 +235,21 @@ class PropVals(Mapping[str, "PropValue | PropVals"]):
         return b
 
     def diff(self, other: "PropVals") -> "PropVals":
-        self.section.assert_valid_value(other.section)
+        self.section.assert_valid_value(other._vals)
         out = {}
         for k, v in self.items():
             match v:
                 case PropValue():
                     if v != other[k]:
-                        out[k] = v
+                        out[k] = v.value
                 case PropVals():
                     if v.section.recurse:
                         result = PropVals._diff(v, other._vals[k])
                         if result is not SAME:
-                            out[k] = result
+                            out[k] = result.value
                     else:
                         if v != other._vals[k]:
-                            out[k] = v
+                            out[k] = v.value
 
         return PropVals(self.section, out)
 
@@ -278,9 +273,8 @@ class PropVals(Mapping[str, "PropValue | PropVals"]):
         return name, result
 
 
-def get_section(section_setter: Callable) -> "section":
+def get_section(section_setter: Callable, section_meta: section) -> "section":
     section_props_type = get_props_type_from_callable(section_setter)
-    section_meta = AnnotationReader(section_setter).section
     props = PropsDict()
     all_props = get_props(section_props_type)
     for k, v in all_props:

@@ -16,10 +16,11 @@ from typing import (
     get_type_hints,
 )
 
-from src.client.ui.shadow.model.annotations.get_annotation_name import (
+from src.client.ui.shadow.model.annotations.get_prop_meta import (
     get_prop_def,
     get_inner_type_value,
 )
+from src.client.ui.shadow.model.props.single.prop_def import PropDef
 
 
 def get_props(section_type: Type):
@@ -28,5 +29,5 @@ def get_props(section_type: Type):
         inner_type = get_inner_type_value(v) or v
         prop_def = get_prop_def(v)
         if not prop_def:
-            continue
+            prop_def = PropDef()
         yield k, prop_def.set(value_type=inner_type, prop_name=k)

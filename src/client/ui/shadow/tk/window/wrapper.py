@@ -19,7 +19,6 @@ from typing import (
 )
 
 
-from src.client.ui.shadow.model.props.operators import compute
 from src.client.ui.shadow.model.props.dict.props_dict import PropVals, PropsDict
 from src.client.ui.shadow.model.components.component import Component
 from src.client.ui.shadow.model.nodes.resource import (
@@ -125,9 +124,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
 
     @override
     def update(self, props: PropVals) -> None:
-        x = compute("", props)
-        if not x:
-            return
+        x = props.compute("")
         _, computed = x
         assert isinstance(computed, dict)
 
@@ -140,7 +137,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
             if configure := computed["configure"]:
                 self.resource.configure(**configure)
             if ("", "override_redirect") in computed:
-                self.resource.overrideredirect(computed["", "override_redirect"])
+                self.resource.overrideredirect(computed["override_redirect"])
             if children := self.node.children:
                 self._component_mount.remount(children)
 
