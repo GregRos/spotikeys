@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from src.ui.model.prop_def import PropDef
+from src.ui.model.prop_def import Prop
 
 
 from typing import Any, TypeGuard, override
@@ -8,7 +8,7 @@ from typing import Any, TypeGuard, override
 class PropValue:
     __match_args__ = ("value", "prop")
 
-    def __init__(self, prop: PropDef, value: Any) -> None:
+    def __init__(self, prop: Prop, value: Any) -> None:
         self.prop = prop
         self.value = value
 

@@ -15,7 +15,7 @@ from pydantic.dataclasses import dataclass
 
 from src.ui.model.annotations.get_sections import get_sections
 from src.ui.model.annotations.get_type_annotation import AnnotationReader
-from src.ui.model.prop_def import PropDef
+from src.ui.model.prop_def import Prop
 from src.ui.model.props_dict import (
     PropVals,
     PropsDict,
@@ -27,11 +27,11 @@ from src.ui.model.prop_value import PropValue
 
 
 class InitPropsBase(TypedDict):
-    key: Annotated[NotRequired[str], PropDef(default="")]
+    key: Annotated[NotRequired[str], Prop(default="")]
 
 
 class ShadowProps(InitPropsBase):
-    children: Annotated[NotRequired[tuple[Self]], PropDef(default=())]
+    children: Annotated[NotRequired[tuple[Self, ...]], Prop(default=())]
 
 
 class ShadowNode:

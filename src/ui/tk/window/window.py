@@ -11,7 +11,7 @@ from typing import (
 
 
 from src.ui.model.props_dict import section
-from src.ui.model.prop_def import PropDef
+from src.ui.model.prop_def import Prop
 from src.ui.model.component import Component
 from src.ui.model.shadow_node import (
     InitPropsBase,
@@ -21,13 +21,13 @@ from src.ui.tk.widgets.widget import WidgetNode
 
 
 class WindowProps(InitPropsBase):
-    topmost: Annotated[NotRequired[bool], PropDef(parent="attributes")]
-    background: Annotated[NotRequired[str], PropDef(parent="configure")]
+    topmost: Annotated[NotRequired[bool], Prop(parent="attributes")]
+    background: Annotated[NotRequired[str], Prop(parent="configure")]
     transparent_color: Annotated[
-        NotRequired[str], PropDef(parent="attributes", alias="transparentcolor")
+        NotRequired[str], Prop(parent="attributes", alias="transparentcolor")
     ]
     override_redirect: NotRequired[bool]
-    alpha: Annotated[NotRequired[float], PropDef(parent="attributes")]
+    alpha: Annotated[NotRequired[float], Prop(parent="attributes")]
 
 
 class Geometry(InitPropsBase):
@@ -37,7 +37,7 @@ class Geometry(InitPropsBase):
     height: int
 
 
-class SwTkWindow(ShadowNode, Component[WidgetNode]):  # type: ignore
+class Window(ShadowNode, Component[WidgetNode]):  # type: ignore
 
     @section(recurse=True)
     def __init__(self, **props: Unpack[WindowProps]): ...
@@ -53,6 +53,6 @@ class SwTkWindow(ShadowNode, Component[WidgetNode]):  # type: ignore
 
 
 @dataclass(kw_only=True)
-class WindowComponent(Component[SwTkWindow]):
+class WindowComponent(Component[Window]):
 
     pass

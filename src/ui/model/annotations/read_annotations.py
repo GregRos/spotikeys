@@ -20,7 +20,7 @@ from src.ui.model.annotations.get_prop_meta import (
     get_prop_def,
     get_inner_type_value,
 )
-from src.ui.model.prop_def import PropDef
+from src.ui.model.prop_def import Prop
 
 
 def get_props(section_type: Type):
@@ -29,5 +29,5 @@ def get_props(section_type: Type):
         inner_type = get_inner_type_value(v) or v
         prop_def = get_prop_def(v)
         if not prop_def:
-            prop_def = PropDef(prop_name=k)
+            prop_def = Prop(prop_name=k)
         yield k, prop_def.set(value_type=inner_type, prop_name=k)

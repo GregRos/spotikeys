@@ -31,14 +31,14 @@ from src.ui.model.annotations.get_prop_meta import (
 )
 from src.ui.model.annotations.get_type_annotation import AnnotationReader
 from src.ui.model.annotations.read_annotations import get_props
-from src.ui.model.prop_def import PropDef
+from src.ui.model.prop_def import Prop
 from src.ui.model.prop_value import PropValue
 
 
 from src.ui.tk.geometry import Geometry
 
 
-type SomeProp = PropDef | section
+type SomeProp = Prop | section
 SAME = object()
 
 
@@ -52,9 +52,9 @@ class PropsDict(Mapping[str, SomeProp]):
             dict(props) if isinstance(props, Mapping) else {k: v for k, v in props}
         )
 
-    def get_prop(self, key: str) -> PropDef:
+    def get_prop(self, key: str) -> Prop:
         result = self[key]
-        assert isinstance(result, PropDef), f"Key {key} is not a PropDef"
+        assert isinstance(result, Prop), f"Key {key} is not a PropDef"
         return result
 
     def get_section(self, key: str) -> "section":
@@ -86,7 +86,7 @@ class PropsDict(Mapping[str, SomeProp]):
 
         return PropsDict(result)
 
-    def set(self, **props: PropDef) -> "PropsDict":
+    def set(self, **props: Prop) -> "PropsDict":
         return self.merge(props)
 
     def __len__(self) -> int:

@@ -32,21 +32,21 @@ from src.ui.rendering.context import Ctx
 from src.ui.tk.widgets.component_mount import WidgetComponentMount
 from src.ui.tk.widgets.widget import WidgetNode
 from src.ui.tk.widgets.widget_wrapper import WidgetWrapper
-from src.ui.tk.window.window import SwTkWindow
+from src.ui.tk.window.window import Window
 from src.ui.tk.geometry import Geometry
 
 
-class TkWrapper(ShadowedResource[SwTkWindow]):
+class TkWrapper(ShadowedResource[Window]):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     resource: Tk
     _component_mount: WidgetComponentMount
 
     @staticmethod
     @override
-    def node_type() -> type[SwTkWindow]:
-        return SwTkWindow
+    def node_type() -> type[Window]:
+        return Window
 
-    def __init__(self, node: SwTkWindow, resource: Tk, context: Ctx, root: Component):
+    def __init__(self, node: Window, resource: Tk, context: Ctx, root: Component):
         super().__init__(node)
         self.resource = resource
         self.context = context
@@ -57,7 +57,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
         return self.resource is other.resource
 
     @staticmethod
-    def create(node: SwTkWindow, context: Ctx) -> "TkWrapper":
+    def create(node: Window, context: Ctx) -> "TkWrapper":
         waiter = threading.Event()
         tk: Tk = None  # type: ignore
 
@@ -82,7 +82,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
         self.resource.after(0, action)
 
     @override
-    def migrate(self, node: SwTkWindow) -> Self:
+    def migrate(self, node: Window) -> Self:
         return self.__class__(
             node, self.resource, self.context, self._component_mount._mounted
         )
@@ -119,7 +119,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
         self.schedule(do)
 
     @override
-    def get_compatibility(self, other: SwTkWindow) -> Compat:
+    def get_compatibility(self, other: Window) -> Compat:
         return "update"
 
     @override

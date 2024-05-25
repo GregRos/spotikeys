@@ -1,4 +1,4 @@
-from typing import Callable, Generator
+from typing import Any, Callable, Generator
 
 from src.ui.model.shadow_node import ShadowNode
 from src.ui.rendering.stateful_reconciler import StatefulReconciler
@@ -28,6 +28,9 @@ class ComponentMount:
         self.context = context
         self._mounted = root
         self.context += lambda _: self.force_rerender()
+
+    def __call__(self, **ctx_args: Any):
+        self.context(**ctx_args)
 
     def _compute_render(self):
         def _render(

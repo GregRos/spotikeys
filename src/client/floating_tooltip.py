@@ -14,7 +14,7 @@ from src.kb.triggered_command import (
 from src.client.command_header import CommandHeader
 from src.ui.rendering.context import Ctx
 from src.ui.tk.widgets.widget import WidgetComponent
-from src.ui.tk.window.window import SwTkWindow, WindowComponent
+from src.ui.tk.window.window import Window, WindowComponent
 from src.client.media_display import MediaDisplay
 from src.now_playing import MediaStatus
 
@@ -35,7 +35,7 @@ class ActionHUD(WindowComponent):
     def render(self, ctx):
         if ctx.hidden == True:
             return
-        yield SwTkWindow(
+        yield Window(
             background="#000001",
             topmost=True,
             transparent_color="black",

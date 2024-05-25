@@ -35,7 +35,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
 
         super().__init__()
         self._root = WindowComponentMount(ActionHUD())
-        self._root.ctx(
+        self._root(
             executed=None,
             last_status=MediaStatus(
                 artist="",
@@ -75,7 +75,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
             self._last_command = thingy.triggered
             self._ctx(
                 hidden=False, executed=thingy, previous=self._last_status
-            ).schedule(lambda _: self._root.ctx(hidden=True))
+            ).schedule(lambda _: self._root(hidden=True))
         if isinstance(thingy, TriggeredCommand):
             self._ctx._last_command = thingy
 

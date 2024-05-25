@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(kw_only=True)
-class PropDef:
+class Prop:
     parent: str | None = field(default=None)
     alias: str | None = field(default=None)
     default: Any | None = field(default=None)
@@ -23,7 +23,7 @@ class PropDef:
     prop_name: str | None = field(default=None)
 
     @property
-    def prop(self) -> "PropDef":
+    def prop(self) -> "Prop":
         return self
 
     @property
@@ -55,7 +55,7 @@ class PropDef:
             raise ValueError("No default value set")
         return self.default
 
-    def set(self, **kwargs: Any) -> "PropDef":
+    def set(self, **kwargs: Any) -> "Prop":
         clone = copy(self)
         for k, v in kwargs.items():
             setattr(clone, k, v)
@@ -64,7 +64,7 @@ class PropDef:
     def transform(self, key: str, value: Any) -> tuple[str, Any]:
         return (self.alias or key, self.converter(value) if self.converter else value)
 
-    def merge(self, other: "PropDef") -> "PropDef":
+    def merge(self, other: "Prop") -> "Prop":
         return self.set(**{k: v for k, v in other.__dict__.items() if v is not None})
 
     def compute(self, key: str) -> tuple[str, Any] | None:

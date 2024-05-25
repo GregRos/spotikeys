@@ -21,7 +21,7 @@ from typing import (
 from pydantic import Field
 
 
-from src.ui.model.prop_def import PropDef
+from src.ui.model.prop_def import Prop
 from src.ui.model.props_dict import PropsDict
 from src.ui.model.shadow_node import (
     InitPropsBase,
@@ -32,8 +32,8 @@ from src.ui.rendering.context import Ctx, Updatable
 
 
 class ComponentProps(InitPropsBase):
-    key: Annotated[NotRequired[str], PropDef(default="")]
-    children: Annotated[NotRequired[Tuple[Self, ...]], PropDef(default=())]
+    key: Annotated[NotRequired[str], Prop(default="")]
+    children: Annotated[NotRequired[Tuple[Self, ...]], Prop(default=())]
 
 
 @dataclass(kw_only=True)
