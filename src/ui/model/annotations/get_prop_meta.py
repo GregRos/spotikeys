@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING, Any, Callable, Type, get_type_hints
 from src.ui.model.annotations.get_annotation_name import (
     get_annotation_name,
 )
-from src.ui.model.props.single.prop_def import PropDef
+from src.ui.model.prop_def import PropDef
 
 if TYPE_CHECKING:
-    from src.ui.model.props.dict.props_dict import section
+    from src.ui.model.props_dict import section
 
 
 def get_metadata(t: Type) -> tuple[Any, ...]:

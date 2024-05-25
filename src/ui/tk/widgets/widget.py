@@ -15,11 +15,11 @@ from typing import (
     Unpack,
     override,
 )
-from src.ui.core.context import Ctx
-from src.ui.core.renderer import ComponentMount
-from src.ui.core.stateful_reconciler import StatefulReconciler
+from src.ui.rendering.context import Ctx
+from src.ui.rendering.renderer import ComponentMount
+from src.ui.rendering.stateful_reconciler import StatefulReconciler
 from src.ui.model.component import Component
-from src.ui.model.props.dict.props_dict import section
+from src.ui.model.props_dict import section
 from src.ui.tk.make_clickthrough import make_clickthrough
 
 
@@ -34,10 +34,10 @@ class WidgetNode(ShadowNode):
         cls.tk_type = tk_type
         return super().__init_subclass__()
 
-    @section(recurse=True).setter
+    @section(recurse=True)
     def __init__(self, **props: Unpack[WidgetProps]): ...
 
-    @section(recurse=False).setter
+    @section(recurse=False)
     def pack(self, **props: Unpack[PackProps]) -> None:
         pass
 

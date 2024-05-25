@@ -6,7 +6,7 @@ from typing import (
 from src.ui.model.resource import (
     ShadowedResource,
 )
-from src.ui.core.future_actions import (
+from src.ui.rendering.future_actions import (
     Create,
     Recreate,
     Replace,

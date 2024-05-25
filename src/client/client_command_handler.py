@@ -8,8 +8,8 @@ from typing import Any, Awaitable, Callable
 
 from src.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
 from src.client.floating_tooltip import ActionHUD, MediaExecuted, MediaStageMessage
-from src.ui.core.context import Ctx
-from src.ui.core.renderer import ComponentMount
+from src.ui.rendering.context import Ctx
+from src.ui.rendering.renderer import ComponentMount
 from src.ui.tk.window.component_mount import WindowComponentMount
 from src.client.volume import ClientVolumeControl, VolumeInfo
 from src.now_playing import MediaStatus

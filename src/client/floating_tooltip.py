@@ -12,7 +12,7 @@ from src.kb.triggered_command import (
 
 
 from src.client.command_header import CommandHeader
-from src.ui.core.context import Ctx
+from src.ui.rendering.context import Ctx
 from src.ui.tk.widgets.widget import WidgetComponent
 from src.ui.tk.window.window import SwTkWindow, WindowComponent
 from src.client.media_display import MediaDisplay

@@ -1,6 +1,6 @@
 from tkinter import Label, Tk, Widget
 from typing import Any, ClassVar, Self, final, override
-from src.ui.model.props.dict.props_dict import PropVals, PropsDict
+from src.ui.model.props_dict import PropVals, PropsDict
 from src.ui.tk.make_clickthrough import make_clickthrough
 from src.ui.model.resource import Compat, ShadowedResource
 from src.ui.tk.widgets.widget import WidgetNode

@@ -1,4 +1,4 @@
-from src.ui.model.props.single.prop_def import PropDef
+from src.ui.model.prop_def import PropDef
 from src.ui.model.shadow_node import ShadowProps
 from src.ui.tk.font import Font
 

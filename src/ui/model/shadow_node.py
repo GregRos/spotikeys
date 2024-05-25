@@ -15,15 +15,15 @@ from pydantic.dataclasses import dataclass
 
 from src.ui.model.annotations.get_sections import get_sections
 from src.ui.model.annotations.get_type_annotation import AnnotationReader
-from src.ui.model.props.single.prop_def import PropDef
-from src.ui.model.props.dict.props_dict import (
+from src.ui.model.prop_def import PropDef
+from src.ui.model.props_dict import (
     PropVals,
     PropsDict,
     section,
 )
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.ui.model.props.single.prop_value import PropValue
+from src.ui.model.prop_value import PropValue
 
 
 class InitPropsBase(TypedDict):

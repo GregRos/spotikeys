@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from src.ui.model.props.single.prop_def import PropDef
+from src.ui.model.prop_def import PropDef
 
 
 from typing import Any, TypeGuard, override

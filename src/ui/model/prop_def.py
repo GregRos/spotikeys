@@ -1,9 +1,6 @@
 from dataclasses import dataclass, field
 
 
-from pydantic import Field
-
-
 from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Literal, Self, cast, override
 
@@ -13,7 +10,7 @@ from src.ui.model.annotations.get_annotation_name import (
 
 DiffMode = Literal["simple", "recursive", "never"]
 if TYPE_CHECKING:
-    from src.ui.model.props.single.prop_value import PropValue
+    from src.ui.model.prop_value import PropValue
 
 
 @dataclass(kw_only=True)
@@ -35,7 +32,7 @@ class PropDef:
 
     @property
     def is_dict(self) -> bool:
-        from src.ui.model.props.dict.props_dict import PropsDict
+        from src.ui.model.props_dict import PropsDict
 
         return self.value_type is PropsDict
 

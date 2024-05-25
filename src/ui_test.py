@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from time import sleep
-from src.ui.core.context import Ctx
+from src.ui.rendering.context import Ctx
 from src.ui.model.component import Component
 from src.ui.tk.widgets.widget import LabelNode, WidgetNode
 from src.ui.tk.window.component_mount import WindowComponentMount

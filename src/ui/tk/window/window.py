@@ -10,8 +10,8 @@ from typing import (
 )
 
 
-from src.ui.model.props.dict.props_dict import section
-from src.ui.model.props.single.prop_def import PropDef
+from src.ui.model.props_dict import section
+from src.ui.model.prop_def import PropDef
 from src.ui.model.component import Component
 from src.ui.model.shadow_node import (
     InitPropsBase,
@@ -39,7 +39,7 @@ class Geometry(InitPropsBase):
 
 class SwTkWindow(ShadowNode, Component[WidgetNode]):  # type: ignore
 
-    @section(recurse=True).setter
+    @section(recurse=True)
     def __init__(self, **props: Unpack[WindowProps]): ...
 
     @override
@@ -48,7 +48,7 @@ class SwTkWindow(ShadowNode, Component[WidgetNode]):  # type: ignore
         clone._props = self._props.merge(overrides)
         return clone
 
-    @section(recurse=False).setter
+    @section(recurse=False)
     def geometry(self, **props: Unpack[Geometry]): ...
 
 

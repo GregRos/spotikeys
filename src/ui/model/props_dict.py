@@ -31,8 +31,8 @@ from src.ui.model.annotations.get_prop_meta import (
 )
 from src.ui.model.annotations.get_type_annotation import AnnotationReader
 from src.ui.model.annotations.read_annotations import get_props
-from src.ui.model.props.single.prop_def import PropDef
-from src.ui.model.props.single.prop_value import PropValue
+from src.ui.model.prop_def import PropDef
+from src.ui.model.prop_value import PropValue
 
 
 from src.ui.tk.geometry import Geometry
@@ -154,18 +154,18 @@ class section(Mapping[str, SomeProp]):
             value.assert_valid_value(v)
 
     @overload
-    def setter[
+    def __call__[
         **P, R
     ](self, f: Callable[Concatenate[R, P], None]) -> Callable[Concatenate[R, P], R]: ...
 
     @overload
-    def setter[
+    def __call__[
         **P, R
     ](self) -> Callable[
         [Callable[Concatenate[R, P], Any]], Callable[Concatenate[R, P], R]
     ]: ...
 
-    def setter[**P, R](self, f: Any | None = None) -> Any:
+    def __call__[**P, R](self, f: Any | None = None) -> Any:
         def get_or_init_prop_values(self):
             if not getattr(self, "_props", None):
                 self._props = AnnotationReader(self.__class__).props.with_values({})

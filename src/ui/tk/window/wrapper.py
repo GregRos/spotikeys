@@ -19,16 +19,16 @@ from typing import (
 )
 
 
-from src.ui.model.props.dict.props_dict import PropVals, PropsDict
+from src.ui.model.props_dict import PropVals, PropsDict
 from src.ui.model.component import Component
 from src.ui.model.resource import (
     Compat,
     ShadowedResource,
 )
 from src.ui.model.shadow_node import ShadowProps
-from src.ui.core.stateful_reconciler import StatefulReconciler
-from src.ui.core.renderer import ComponentMount
-from src.ui.core.context import Ctx
+from src.ui.rendering.stateful_reconciler import StatefulReconciler
+from src.ui.rendering.renderer import ComponentMount
+from src.ui.rendering.context import Ctx
 from src.ui.tk.widgets.component_mount import WidgetComponentMount
 from src.ui.tk.widgets.widget import WidgetNode
 from src.ui.tk.widgets.widget_wrapper import WidgetWrapper

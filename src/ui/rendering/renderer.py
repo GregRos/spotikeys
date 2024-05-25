@@ -1,9 +1,9 @@
 from typing import Callable, Generator
 
 from src.ui.model.shadow_node import ShadowNode
-from src.ui.core.stateful_reconciler import StatefulReconciler
+from src.ui.rendering.stateful_reconciler import StatefulReconciler
 from src.ui.model.component import Component
-from src.ui.core.context import Ctx, Updatable
+from src.ui.rendering.context import Ctx, Updatable
 from pydantic.dataclasses import dataclass
 
 

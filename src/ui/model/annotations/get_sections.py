@@ -1,7 +1,7 @@
 from inspect import isfunction
 from src.ui.model.annotations.get_methods import get_methods
 from src.ui.model.annotations.get_type_annotation import AnnotationReader
-from src.ui.model.props.dict.props_dict import PropsDict
+from src.ui.model.props_dict import PropsDict
 
 
 def get_sections(obj: type):
