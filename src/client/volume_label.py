@@ -3,17 +3,13 @@ from math import trunc
 from typing import Generator, override
 from src.ui.model.component import Component
 from src.ui.model.shadow_node import ShadowProps
-from src.ui.tk.widgets.widget import (
-    LabelNode,
-    WidgetNode,
-    WidgetComponent,
-)
+from src.ui import Label, Widget, Component, Window
 from src.ui.tk.font import Font
 from src.client.volume import VolumeInfo
 
 
 @dataclass
-class VolumeLabel(WidgetComponent):
+class VolumeLabel(Component[Widget]):
     volume: VolumeInfo
 
     def get_volume_line(self):
@@ -27,7 +23,7 @@ class VolumeLabel(WidgetComponent):
 
     @override
     def render(self, _):
-        yield LabelNode(
+        yield Label(
             text=self.get_volume_line(),
             background="#000001",
             foreground="#00ff00",

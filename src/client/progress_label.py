@@ -1,10 +1,6 @@
 from pydantic.dataclasses import dataclass
 from typing import Generator, override
-from src.ui.model.component import Component
-from src.ui.model.shadow_node import ShadowProps
-from src.ui.tk.widgets.widget import LabelNode, WidgetComponent
-from src.ui.tk.font import Font
-from src.now_playing import MediaStatus
+from src.ui import Component, Widget, Label, Font, Window
 
 
 def format_duration(seconds):
@@ -13,7 +9,7 @@ def format_duration(seconds):
 
 
 @dataclass()
-class ProgressLabel(WidgetComponent):
+class ProgressLabel(Component[Widget]):
     duration: float
     position: float
     is_playing: bool
@@ -24,7 +20,7 @@ class ProgressLabel(WidgetComponent):
 
     @override
     def render(self, _):
-        yield LabelNode(
+        yield Label(
             text=self.get_progress_line(),
             background="#000001",
             foreground="#ffffff",

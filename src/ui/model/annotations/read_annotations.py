@@ -20,7 +20,7 @@ from src.ui.model.annotations.get_prop_meta import (
     get_prop_def,
     get_inner_type_value,
 )
-from src.ui.model.prop_def import Prop
+from src.ui.model.prop import Prop
 
 
 def get_props(section_type: Type):

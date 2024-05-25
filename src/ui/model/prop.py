@@ -32,9 +32,9 @@ class Prop:
 
     @property
     def is_dict(self) -> bool:
-        from src.ui.model.props_dict import PropsDict
+        from src.ui.model.prop_dict import PropDict
 
-        return self.value_type is PropsDict
+        return self.value_type is PropDict
 
     def is_valid(self, input: Any):
         if self.value_type:

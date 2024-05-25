@@ -1,23 +1,21 @@
 from dataclasses import dataclass
 from time import sleep
-from src.ui.rendering.context import Ctx
+from src.ui.model.context import Ctx
 from src.ui.model.component import Component
-from src.ui import LabelNode, WidgetNode
-from src.ui import WindowComponentMount
-from src.ui import Window
+from src.ui import Label, Widget, Window, WindowMount
 from src.log_config import setup_logging
 
 setup_logging()
 
 
 @dataclass(kw_only=True)
-class StuffComponent(Component[WidgetNode]):
+class StuffComponent(Component[Widget]):
     text: str
 
     def render(self, _):
-        yield LabelNode(
-            text=self.text, background="#000001", foreground="#ffffff"
-        ).pack(ipadx=20, ipady=15, fill="both")
+        yield Label(text=self.text, background="#000001", foreground="#ffffff").pack(
+            ipadx=20, ipady=15, fill="both"
+        )
 
 
 @dataclass(kw_only=True)
@@ -31,7 +29,7 @@ class WindowComponent(Component[Window]):
         ]
 
 
-MyTK = WindowComponentMount(WindowComponent())
+MyTK = WindowMount(WindowComponent())
 
 MyTK(text="Hello, World!")
 sleep(2)

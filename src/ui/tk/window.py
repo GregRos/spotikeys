@@ -10,14 +10,14 @@ from typing import (
 )
 
 
-from src.ui.model.props_dict import section
-from src.ui.model.prop_def import Prop
+from src.ui.model.prop_dict import section
+from src.ui.model.prop import Prop
 from src.ui.model.component import Component
 from src.ui.model.shadow_node import (
     InitPropsBase,
     ShadowNode,
 )
-from src.ui.tk.widgets.widget import WidgetNode
+from src.ui.tk.widget import Widget
 
 
 class WindowProps(InitPropsBase):
@@ -37,7 +37,7 @@ class Geometry(InitPropsBase):
     height: int
 
 
-class Window(ShadowNode, Component[WidgetNode]):  # type: ignore
+class Window(ShadowNode, Component[Widget]):  # type: ignore
 
     @section(recurse=True)
     def __init__(self, **props: Unpack[WindowProps]): ...
@@ -50,9 +50,3 @@ class Window(ShadowNode, Component[WidgetNode]):  # type: ignore
 
     @section(recurse=False)
     def geometry(self, **props: Unpack[Geometry]): ...
-
-
-@dataclass(kw_only=True)
-class WindowComponent(Component[Window]):
-
-    pass

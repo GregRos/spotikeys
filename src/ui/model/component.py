@@ -21,14 +21,14 @@ from typing import (
 from pydantic import Field
 
 
-from src.ui.model.prop_def import Prop
-from src.ui.model.props_dict import PropsDict
+from src.ui.model.prop import Prop
+from src.ui.model.prop_dict import PropDict
 from src.ui.model.shadow_node import (
     InitPropsBase,
     ShadowNode,
     ShadowProps,
 )
-from src.ui.rendering.context import Ctx, Updatable
+from src.ui.model.context import Ctx, Updatable
 
 
 class ComponentProps(InitPropsBase):

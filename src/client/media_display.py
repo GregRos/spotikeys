@@ -1,13 +1,11 @@
 from pydantic.dataclasses import dataclass
 from math import trunc
-from tkinter import Tk
 from src.kb.triggered_command import OkayCommand
 from src.ui.model.component import (
     Component,
 )
 from src.client.progress_label import ProgressLabel
-from src.ui.tk.widgets.widget import LabelNode, WidgetComponent
-from src.ui.tk.font import Font
+from src.ui import Label, Component, Font, Widget
 from src.client.volume_label import VolumeLabel
 from src.client.volume import VolumeInfo
 from src.now_playing import MediaStatus
@@ -20,12 +18,12 @@ def truncate_text(text: str, max_length: int) -> str:
 
 
 @dataclass
-class MediaDisplay(WidgetComponent):
+class MediaDisplay(Component[Widget]):
     status: MediaStatus
 
     def render(self, _):
         status = self.status
-        yield LabelNode(
+        yield Label(
             background="#000001",
             foreground="#ffffff",
             font=Font(
@@ -38,7 +36,7 @@ class MediaDisplay(WidgetComponent):
             ipadx=15,
             fill="both",
         )
-        yield LabelNode(
+        yield Label(
             background="#000001",
             foreground="#aaaafb",
             font=Font(

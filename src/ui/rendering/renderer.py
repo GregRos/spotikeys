@@ -3,7 +3,7 @@ from typing import Any, Callable, Generator
 from src.ui.model.shadow_node import ShadowNode
 from src.ui.rendering.stateful_reconciler import StatefulReconciler
 from src.ui.model.component import Component
-from src.ui.rendering.context import Ctx, Updatable
+from src.ui.model.context import Ctx, Updatable
 from pydantic.dataclasses import dataclass
 
 

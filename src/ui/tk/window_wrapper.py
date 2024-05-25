@@ -19,7 +19,7 @@ from typing import (
 )
 
 
-from src.ui.model.props_dict import PropVals, PropsDict
+from src.ui.model.prop_dict import PropVals, PropDict
 from src.ui.model.component import Component
 from src.ui.model.resource import (
     Compat,
@@ -28,18 +28,18 @@ from src.ui.model.resource import (
 from src.ui.model.shadow_node import ShadowProps
 from src.ui.rendering.stateful_reconciler import StatefulReconciler
 from src.ui.rendering.renderer import ComponentMount
-from src.ui.rendering.context import Ctx
-from src.ui.tk.widgets.component_mount import WidgetComponentMount
-from src.ui.tk.widgets.widget import WidgetNode
-from src.ui.tk.widgets.widget_wrapper import WidgetWrapper
-from src.ui.tk.window.window import Window
+from src.ui.model.context import Ctx
+from src.ui.tk.widget_mount import WidgetMount
+from src.ui.tk.widget import Widget
+from src.ui.tk.widget_wrapper import WidgetWrapper
+from src.ui.tk.window import Window
 from src.ui.tk.geometry import Geometry
 
 
-class TkWrapper(ShadowedResource[Window]):
+class WindowWrapper(ShadowedResource[Window]):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     resource: Tk
-    _component_mount: WidgetComponentMount
+    _component_mount: WidgetMount
 
     @staticmethod
     @override
@@ -50,14 +50,14 @@ class TkWrapper(ShadowedResource[Window]):
         super().__init__(node)
         self.resource = resource
         self.context = context
-        self._component_mount = WidgetComponentMount(resource, context, root)
+        self._component_mount = WidgetMount(resource, context, root)
 
     @override
     def is_same_resource(self, other: Self) -> bool:
         return self.resource is other.resource
 
     @staticmethod
-    def create(node: Window, context: Ctx) -> "TkWrapper":
+    def create(node: Window, context: Ctx) -> "WindowWrapper":
         waiter = threading.Event()
         tk: Tk = None  # type: ignore
 
@@ -72,7 +72,7 @@ class TkWrapper(ShadowedResource[Window]):
         waiter.wait()
         root = Component(key="WidgetRoot")[*node.children]
 
-        wrapper = TkWrapper(node, tk, context, root=root)
+        wrapper = WindowWrapper(node, tk, context, root=root)
         return wrapper
 
     def schedule(
@@ -92,7 +92,7 @@ class TkWrapper(ShadowedResource[Window]):
         self.schedule(self.resource.destroy)
 
     @override
-    def replace(self, other: "TkWrapper") -> None:
+    def replace(self, other: "WindowWrapper") -> None:
         self.schedule(self.resource.deiconify)
         other.unplace()
 

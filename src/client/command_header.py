@@ -4,7 +4,7 @@ from typing import Literal, TypedDict, override
 from src.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
 from src.client.floating_tooltip import MediaStageMessage
 from src.ui.model.component import Component
-from src.ui.tk.widgets.widget import LabelNode
+from src.ui.tk.widget import Label
 from src.ui.tk.font import Font
 
 
@@ -45,7 +45,7 @@ class CommandHeader(Component):
 
     @override
     def render(self, _):
-        yield LabelNode(
+        yield Label(
             text=self.get_text(),
             background=self.get_color(),
             foreground="#dddddd",

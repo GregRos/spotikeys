@@ -1,26 +1,26 @@
-from tkinter import Label, Tk, Widget
+from tkinter import Label, Tk, Widget as TkWidget
 from typing import Any, ClassVar, Self, final, override
-from src.ui.model.props_dict import PropVals, PropsDict
+from src.ui.model.prop_dict import PropVals, PropDict
 from src.ui.tk.make_clickthrough import make_clickthrough
 from src.ui.model.resource import Compat, ShadowedResource
-from src.ui.tk.widgets.widget import WidgetNode
+from src.ui.tk.widget import Widget
 
 
-class WidgetWrapper(ShadowedResource[WidgetNode]):
+class WidgetWrapper(ShadowedResource[Widget]):
 
     @staticmethod
     @override
-    def node_type() -> type[WidgetNode]:
-        return WidgetNode
+    def node_type() -> type[Widget]:
+        return Widget
 
     @final
     @override
-    def migrate(self, node: WidgetNode) -> Self:
+    def migrate(self, node: Widget) -> Self:
         x = WidgetWrapper(node, self.resource)
         return x  # type: ignore
 
     @staticmethod
-    def create(tk: Tk, node: WidgetNode) -> "WidgetWrapper":
+    def create(tk: Tk, node: Widget) -> "WidgetWrapper":
         match node.__class__.tk_type:
             case "Label":
                 return __class__(node, Label(tk))
@@ -28,7 +28,7 @@ class WidgetWrapper(ShadowedResource[WidgetNode]):
                 raise ValueError(f"Unknown type: {node.tk_type}")
 
     @override
-    def get_compatibility(self, other: WidgetNode) -> Compat:
+    def get_compatibility(self, other: Widget) -> Compat:
         if self.node.tk_type != other.tk_type:
             return "recreate"
         elif self.node._props["pack"] != other._props["pack"]:
@@ -36,12 +36,12 @@ class WidgetWrapper(ShadowedResource[WidgetNode]):
         else:
             return "update"
 
-    def __init__(self, node: WidgetNode, resource: Widget) -> None:
+    def __init__(self, node: Widget, resource: TkWidget) -> None:
         super().__init__(node)
         self.resource = resource
 
     @staticmethod
-    def _wrap(node: WidgetNode, resource: Widget) -> "WidgetWrapper":
+    def _wrap(node: Widget, resource: TkWidget) -> "WidgetWrapper":
         return WidgetWrapper(node, resource)
 
     @override

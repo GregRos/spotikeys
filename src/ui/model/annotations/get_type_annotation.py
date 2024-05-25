@@ -2,9 +2,9 @@ from typing import TYPE_CHECKING, Any, Callable
 
 
 if TYPE_CHECKING:
-    from src.ui.model.props_dict import section
-    from src.ui.model.props_dict import PropsDict
-    from src.ui.model.prop_def import Prop
+    from src.ui.model.prop_dict import section
+    from src.ui.model.prop_dict import PropDict
+    from src.ui.model.prop import Prop
 
 
 class AnnotationReader:

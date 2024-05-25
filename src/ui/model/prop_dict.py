@@ -31,7 +31,7 @@ from src.ui.model.annotations.get_prop_meta import (
 )
 from src.ui.model.annotations.get_type_annotation import AnnotationReader
 from src.ui.model.annotations.read_annotations import get_props
-from src.ui.model.prop_def import Prop
+from src.ui.model.prop import Prop
 from src.ui.model.prop_value import PropValue
 
 
@@ -42,7 +42,7 @@ type SomeProp = Prop | section
 SAME = object()
 
 
-class PropsDict(Mapping[str, SomeProp]):
+class PropDict(Mapping[str, SomeProp]):
     _props: Mapping[str, SomeProp]
 
     def __init__(
@@ -62,14 +62,14 @@ class PropsDict(Mapping[str, SomeProp]):
         assert isinstance(result, section), f"Key {key} is not a section"
         return result
 
-    def __and__(self, other: Mapping[str, SomeProp]) -> "PropsDict":
+    def __and__(self, other: Mapping[str, SomeProp]) -> "PropDict":
         return self.merge(other)
 
     def merge(
         self, other: Mapping[str, SomeProp] | Iterable[tuple[str, SomeProp]]
-    ) -> "PropsDict":
+    ) -> "PropDict":
         result = {}
-        other = PropsDict(other)
+        other = PropDict(other)
         for key in self.keys() | other.keys():
             if key not in self:
                 result[key] = other[key]
@@ -84,9 +84,9 @@ class PropsDict(Mapping[str, SomeProp]):
             ), f"Key {key} exists in both dicts, but is not a section in at least one. Can't be merged."
             result[key] = self_prop.merge_props(other_prop)
 
-        return PropsDict(result)
+        return PropDict(result)
 
-    def set(self, **props: Prop) -> "PropsDict":
+    def set(self, **props: Prop) -> "PropDict":
         return self.merge(props)
 
     def __len__(self) -> int:
@@ -114,7 +114,7 @@ class PropsDict(Mapping[str, SomeProp]):
 
 @dataclass
 class section(Mapping[str, SomeProp]):
-    props: PropsDict = field(default_factory=PropsDict)
+    props: PropDict = field(default_factory=PropDict)
     recurse: bool = field(default=True)
     alias: str | None = field(default=None)
 
@@ -275,7 +275,7 @@ class PropVals(Mapping[str, "PropValue | PropVals"]):
 
 def get_section(section_setter: Callable, section_meta: section) -> "section":
     section_props_type = get_props_type_from_callable(section_setter)
-    props = PropsDict()
+    props = PropDict()
     all_props = get_props(section_props_type)
     for k, v in all_props:
         props = props.merge({k: v})

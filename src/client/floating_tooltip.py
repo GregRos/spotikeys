@@ -12,9 +12,7 @@ from src.kb.triggered_command import (
 
 
 from src.client.command_header import CommandHeader
-from src.ui.rendering.context import Ctx
-from src.ui.tk.widgets.widget import WidgetComponent
-from src.ui.tk.window.window import Window, WindowComponent
+from src.ui import Window, Ctx, Component, Widget
 from src.client.media_display import MediaDisplay
 from src.now_playing import MediaStatus
 
@@ -30,7 +28,7 @@ justify = 24
 
 
 @dataclass
-class ActionHUD(WindowComponent):
+class ActionHUD(Component[Window]):
 
     def render(self, ctx):
         if ctx.hidden == True:
@@ -51,7 +49,7 @@ class ActionHUD(WindowComponent):
         ]
 
     @dataclass
-    class Inner(WidgetComponent):
+    class Inner(Component[Widget]):
         executed: MediaStageMessage
         previous: MediaStatus
 

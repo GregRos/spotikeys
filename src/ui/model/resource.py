@@ -5,7 +5,7 @@ from typing import Any, Callable, Literal, Self
 from pydantic import BaseModel
 
 
-from src.ui.model.props_dict import PropVals, PropsDict
+from src.ui.model.prop_dict import PropVals, PropDict
 from src.ui.model.shadow_node import ShadowNode, ShadowProps
 
 type Compat = Literal["update", "replace", "recreate"]
