@@ -29,5 +29,5 @@ def get_props(section_type: Type):
         inner_type = get_inner_type_value(v) or v
         prop_def = get_prop_def(v)
         if not prop_def:
-            prop_def = PropDef()
+            prop_def = PropDef(prop_name=k)
         yield k, prop_def.set(value_type=inner_type, prop_name=k)

@@ -53,5 +53,14 @@ class ShadowNode:
         assert isinstance(x, PropValue)
         return x.value
 
+    def __place__(self):
+        pass
+
+    def __post_place__(self):
+        pass
+
+    def __update__(self):
+        pass
+
     @abstractmethod
     def _copy(self, **overrides: Any) -> Self: ...

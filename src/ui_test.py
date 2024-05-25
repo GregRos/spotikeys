@@ -26,7 +26,7 @@ class WindowComponent(Component[SwTkWindow]):
     def render(self, ctx: Ctx):
         yield SwTkWindow(
             topmost=True, background="black", transparent_color="black", alpha=85
-        ).geometry(width=100, height=200, x=500, y=500)[
+        ).geometry(width=500, height=500, x=500, y=500)[
             StuffComponent(text=ctx.text), StuffComponent(text=ctx.text)
         ]
 
