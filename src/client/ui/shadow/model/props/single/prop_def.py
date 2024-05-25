@@ -22,6 +22,7 @@ class PropDef(Computable, Diffable):
     default: Any | None = field(default=None)
     converter: Callable[[Any], Any] | None = field(default=None)
     value_type: type[Any] | None = field(default=None)
+    prop_name: str | None = field(default=None)
 
     @property
     def prop(self) -> "PropDef":

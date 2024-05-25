@@ -12,11 +12,9 @@ from typing import (
 
 from pydantic.dataclasses import dataclass
 
-from src.client.ui.shadow.model.props.from_type.get_sections import get_sections
-from src.client.ui.shadow.model.props.from_type.get_type_annotation import (
-    AnnotationReader,
-)
 
+from src.client.ui.shadow.model.annotations.get_sections import get_sections
+from src.client.ui.shadow.model.annotations.get_type_annotation import AnnotationReader
 from src.client.ui.shadow.model.props.single.prop_def import PropDef
 from src.client.ui.shadow.model.props.dict.props_dict import (
     PropVals,

@@ -26,13 +26,11 @@ from typing import (
 from pyrsistent import v
 
 
-from src.client.ui.shadow.model.props.from_type.get_type_annotation import (
-    AnnotationReader,
-)
-from src.client.ui.shadow.model.props.from_type.read_annotations import (
-    get_props,
+from src.client.ui.shadow.model.annotations.get_annotation_name import (
     get_props_type_from_callable,
 )
+from src.client.ui.shadow.model.annotations.get_type_annotation import AnnotationReader
+from src.client.ui.shadow.model.annotations.read_annotations import get_props
 from src.client.ui.shadow.model.props.single.prop_def import PropDef
 from src.client.ui.shadow.model.props.single.prop_value import PropValue
 from src.client.ui.shadow.model.props.operators import (
@@ -217,7 +215,7 @@ class PropVals(Mapping[str, "PropValue | PropVals"]):
 
     def __init__(self, props: "section", values: Mapping[str, Any] = {}):
         self.section = props
-        self._vals = values
+        self._vals = {k: v for k, v in values.items() if v is not None}
         props.assert_valid_value(values)
 
     def __len__(self) -> int:

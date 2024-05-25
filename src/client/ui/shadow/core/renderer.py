@@ -28,7 +28,6 @@ class ComponentMount:
         self.context = context
         self._mounted = root
         self.context += lambda _: self.force_rerender
-        self.force_rerender()
 
     def _compute_render(self):
         def _render(
