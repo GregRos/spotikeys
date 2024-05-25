@@ -21,9 +21,11 @@ from src.client.ui.shadow.tk.widgets.widget import WidgetNode
 
 
 class WindowProps(InitPropsBase):
-    topmost: Annotated[NotRequired[bool], PropDef(parent="configure")]
-    background: Annotated[NotRequired[str], PropDef(parent="attributes")]
-    transparent_color: Annotated[NotRequired[str], PropDef(parent="attributes")]
+    topmost: Annotated[NotRequired[bool], PropDef(parent="attributes")]
+    background: Annotated[NotRequired[str], PropDef(parent="configure")]
+    transparent_color: Annotated[
+        NotRequired[str], PropDef(parent="attributes", alias="transparentcolor")
+    ]
     override_redirect: NotRequired[bool]
     alpha: Annotated[NotRequired[float], PropDef(parent="attributes")]
 

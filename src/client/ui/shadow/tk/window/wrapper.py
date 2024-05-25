@@ -141,7 +141,7 @@ class TkWrapper(ShadowedResource[SwTkWindow]):
                 self.resource.configure(**configure)
             if ("", "override_redirect") in computed:
                 self.resource.overrideredirect(computed["", "override_redirect"])
-            if children := computed["children"]:
+            if children := self.node.children:
                 self._component_mount.remount(children)
 
         self.schedule(do)

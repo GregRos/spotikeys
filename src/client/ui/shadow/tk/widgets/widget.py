@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from copy import copy
 from dataclasses import dataclass
 from itertools import groupby
 from tkinter import Label, Tk, Widget
@@ -40,11 +41,14 @@ class WidgetNode(ShadowNode):
     def pack(self, **props: Unpack[PackProps]) -> None:
         pass
 
+    def _copy(self, **overrides: Any) -> Self:
+        clone = copy(self)
+        clone._props = self._props.merge(overrides)
+        return clone
+
 
 class LabelNode(WidgetNode, tk_type="Label"):
-    @override
-    def _copy(self, **overrides: Any) -> Self:
-        return self.__class__(*self._props.merge(overrides))
+    pass
 
 
 @dataclass(kw_only=True)

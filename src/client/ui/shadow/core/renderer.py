@@ -27,7 +27,7 @@ class ComponentMount:
         self._reconciler = reconciler
         self.context = context
         self._mounted = root
-        self.context += lambda _: self.force_rerender
+        self.context += lambda _: self.force_rerender()
 
     def _compute_render(self):
         def _render(
