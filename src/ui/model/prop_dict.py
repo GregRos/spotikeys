@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from copy import copy
 from dataclasses import dataclass, field
+from inspect import isfunction
 from itertools import groupby
 from types import SimpleNamespace
 from typing import (
@@ -26,12 +27,10 @@ from typing import (
 from pyrsistent import v
 
 
-from src.ui.model.annotations.get_prop_meta import (
-    get_props_type_from_callable,
-)
-from src.ui.model.annotations.get_type_annotation import AnnotationReader
-from src.ui.model.annotations.read_annotations import get_props
-from src.ui.model.prop import Prop
+from src.annotations.get_metadata import get_props_type_from_callable
+from src.annotations.get_methods import get_methods
+from src.ui.model.annotation_reader import AnnotationReader
+from src.ui.model.prop import Prop, get_props
 from src.ui.model.prop_value import PropValue
 
 
@@ -281,3 +280,22 @@ def get_section(section_setter: Callable, section_meta: section) -> "section":
         props = props.merge({k: v})
 
     return section_meta.merge_props(props)
+
+
+def get_section_meta(f: Callable) -> "section | None":
+    return f.__annotations__["section"]
+
+
+def get_sections(obj: type):
+    props = PropDict()
+    methods = get_methods(obj, stop_class=object)
+    for k, f in methods.items():
+        if not isfunction(f) or "section" not in AnnotationReader(f):
+            continue
+        section = AnnotationReader(f).section
+
+        if k == "__init__":
+            props = props.merge(section.props)
+        else:
+            props = props.merge({k: section})
+    return props

@@ -13,12 +13,12 @@ from typing import (
 from pydantic.dataclasses import dataclass
 
 
-from src.ui.model.annotations.get_sections import get_sections
-from src.ui.model.annotations.get_type_annotation import AnnotationReader
+from src.ui.model.annotation_reader import AnnotationReader
 from src.ui.model.prop import Prop
 from src.ui.model.prop_dict import (
     PropVals,
     PropDict,
+    get_sections,
     section,
 )
 from pydantic import BaseModel, ConfigDict, Field

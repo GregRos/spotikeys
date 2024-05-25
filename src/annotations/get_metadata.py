@@ -1,11 +1,6 @@
-from typing import TYPE_CHECKING, Any, Callable, Type, get_type_hints
-from src.ui.model.annotations.get_annotation_name import (
-    get_annotation_name,
-)
-from src.ui.model.prop import Prop
+from typing import Any, Callable, Type, get_type_hints
 
-if TYPE_CHECKING:
-    from src.ui.model.prop_dict import section
+from src.annotations.get_annotation_name import get_annotation_name
 
 
 def get_metadata(t: Type) -> tuple[Any, ...]:
@@ -16,13 +11,9 @@ def get_metadata(t: Type) -> tuple[Any, ...]:
         return ()  # type: tuple[Type, ...]
 
 
-def get_prop_def(t: Type):
-    metadata = get_metadata(t)
-    return next((x for x in metadata if isinstance(x, Prop)), None)
-
-
-def get_section_meta(f: Callable) -> "section | None":
-    return f.__annotations__["section"]
+def get_metadata_of_type[X](target: Type, metadata_type: type[X]) -> X | None:
+    metadata = get_metadata(target)
+    return next((x for x in metadata if isinstance(x, metadata_type)), None)
 
 
 def get_inner_type_value(ty: Type):

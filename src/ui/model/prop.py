@@ -2,11 +2,23 @@ from dataclasses import dataclass, field
 
 
 from copy import copy
-from typing import TYPE_CHECKING, Any, Callable, Literal, Self, cast, override
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Literal,
+    Self,
+    Type,
+    cast,
+    get_type_hints,
+    override,
+)
 
-from src.ui.model.annotations.get_annotation_name import (
+from src.annotations.get_annotation_name import (
     get_annotation_name,
 )
+from src.annotations.get_metadata import get_inner_type_value, get_metadata_of_type
+
 
 DiffMode = Literal["simple", "recursive", "never"]
 if TYPE_CHECKING:
@@ -69,3 +81,13 @@ class Prop:
 
     def compute(self, key: str) -> tuple[str, Any] | None:
         return self.alias if self.alias else key, self.default
+
+
+def get_props(section_type: Type):
+    type_metadata = get_type_hints(section_type, include_extras=True)
+    for k, v in type_metadata.items():
+        inner_type = get_inner_type_value(v) or v
+        prop_def = get_metadata_of_type(v, Prop)
+        if not prop_def:
+            prop_def = Prop(prop_name=k)
+        yield k, prop_def.set(value_type=inner_type, prop_name=k)
