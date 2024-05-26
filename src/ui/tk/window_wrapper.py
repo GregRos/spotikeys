@@ -19,7 +19,7 @@ from typing import (
 )
 
 
-from src.ui.model.prop_dict import PropVals, PropDict
+from src.ui.model.prop_dict import PValues, PDict
 from src.ui.model.component import Component
 from src.ui.model.resource import (
     Compat,
@@ -124,8 +124,8 @@ class WindowWrapper(ShadowedResource[Window]):
         return "update"
 
     @override
-    def update(self, props: PropVals) -> None:
-        x = props.compute("")
+    def update(self, props: PValues) -> None:
+        x = props.compute()
         _, computed = x
         assert isinstance(computed, dict)
 

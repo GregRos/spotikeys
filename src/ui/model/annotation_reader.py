@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING, Any, Callable
 
 
 if TYPE_CHECKING:
-    from src.ui.model.prop_dict import section
-    from src.ui.model.prop_dict import PropDict
+    from src.ui.model.prop_dict import PSection
+    from src.ui.model.prop_dict import PDict
     from src.ui.model.prop import Prop
 
 
@@ -23,17 +23,17 @@ class AnnotationReader:
         return name in self._target.__annotations__
 
     @property
-    def section(self) -> "section":
+    def section(self) -> "PSection":
         return self.get_annotation("section")
 
     @section.setter
-    def section(self, value: "section") -> None:
+    def section(self, value: "PSection") -> None:
         self.set_annotation("section", value)
 
     @property
-    def props(self) -> "section":
+    def props(self) -> "PSection":
         return self.get_annotation("props")
 
     @props.setter
-    def props(self, value: "section") -> None:
+    def props(self, value: "PSection") -> None:
         self.set_annotation("props", value)

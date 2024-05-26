@@ -5,15 +5,24 @@ from src.ui.model.prop import Prop
 from typing import Any, TypeGuard, override
 
 
-class PropValue:
+def format_value(value: Any) -> str:
+    if isinstance(value, str):
+        return f'"{value}"'
+    return str(value)
+
+
+class PValue:
     __match_args__ = ("value", "prop")
 
     def __init__(self, prop: Prop, value: Any) -> None:
         self.prop = prop
         self.value = value
 
-    def compute(self, key: str) -> tuple[str, Any]:
-        v = self.value or self.prop.default
+    def __repr__(self) -> str:
+        return f"{self.prop.name}={format_value(self.value)}"
+
+    def compute(self) -> tuple[str, Any]:
+        v = self.value or self.prop.no_value
         v = self.prop.converter(v) if self.prop.converter else v
-        k = self.prop.alias or key
+        k = self.prop.name or ""
         return k, v

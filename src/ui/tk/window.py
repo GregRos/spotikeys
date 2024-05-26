@@ -10,7 +10,7 @@ from typing import (
 )
 
 
-from src.ui.model.prop_dict import section
+from src.ui.model.prop_dict import PSection
 from src.ui.model.prop import Prop
 from src.ui.model.component import Component
 from src.ui.model.shadow_node import (
@@ -24,7 +24,7 @@ class WindowProps(InitPropsBase):
     topmost: Annotated[NotRequired[bool], Prop(parent="attributes")]
     background: Annotated[NotRequired[str], Prop(parent="configure")]
     transparent_color: Annotated[
-        NotRequired[str], Prop(parent="attributes", alias="transparentcolor")
+        NotRequired[str], Prop(parent="attributes", name="transparentcolor")
     ]
     override_redirect: NotRequired[bool]
     alpha: Annotated[NotRequired[float], Prop(parent="attributes")]
@@ -39,7 +39,7 @@ class Geometry(InitPropsBase):
 
 class Window(ShadowNode, Component[Widget]):  # type: ignore
 
-    @section(recurse=True)
+    @PSection(recurse=True)
     def __init__(self, **props: Unpack[WindowProps]): ...
 
     @override
@@ -48,5 +48,5 @@ class Window(ShadowNode, Component[Widget]):  # type: ignore
         clone._props = self._props.merge(overrides)
         return clone
 
-    @section(recurse=False)
+    @PSection(recurse=False)
     def geometry(self, **props: Unpack[Geometry]): ...

@@ -22,7 +22,7 @@ from pydantic import Field
 
 
 from src.ui.model.prop import Prop
-from src.ui.model.prop_dict import PropDict
+from src.ui.model.prop_dict import PDict
 from src.ui.model.shadow_node import (
     InitPropsBase,
     ShadowNode,
@@ -32,8 +32,8 @@ from src.ui.model.context import Ctx, Updatable
 
 
 class ComponentProps(InitPropsBase):
-    key: Annotated[NotRequired[str], Prop(default="")]
-    children: Annotated[NotRequired[Tuple[Self, ...]], Prop(default=())]
+    key: Annotated[NotRequired[str], Prop(no_value="")]
+    children: Annotated[NotRequired[Tuple[Self, ...]], Prop(no_value=())]
 
 
 @dataclass(kw_only=True)

@@ -5,7 +5,7 @@ from typing import Any, Callable, Literal, Self
 from pydantic import BaseModel
 
 
-from src.ui.model.prop_dict import PropVals, PropDict
+from src.ui.model.prop_dict import PValues, PDict
 from src.ui.model.shadow_node import ShadowNode, ShadowProps
 
 type Compat = Literal["update", "replace", "recreate"]
@@ -30,7 +30,7 @@ class ShadowedResource[Node: ShadowNode](ABC):
             and self.is_same_resource(value)
         )
 
-    def props(self, other: Node | None = None) -> PropVals:
+    def props(self, other: Node | None = None) -> PValues:
         a = self.node._props
         if not other:
             return a
@@ -50,7 +50,7 @@ class ShadowedResource[Node: ShadowNode](ABC):
         return self.node.key
 
     @abstractmethod
-    def update(self, props: PropVals) -> None: ...
+    def update(self, props: PValues) -> None: ...
 
     @abstractmethod
     def place(self) -> None: ...

@@ -1,6 +1,6 @@
 from tkinter import Label, Tk, Widget as TkWidget
 from typing import Any, ClassVar, Self, final, override
-from src.ui.model.prop_dict import PropVals, PropDict
+from src.ui.model.prop_dict import PValues, PDict
 from src.ui.tk.make_clickthrough import make_clickthrough
 from src.ui.model.resource import Compat, ShadowedResource
 from src.ui.tk.widget import Widget
@@ -53,13 +53,13 @@ class WidgetWrapper(ShadowedResource[Widget]):
         self.resource.destroy()
 
     @override
-    def update(self, props: PropVals) -> None:
-        _, diff = props.compute("")
+    def update(self, props: PValues) -> None:
+        _, diff = props.compute()
         self.resource.configure(**diff.get("configure", {}))
 
     @override
     def place(self) -> None:
-        _, d = self.node._props.compute("")
+        _, d = self.node._props.compute()
 
         self.resource.pack_configure(**d.get("pack", {}))
         make_clickthrough(self.resource)
@@ -70,7 +70,7 @@ class WidgetWrapper(ShadowedResource[Widget]):
 
     @override
     def replace(self, other: Self) -> None:
-        _, p = other.node._props.compute("")
+        _, p = other.node._props.compute()
 
         other.resource.pack_configure(after=self.resource, **p.get("pack", {}))
 

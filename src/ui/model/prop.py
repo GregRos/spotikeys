@@ -14,6 +14,7 @@ from typing import (
     override,
 )
 
+from src.annotations.defaults import defaults, update
 from src.annotations.get_annotation_name import (
     get_annotation_name,
 )
@@ -22,17 +23,16 @@ from src.annotations.get_metadata import get_inner_type_value, get_metadata_of_t
 
 DiffMode = Literal["simple", "recursive", "never"]
 if TYPE_CHECKING:
-    from src.ui.model.prop_value import PropValue
+    from src.ui.model.prop_value import PValue
 
 
 @dataclass(kw_only=True)
 class Prop:
     parent: str | None = field(default=None)
-    alias: str | None = field(default=None)
-    default: Any | None = field(default=None)
+    name: str | None = field(default=None)
+    no_value: Any | None = field(default=None)
     converter: Callable[[Any], Any] | None = field(default=None)
     value_type: type[Any] | None = field(default=None)
-    prop_name: str | None = field(default=None)
 
     @property
     def prop(self) -> "Prop":
@@ -40,13 +40,13 @@ class Prop:
 
     @property
     def has_default(self) -> bool:
-        return self.default is not None
+        return self.no_value is not None
 
     @property
     def is_dict(self) -> bool:
-        from src.ui.model.prop_dict import PropDict
+        from src.ui.model.prop_dict import PDict
 
-        return self.value_type is PropDict
+        return self.value_type is PDict
 
     def is_valid(self, input: Any):
         if self.value_type:
@@ -63,24 +63,28 @@ class Prop:
 
     @property
     def value(self) -> Any:
-        if self.default is None:
+        if self.no_value is None:
             raise ValueError("No default value set")
-        return self.default
+        return self.no_value
 
-    def set(self, **kwargs: Any) -> "Prop":
-        clone = copy(self)
-        for k, v in kwargs.items():
-            setattr(clone, k, v)
-        return clone
+    def update(self, source_prop: "Prop") -> "Prop":
+        return update(
+            self, source_prop, "parent", "name", "no_value", "converter", "value_type"
+        )
+
+    def defaults(self, source_prop: "Prop") -> "Prop":
+        return defaults(
+            self, source_prop, "parent", "name", "no_value", "converter", "value_type"
+        )
 
     def transform(self, key: str, value: Any) -> tuple[str, Any]:
-        return (self.alias or key, self.converter(value) if self.converter else value)
+        return (self.name or key, self.converter(value) if self.converter else value)
 
     def merge(self, other: "Prop") -> "Prop":
-        return self.set(**{k: v for k, v in other.__dict__.items() if v is not None})
+        return self.update(**{k: v for k, v in other.__dict__.items() if v is not None})
 
     def compute(self, key: str) -> tuple[str, Any] | None:
-        return self.alias if self.alias else key, self.default
+        return self.name if self.name else key, self.no_value
 
 
 def get_props(section_type: Type):
@@ -89,5 +93,5 @@ def get_props(section_type: Type):
         inner_type = get_inner_type_value(v) or v
         prop_def = get_metadata_of_type(v, Prop)
         if not prop_def:
-            prop_def = Prop(prop_name=k)
-        yield k, prop_def.set(value_type=inner_type, prop_name=k)
+            prop_def = Prop()
+        yield k, prop_def.defaults(Prop(value_type=inner_type, name=k))
