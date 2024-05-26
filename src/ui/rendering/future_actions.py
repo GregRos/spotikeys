@@ -1,11 +1,13 @@
+from dataclasses import dataclass
+from typing import Any
 from pydantic import ConfigDict
-from pydantic.dataclasses import dataclass
 
+from src.ui.model.prop_dict import PValues
 from src.ui.model.shadow_node import ShadowNode
 from src.ui.model.resource import ShadowedResource
 
 
-@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
+@dataclass
 class Create:
     next: ShadowNode
 
@@ -13,20 +15,24 @@ class Create:
         return f"🆕 {self.next}"
 
 
-@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
+@dataclass
 class Update:
     existing: ShadowedResource
     next: ShadowNode
+    diff: PValues
+
+    def __bool__(self):
+        return bool(self.diff.value)
 
     @property
     def props(self):
         return self.existing.props(self.next._props)
 
     def __repr__(self) -> str:
-        return f"📝 {self.next._props}"
+        return f"📝 {self.diff}"
 
 
-@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
+@dataclass
 class Recreate:
     old: ShadowedResource
     next: ShadowNode
@@ -36,7 +42,7 @@ class Recreate:
         return f"{self.old.key} ♻️ {self.next._props}"
 
 
-@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
+@dataclass
 class Place:
     what: Update | Recreate | Create
 
@@ -44,7 +50,7 @@ class Place:
         return f"👇 {self.what.__repr__()}"
 
 
-@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
+@dataclass
 class Replace:
     replaces: ShadowedResource
     with_what: Update | Recreate | Create
@@ -53,7 +59,7 @@ class Replace:
         return f"{self.replaces.key} ↔️ {self.with_what.__repr__()}"
 
 
-@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
+@dataclass
 class Unplace:
     what: ShadowedResource
 

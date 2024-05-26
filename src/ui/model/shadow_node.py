@@ -58,8 +58,8 @@ class ShadowNode:
 
     def __repr__(self) -> str:
         existing_key = self.key
-        props = self._props.__repr__()
-        return f"{self.type_name}({props})"
+        props = self._props.without("key").__repr__()
+        return props.__repr__()
 
     @property
     def key(self) -> str:

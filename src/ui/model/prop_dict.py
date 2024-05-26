@@ -18,6 +18,7 @@ from typing import (
     TypedDict,
     Unpack,
     cast,
+    get_origin,
     get_type_hints,
     overload,
     override,
@@ -27,11 +28,15 @@ from typing import (
 from pyrsistent import v
 
 
-from src.annotations.defaults import defaults, update
-from src.annotations.get_metadata import get_props_type_from_callable
-from src.annotations.get_methods import get_methods
+from src.annotations.defaults import defaults, is_empty, update
+from src.annotations.get_metadata import (
+    get_inner_type_value,
+    get_metadata_of_type,
+    get_props_type_from_callable,
+)
+from src.annotations.get_methods import get_attrs_downto
 from src.ui.model.annotation_reader import AnnotationReader
-from src.ui.model.prop import Prop, get_props
+from src.ui.model.prop import Prop
 from src.ui.model.prop_value import PValue
 
 
@@ -155,7 +160,7 @@ class PSection(Mapping[str, SomeProp]):
         for k, v in other.items():
             section = self.props
             value = section.get(k, None)
-            if not value:
+            if is_empty(value):
                 raise ValueError(f"Key {k} doesn't exist in section {section}")
             value.assert_valid_value(v or value.no_value)  # type: ignore
 
@@ -174,8 +179,8 @@ class PSection(Mapping[str, SomeProp]):
 
     def merge_class(self, obj: type):
         props = PDict()
-        methods = get_methods(obj, stop_class=object)
-        for k, f in methods.items():
+        attrs = get_attrs_downto(obj, stop_class=object)
+        for k, f in attrs.items():
             if not isfunction(f) or "section" not in AnnotationReader(f):
                 continue
             section = AnnotationReader(f).section
@@ -184,6 +189,7 @@ class PSection(Mapping[str, SomeProp]):
                 props = props.merge(section.props)
             else:
                 props = props.merge({k: section})
+        props = props.merge(x for x in get_props(obj) if x[0] not in props)
         return self.merge_props(props)
 
     @overload
@@ -234,7 +240,9 @@ class PValues(Mapping[str, "PValue | PValues"]):
         return f"{self.section.name}({props})"
 
     def without(self, *keys: str) -> "PValues":
-        return PValues(self.section, {k: v for k, v in self.items() if k not in keys})
+        return PValues(
+            self.section, {k: v for k, v in self._vals.items() if k not in keys}
+        )
 
     def __getitem__(self, key: str) -> "PValue | PValues":
         value = self._vals.get(key)
@@ -293,7 +301,7 @@ class PValues(Mapping[str, "PValue | PValues"]):
                         if result is not SAME:
                             out[k] = result.value
                     else:
-                        if v != other._vals[k]:
+                        if v != other[k]:
                             out[k] = v.value
 
         return PValues(self.section, out)
@@ -310,9 +318,28 @@ class PValues(Mapping[str, "PValue | PValues"]):
         for key, prop_val in self.items():
             k, v = prop_val.compute()
             target = (
-                get_or_create_section(prop_val.prop.parent)
-                if isinstance(prop_val, PValue) and prop_val.prop.parent
+                get_or_create_section(prop_val.prop.subsection)
+                if isinstance(prop_val, PValue) and prop_val.prop.subsection
                 else result
             )
             target[k] = v
         return name, result
+
+
+def get_props(section_type: type):
+
+    type_metadata = get_type_hints(
+        section_type, include_extras=True, localns={"Node": "object"}
+    )
+    for k, v in type_metadata.items():
+        inner_type = get_inner_type_value(v) or v
+        prop = get_metadata_of_type(v, Prop, PSection)
+        match prop:
+            case None if (x := get_origin(inner_type)) and issubclass(x, Mapping):
+                yield k, PSection(name=k).merge_class(inner_type)
+            case None:
+                yield k, Prop(value_type=inner_type, name=k)
+            case Prop():
+                yield k, prop.defaults(Prop(value_type=inner_type, name=k))
+            case PSection():
+                yield k, prop.defaults(PSection(name=k)).merge_class(inner_type)

@@ -35,7 +35,7 @@ class ActionHUD(Component[Window]):
             transparent_color="black",
             override_redirect=True,
             alpha=85 if isinstance(ctx.executed, TriggeredCommand) else 100,
-        ).geometry(
+        ).Geometry(
             width=420,
             height=250,
             x=-450,

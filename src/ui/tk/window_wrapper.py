@@ -112,7 +112,7 @@ class WindowWrapper(ShadowedResource[Window]):
     @override
     def place(self) -> None:
         def do():
-            geo = self.node._props["geometry"].value
+            geo = self.node._props["Geometry"].value
             geo = self.normalize_geo(geo)
             self.resource.wm_geometry(geo)
             self.resource.deiconify()

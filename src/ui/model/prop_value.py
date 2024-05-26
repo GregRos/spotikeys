@@ -26,3 +26,10 @@ class PValue:
         v = self.prop.converter(v) if self.prop.converter else v
         k = self.prop.name or ""
         return k, v
+
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, PValue)
+            and self.prop == other.prop
+            and self.value == other.value
+        )

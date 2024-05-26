@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 @dataclass(kw_only=True)
 class Prop:
-    parent: str | None = field(default=None)
+    subsection: str | None = field(default=None)
     name: str | None = field(default=None)
     no_value: Any | None = field(default=None)
     converter: Callable[[Any], Any] | None = field(default=None)
@@ -85,13 +85,3 @@ class Prop:
 
     def compute(self, key: str) -> tuple[str, Any] | None:
         return self.name if self.name else key, self.no_value
-
-
-def get_props(section_type: Type):
-    type_metadata = get_type_hints(section_type, include_extras=True)
-    for k, v in type_metadata.items():
-        inner_type = get_inner_type_value(v) or v
-        prop_def = get_metadata_of_type(v, Prop)
-        if not prop_def:
-            prop_def = Prop()
-        yield k, prop_def.defaults(Prop(value_type=inner_type, name=k))

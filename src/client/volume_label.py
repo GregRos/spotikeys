@@ -32,7 +32,7 @@ class VolumeLabel(Component[Widget]):
                 size=13,
                 style="normal",
             ),
-        ).pack(
+        ).Pack(
             ipadx=40,
             ipady=13,
             fill="both",

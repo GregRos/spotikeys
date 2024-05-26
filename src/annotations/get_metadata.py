@@ -11,9 +11,11 @@ def get_metadata(t: Type) -> tuple[Any, ...]:
         return ()  # type: tuple[Type, ...]
 
 
-def get_metadata_of_type[X](target: Type, metadata_type: type[X]) -> X | None:
+def get_metadata_of_type[X](target: Type, *metadata_type: type[X]) -> X | None:
     metadata = get_metadata(target)
-    return next((x for x in metadata if isinstance(x, metadata_type)), None)
+    return next(
+        (x for x in metadata if any(isinstance(x, t) for t in metadata_type)), None
+    )
 
 
 def get_inner_type_value(ty: Type):

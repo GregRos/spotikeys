@@ -1,5 +1,6 @@
 from threading import Lock
 import threading
+from time import sleep
 from typing import Any, Callable, Self
 
 
@@ -13,8 +14,9 @@ class Updatable:
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and self._map == other._map
 
-    def schedule(self, action: Callable[[Self], Any]) -> None:
+    def schedule(self, action: Callable[[Self], Any], delay: float) -> None:
         def do(x: Self):
+            sleep(delay)
             if x == self:
                 action(x)
             else:
@@ -24,7 +26,7 @@ class Updatable:
         thread.start()
 
     def __init__(self, **kwargs: Any):
-        self._map = dict[str, Any](kwargs=kwargs)
+        self._map = dict[str, Any](**kwargs)
         self._listeners = []
 
     def __getattr__(self, key: str) -> Any:

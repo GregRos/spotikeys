@@ -1,10 +1,14 @@
 from copy import copy
 from typing import Any
 
+MISSING = object()  # type: Any
 
-def is_empty(target, key) -> bool:
+
+def is_empty(target, key: str = MISSING) -> bool:
+    if key is MISSING:
+        return target is None or target == "" or target == []
     x = getattr(target, key)
-    return x is None or x == "" or x == []
+    return is_empty(x)
 
 
 def defaults[T](self, base: T, *only_keys: str) -> T:

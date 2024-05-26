@@ -29,7 +29,7 @@ class ProgressLabel(Component[Widget]):
                 size=14,
                 style="normal",
             ),
-        ).pack(
+        ).Pack(
             ipadx=20,
             ipady=15,
             fill="both",

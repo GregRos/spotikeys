@@ -1,8 +1,6 @@
 from __future__ import annotations
 import abc
 from dataclasses import dataclass, field
-from tkinter import Tk, Widget
-from types import SimpleNamespace
 from typing import (
     TYPE_CHECKING,
     Annotated,
@@ -17,8 +15,6 @@ from typing import (
     Unpack,
     override,
 )
-
-from pydantic import Field
 
 
 from src.ui.model.prop import Prop

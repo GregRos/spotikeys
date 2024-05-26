@@ -30,24 +30,19 @@ from src.ui.model.shadow_node import ShadowNode, ShadowProps
 
 
 class WidgetProps(ShadowProps):
-    text: Annotated[NotRequired[str], Prop(no_value=" ", parent="configure")]
-    font: Annotated[
-        NotRequired[Font],
-        Prop(
-            no_value=Font("Courier New", 18, "normal"),
-            parent="configure",
-            converter=lambda x: x.to_tk(),
-        ),
-    ]
-    borderwidth: Annotated[NotRequired[int], Prop(no_value=0, parent="configure")]
+    text: Annotated[NotRequired[str], Prop(no_value=" ", subsection="configure")]
+    font: Annotated[NotRequired[Font], PSection(recurse=False, name="Font")]
+    borderwidth: Annotated[NotRequired[int], Prop(no_value=0, subsection="configure")]
     background: Annotated[
-        NotRequired[str], Prop(no_value="#000001", parent="configure")
+        NotRequired[str], Prop(no_value="#000001", subsection="configure")
     ]
     foreground: Annotated[
-        NotRequired[str], Prop(no_value="#ffffff", parent="configure")
+        NotRequired[str], Prop(no_value="#ffffff", subsection="configure")
     ]
-    justify: Annotated[NotRequired[str], Prop(no_value="center", parent="configure")]
-    relief: Annotated[NotRequired[str], Prop(no_value="solid", parent="configure")]
+    justify: Annotated[
+        NotRequired[str], Prop(no_value="center", subsection="configure")
+    ]
+    relief: Annotated[NotRequired[str], Prop(no_value="solid", subsection="configure")]
 
 
 class PackProps(ShadowProps):
@@ -64,7 +59,7 @@ class Widget(ShadowNode):
     def __init__(self, **props: Unpack[WidgetProps]): ...
 
     @PSection(recurse=False)
-    def pack(self, **props: Unpack[PackProps]) -> None:
+    def Pack(self, **props: Unpack[PackProps]) -> None:
         pass
 
     def _copy(self, **overrides: Any) -> Self:

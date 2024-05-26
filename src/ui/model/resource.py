@@ -2,8 +2,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Callable, Literal, Self
 
-from pydantic import BaseModel
-
 
 from src.ui.model.prop_dict import PValues, PDict
 from src.ui.model.shadow_node import ShadowNode, ShadowProps

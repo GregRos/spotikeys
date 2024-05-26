@@ -1,12 +1,10 @@
+from typing import Annotated, NotRequired, TypedDict
 from pydantic import Field
-from pydantic.dataclasses import dataclass
+
+from src.ui.model.prop import Prop
 
 
-@dataclass(frozen=True)
-class Font:
+class Font(TypedDict):
     family: str
     size: int
-    style: str = Field(default="normal")
-
-    def to_tk(self):
-        return (self.family, self.size, self.style)
+    style: Annotated[NotRequired[str], Prop(no_value="normal")]

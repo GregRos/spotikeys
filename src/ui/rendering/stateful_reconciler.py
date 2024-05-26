@@ -27,8 +27,8 @@ class StatefulReconciler[Node: ShadowNode]:
     type ReconcileAction = Place | Replace | Unplace | Update
     type CreateAction = Create | Recreate | Update
 
-    _placement: tuple[ShadowNode, ...]
-    _key_to_resource: dict[str, ShadowedResource]
+    _placement: tuple[Node, ...]
+    _key_to_resource: dict[str, ShadowedResource[Node]]
 
     def __init__(
         self,
@@ -44,7 +44,7 @@ class StatefulReconciler[Node: ShadowNode]:
     def node_type(self) -> type[ShadowNode]:
         return self.resource_type.node_type()
 
-    def _get_reconcile_action(self, prev: ShadowNode | None, next: ShadowNode | None):
+    def _get_reconcile_action(self, prev: Node | None, next: Node | None):
 
         if not next:
             assert prev, "Neither prev nor next exists"
@@ -58,7 +58,13 @@ class StatefulReconciler[Node: ShadowNode]:
                 return Place(Create(next))
             if old_next_placement.get_compatibility(next) == "recreate":
                 return Place(Recreate(old_next_placement, next))
-            return Place(Update(old_next_placement, next))
+            return Place(
+                Update(
+                    old_next_placement,
+                    next,
+                    diff=old_next_placement.node._props.diff(next._props),
+                )
+            )
 
         old_prev_placement = self._key_to_resource[prev.key]
 
@@ -67,12 +73,19 @@ class StatefulReconciler[Node: ShadowNode]:
                 return Replace(old_prev_placement, Create(next))
             if old_next_placement.get_compatibility(next) == "recreate":
                 return Replace(old_prev_placement, Recreate(old_next_placement, next))
-            return Replace(old_prev_placement, Update(old_next_placement, next))
+            return Replace(
+                old_prev_placement,
+                Update(
+                    old_next_placement,
+                    next,
+                    diff=old_next_placement.node._props.diff(next._props),
+                ),
+            )
 
         assert old_next_placement
         if old_next_placement.get_compatibility(next) == "recreate":
             return Replace(old_prev_placement, Recreate(old_next_placement, next))
-        return Update(old_next_placement, next)
+        return Update(old_next_placement, next, diff=prev._props.diff(next._props))
 
     @staticmethod
     def _check_duplicates(rendering: Iterable[ShadowNode]):
@@ -87,7 +100,7 @@ class StatefulReconciler[Node: ShadowNode]:
         if messages:
             raise ValueError(messages)
 
-    def compute_reconcile_actions(self, rendering: Iterable[ShadowNode]):
+    def compute_reconcile_actions(self, rendering: Iterable[Node]):
         self._check_duplicates(rendering)
         placed = set[str]()
         for prev, next in zip_longest(self._placement, rendering, fillvalue=None):
@@ -104,15 +117,18 @@ class StatefulReconciler[Node: ShadowNode]:
                 new_resource.update(next._props)
                 self._key_to_resource[next.key] = new_resource
                 return new_resource
-            case Update(existing, next):
-                diff = existing.props(next)
-                existing.update(diff)
+            case Update(existing, next, diff):
+                if diff:
+                    existing.update(diff)
                 return existing.migrate(next)
             case _:
                 assert False, f"Unknown action: {action}"
 
-    def _do_reconcile_action(self, action: ReconcileAction):
-        logger.info(f"Reconcile action: {action}")
+    def _do_reconcile_action(self, action: ReconcileAction, log=True):
+        if action:
+            logger.info(f"Reconcile action: {action}")
+        else:
+            logger.info(f"No reconcile needed")
         match action:
             case Update(existing, next):
                 self._do_create_action(action)
@@ -137,8 +153,8 @@ class StatefulReconciler[Node: ShadowNode]:
             case _:
                 assert False, f"Unknown action: {action}"
 
-    def reconcile(self, rendering: tuple[ShadowNode, ...]):
-        reconcile = [*self.compute_reconcile_actions(rendering)]
-        for reconcile in reconcile:
+    def reconcile(self, rendering: tuple[Node, ...]):
+        reconciles = [*self.compute_reconcile_actions(rendering)]
+        for reconcile in reconciles:
             self._do_reconcile_action(reconcile)
         self._placement = rendering

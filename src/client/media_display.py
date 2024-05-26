@@ -32,7 +32,7 @@ class MediaDisplay(Component[Widget]):
                 style="normal",
             ),
             text=truncate_text(status.title, 28),
-        ).pack(
+        ).Pack(
             ipadx=15,
             fill="both",
         )
@@ -45,7 +45,7 @@ class MediaDisplay(Component[Widget]):
                 style="normal",
             ),
             text=truncate_text(status.artist, 28),
-        ).pack(
+        ).Pack(
             ipadx=15,
             fill="both",
         )

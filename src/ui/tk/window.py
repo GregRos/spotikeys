@@ -21,13 +21,13 @@ from src.ui.tk.widget import Widget
 
 
 class WindowProps(InitPropsBase):
-    topmost: Annotated[NotRequired[bool], Prop(parent="attributes")]
-    background: Annotated[NotRequired[str], Prop(parent="configure")]
+    topmost: Annotated[NotRequired[bool], Prop(subsection="attributes")]
+    background: Annotated[NotRequired[str], Prop(subsection="configure")]
     transparent_color: Annotated[
-        NotRequired[str], Prop(parent="attributes", name="transparentcolor")
+        NotRequired[str], Prop(subsection="attributes", name="transparentcolor")
     ]
-    override_redirect: NotRequired[bool]
-    alpha: Annotated[NotRequired[float], Prop(parent="attributes")]
+    override_redirect: Annotated[NotRequired[bool], Prop()]
+    alpha: Annotated[NotRequired[float], Prop(subsection="attributes")]
 
 
 class Geometry(InitPropsBase):
@@ -49,4 +49,4 @@ class Window(ShadowNode, Component[Widget]):  # type: ignore
         return clone
 
     @PSection(recurse=False)
-    def geometry(self, **props: Unpack[Geometry]): ...
+    def Geometry(self, **props: Unpack[Geometry]): ...

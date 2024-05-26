@@ -54,7 +54,7 @@ class CommandHeader(Component):
                 size=12,
                 style="normal",
             ),
-        ).pack(
+        ).Pack(
             ipadx=20,
             ipady=5,
             fill="both",
