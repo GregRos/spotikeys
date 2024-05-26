@@ -37,6 +37,10 @@ class ShadowProps(InitPropsBase):
 class ShadowNode:
     _props: PropVals
 
+    @property
+    def type_name(self) -> str:
+        return self.__class__.__name__
+
     def __init_subclass__(cls) -> None:
         props = AnnotationReader(cls).props = section(get_sections(cls), recurse=True)
         original_post_init = getattr(cls, "__post_init__", None)
@@ -46,6 +50,11 @@ class ShadowNode:
             self.props = props.with_values({})
 
         setattr(cls, "__post_init__", init_props)
+
+    def __repr__(self) -> str:
+        existing_key = self.key
+        props = self._props.__repr__()
+        return f"{self.type_name}({props})"
 
     @property
     def key(self) -> str:

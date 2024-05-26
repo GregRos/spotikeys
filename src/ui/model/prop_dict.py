@@ -116,7 +116,7 @@ class section(Mapping[str, SomeProp]):
     props: PropDict = field(default_factory=PropDict)
     recurse: bool = field(default=True)
     alias: str | None = field(default=None)
-
+    name: str = field(default="", init=False)
     def __iter__(self) -> Iterator[str]:
         return iter(self.props)
 
@@ -189,6 +189,19 @@ class section(Mapping[str, SomeProp]):
 class PropVals(Mapping[str, "PropValue | PropVals"]):
     section: "section"
     _vals: Mapping[str, Any]
+
+    def __repr__(self) -> str:
+        entries = dict()
+        for key, value in self.items():
+            prop = self.section.props[key]
+            if isinstance(prop, section):
+                entries[key] = f"{prop.}"
+            entries[key] = value.value.__repr__()
+        props = ", ".join("=".join(pair) for pair in entries.items())
+        return props
+
+    def without(self, *keys: str) -> "PropVals":
+        return PropVals(self.section, {k: v for k, v in self.items() if k not in keys})
 
     def __getitem__(self, key: str) -> "PropValue | PropVals":
         value = self._vals.get(key)

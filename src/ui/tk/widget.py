@@ -55,11 +55,6 @@ class PackProps(ShadowProps):
 
 
 class Widget(ShadowNode):
-    tk_type: ClassVar[str]
-
-    def __init_subclass__(cls, tk_type: str) -> None:
-        cls.tk_type = tk_type
-        return super().__init_subclass__()
 
     @section(recurse=True)
     def __init__(self, **props: Unpack[WidgetProps]): ...
@@ -74,5 +69,6 @@ class Widget(ShadowNode):
         return clone
 
 
-class Label(Widget, tk_type="Label"):
+class Label(Widget):
+
     pass

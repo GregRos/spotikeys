@@ -21,15 +21,15 @@ class WidgetWrapper(ShadowedResource[Widget]):
 
     @staticmethod
     def create(tk: Tk, node: Widget) -> "WidgetWrapper":
-        match node.__class__.tk_type:
+        match node.type_name:
             case "Label":
                 return __class__(node, Label(tk))
             case _:
-                raise ValueError(f"Unknown type: {node.tk_type}")
+                raise ValueError(f"Unknown type: {node.type_name}")
 
     @override
     def get_compatibility(self, other: Widget) -> Compat:
-        if self.node.tk_type != other.tk_type:
+        if self.node.type_name != other.type_name:
             return "recreate"
         elif self.node._props["pack"] != other._props["pack"]:
             return "replace"

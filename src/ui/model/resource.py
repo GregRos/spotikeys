@@ -13,6 +13,10 @@ type Compat = Literal["update", "replace", "recreate"]
 
 class ShadowedResource[Node: ShadowNode](ABC):
 
+    def __repr__(self) -> str:
+        node_type_name = self.__class__.node_type().__name__
+        return self.node.__repr__()
+
     @staticmethod
     @abstractmethod
     def node_type() -> type[Node]: ...
@@ -40,6 +44,10 @@ class ShadowedResource[Node: ShadowNode](ABC):
 
     @abstractmethod
     def destroy(self) -> None: ...
+
+    @property
+    def key(self) -> str:
+        return self.node.key
 
     @abstractmethod
     def update(self, props: PropVals) -> None: ...

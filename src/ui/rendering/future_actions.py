@@ -9,6 +9,9 @@ from src.ui.model.resource import ShadowedResource
 class Create:
     next: ShadowNode
 
+    def __repr__(self) -> str:
+        return f"🆕 {self.next}"
+
 
 @dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Update:
@@ -19,6 +22,9 @@ class Update:
     def props(self):
         return self.existing.props(self.next._props)
 
+    def __repr__(self) -> str:
+        return f"📝 {self.next._props}"
+
 
 @dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Recreate:
@@ -27,12 +33,15 @@ class Recreate:
 
     @property
     def props(self):
-        return self.next._props
+        return f"{self.old.key} ♻️ {self.next._props}"
 
 
 @dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Place:
     what: Update | Recreate | Create
+
+    def __repr__(self) -> str:
+        return f"👇 {self.what.__repr__()}"
 
 
 @dataclass(config=ConfigDict(arbitrary_types_allowed=True))
@@ -40,7 +49,13 @@ class Replace:
     replaces: ShadowedResource
     with_what: Update | Recreate | Create
 
+    def __repr__(self) -> str:
+        return f"{self.replaces.key} ↔️ {self.with_what.__repr__()}"
+
 
 @dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Unplace:
     what: ShadowedResource
+
+    def __repr__(self) -> str:
+        return f"❌ {self.what.key}"
