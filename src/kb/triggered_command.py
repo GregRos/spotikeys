@@ -1,14 +1,14 @@
+from dataclasses import dataclass, field
 from datetime import date
 import datetime
 import time
+import traceback
 
-from pydantic import Field
 from src.kb.key import Key
 from src.kb.key_combination import KeyCombination
 from src.commanding.commands import Command
 
 
-from pydantic.dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable, Coroutine, Literal, TypeGuard
 
 
@@ -49,6 +49,7 @@ class TriggeredCommand:
             return OkayCommand(self, end - start, result)
         except Exception as e:
             end = time.time()
+            print(traceback.format_exc())
             return FailedCommand(self, end - start, e)
 
     def __str__(self):
@@ -57,9 +58,9 @@ class TriggeredCommand:
 
 @dataclass()
 class OkayCommand[T]:
-    success: Literal[True] = Field(default=True, init=False)
+    success: Literal[True] = field(default=True, init=False)
     triggered: TriggeredCommand
-    command: Command = Field(init=False)
+    command: Command = field(init=False)
     duration: float
     result: T
 
@@ -69,7 +70,7 @@ class OkayCommand[T]:
 
 @dataclass
 class FailedCommand:
-    success: Literal[False] = Field(default=False, init=False)
+    success: Literal[False] = field(default=False, init=False)
     triggered: TriggeredCommand
     duration: float
     exception: Exception

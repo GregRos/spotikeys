@@ -150,7 +150,7 @@ class section(Mapping[str, SomeProp]):
             value = section.get(k, None)
             if not value:
                 raise ValueError(f"Key {k} doesn't exist in section {section}")
-            value.assert_valid_value(v)
+            value.assert_valid_value(v or value.default)  # type: ignore
 
     @overload
     def __call__[

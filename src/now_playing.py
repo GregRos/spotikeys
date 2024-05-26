@@ -1,5 +1,4 @@
-from pydantic.dataclasses import dataclass
-
+from dataclasses import dataclass
 from src.client.volume import VolumeInfo
 from src.server.spotify.device import Device
 

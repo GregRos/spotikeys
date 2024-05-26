@@ -1,5 +1,6 @@
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from comtypes import CLSCTX_ALL, CoInitialize
 
 
 @dataclass
@@ -20,7 +21,7 @@ class ClientVolumeControl:
 
     @property
     def audio_endpoint(self):
-
+        CoInitialize()
         devices = AudioUtilities.GetAllDevices()
         device = [device for device in devices if device.state.name == "Active"][0]
 

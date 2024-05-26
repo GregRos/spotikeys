@@ -7,7 +7,7 @@ from src.ui.tk.window_wrapper import WindowWrapper
 from src.ui.tk.window import Window
 
 
-class WindowMount(ComponentMount):
+class WindowMount(ComponentMount[Window]):
     def __init__(self, root: Component):
         self._ctx = Ctx()
         reconciler = StatefulReconciler[Window](

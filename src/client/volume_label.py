@@ -1,4 +1,4 @@
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 from math import trunc
 from typing import Generator, override
 from src.ui.model.component import Component

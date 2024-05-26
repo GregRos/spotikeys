@@ -7,7 +7,7 @@ from src.ui.tk.widget import Widget
 from src.ui.tk.widget_wrapper import WidgetWrapper
 
 
-class WidgetMount(ComponentMount):
+class WidgetMount(ComponentMount[Widget]):
     def __init__(self, tk: Tk, context: Ctx, root: Component):
         reconciler = StatefulReconciler[Widget](
             WidgetWrapper, lambda x: WidgetWrapper.create(tk, x)

@@ -1,4 +1,4 @@
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 from typing import Generator, override
 from src.ui import Component, Widget, Label, Font, Window
 

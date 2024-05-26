@@ -29,6 +29,7 @@ from src.ui.model.shadow_node import ShadowProps
 from src.ui.rendering.stateful_reconciler import StatefulReconciler
 from src.ui.rendering.renderer import ComponentMount
 from src.ui.model.context import Ctx
+from src.ui.tk.make_clickthrough import make_clickthrough
 from src.ui.tk.widget_mount import WidgetMount
 from src.ui.tk.widget import Widget
 from src.ui.tk.widget_wrapper import WidgetWrapper
@@ -136,7 +137,7 @@ class WindowWrapper(ShadowedResource[Window]):
                 self.resource.attributes(*attributes)
             if configure := computed["configure"]:
                 self.resource.configure(**configure)
-            if ("", "override_redirect") in computed:
+            if "override_redirect" in computed:
                 self.resource.overrideredirect(computed["override_redirect"])
             if children := self.node.children:
                 self._component_mount.remount(children)

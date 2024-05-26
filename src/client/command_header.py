@@ -1,8 +1,8 @@
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 from typing import Literal, TypedDict, override
 
+from src.client.media_types import MediaStageMessage
 from src.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
-from src.client.floating_tooltip import MediaStageMessage
 from src.ui.model.component import Component
 from src.ui.tk.widget import Label
 from src.ui.tk.font import Font

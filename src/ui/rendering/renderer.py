@@ -19,11 +19,13 @@ def wrap_root(children: tuple[Component, ...] | Component) -> Component:
     )
 
 
-class ComponentMount:
+class ComponentMount[X: ShadowNode]:
     _reconciler: StatefulReconciler
     _mounted: Component
 
-    def __init__(self, reconciler: StatefulReconciler, context: Ctx, root: Component):
+    def __init__(
+        self, reconciler: StatefulReconciler, context: Ctx, root: Component[X]
+    ):
         self._reconciler = reconciler
         self.context = context
         self._mounted = root
@@ -31,10 +33,12 @@ class ComponentMount:
 
     def __call__(self, **ctx_args: Any):
         self.context(**ctx_args)
+        return self.context
 
     def _compute_render(self):
+
         def _render(
-            cur_prefix: str, root: Component | tuple[Component, ...]
+            cur_prefix: str, root: Component[X] | tuple[Component[X], ...]
         ) -> Generator[ShadowNode, None, None]:
             node_type = self._reconciler.node_type
             root = root if isinstance(root, Component) else wrap_root(root)
@@ -52,7 +56,7 @@ class ComponentMount:
 
         return (*_render("", self._mounted),)
 
-    def remount(self, root: tuple[Component, ...] | Component):
+    def remount(self, root: tuple[Component[X], ...] | Component[X]):
         self._mounted = wrap_root(root)
         self.force_rerender()
 

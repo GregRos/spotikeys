@@ -1,4 +1,4 @@
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 from math import trunc
 from src.kb.triggered_command import OkayCommand
 from src.ui.model.component import (

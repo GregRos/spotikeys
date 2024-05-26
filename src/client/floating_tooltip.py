@@ -1,9 +1,10 @@
 from asyncio import sleep
 import ctypes
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 from typing import override
 
 
+from src.client.media_types import MediaStageMessage
 from src.kb.triggered_command import (
     FailedCommand,
     OkayCommand,
@@ -18,11 +19,6 @@ from src.now_playing import MediaStatus
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
-
-MediaOkay = OkayCommand[MediaStatus]
-MediaFailed = FailedCommand
-MediaExecuted = MediaOkay | MediaFailed
-MediaStageMessage = MediaExecuted | TriggeredCommand
 
 justify = 24
 

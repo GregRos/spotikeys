@@ -33,7 +33,11 @@ class WidgetProps(ShadowProps):
     text: Annotated[NotRequired[str], Prop(default=" ", parent="configure")]
     font: Annotated[
         NotRequired[Font],
-        Prop(default=Font("Courier New", 18, "normal"), parent="configure"),
+        Prop(
+            default=Font("Courier New", 18, "normal"),
+            parent="configure",
+            converter=lambda x: x.to_tk(),
+        ),
     ]
     borderwidth: Annotated[NotRequired[int], Prop(default=0, parent="configure")]
     background: Annotated[NotRequired[str], Prop(default="#000001", parent="configure")]

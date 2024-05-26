@@ -6,8 +6,9 @@ import time
 import traceback
 from typing import Any, Awaitable, Callable
 
+from src.client.media_types import MediaStageMessage
 from src.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
-from src.client.floating_tooltip import ActionHUD, MediaExecuted, MediaStageMessage
+from src.client.floating_tooltip import ActionHUD
 from src.ui.model.context import Ctx
 from src.ui import WindowMount
 from src.client.volume import ClientVolumeControl, VolumeInfo
@@ -23,8 +24,8 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     _current: TriggeredCommand | None = None
     _lock = threading.Lock()
     _last_command: TriggeredCommand | None = None
-    _ctx = Ctx()
     _root: WindowMount
+    _last_status: MediaStatus
 
     def __init__(
         self,
@@ -33,20 +34,21 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     ) -> None:
 
         super().__init__()
+        self._last_status = MediaStatus(
+            artist="No one",
+            title="Nothing",
+            album="N/A",
+            volume=VolumeInfo(volume=0, mute=False),
+            duration=10,
+            position=1,
+            is_playing=False,
+            device=None,  # type: ignore
+        )
         self._root = WindowMount(ActionHUD())
         self._root(
             executed=None,
-            last_status=MediaStatus(
-                artist="",
-                title="",
-                album="",
-                volume=VolumeInfo(volume=0, mute=False),
-                duration=0,
-                position=0,
-                is_playing=False,
-                device=None,  # type: ignore
-            ),
-            hidden=False,
+            last_status=self._last_status,
+            hidden=True,
         )
         self._loop = loop
         self._volume_control = ClientVolumeControl()
@@ -72,11 +74,11 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         if isinstance(thingy, OkayCommand):
             self._last_status = thingy.result
             self._last_command = thingy.triggered
-            self._ctx(
+            self._root(
                 hidden=False, executed=thingy, previous=self._last_status
             ).schedule(lambda _: self._root(hidden=True))
         if isinstance(thingy, TriggeredCommand):
-            self._ctx._last_command = thingy
+            self._last_command = thingy
 
     @handles(MediaCommands.show_status)
     async def _show_status(self, r_command: TriggeredCommand) -> None:
@@ -90,7 +92,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
 
     @handles(MediaCommands.hide_status)
     async def _hide_status(self, r_command: TriggeredCommand) -> None:
-        self._ctx(hidden=True)
+        self._root(hidden=True)
 
     @handles(MediaCommands.volume_up)
     async def _volume_up(self, r_command: TriggeredCommand) -> None:

@@ -21,7 +21,7 @@ class AsyncCommandHandler(Generic[CommandType, ReturnType]):
             handler = self.__class__.__dict__.get(name)
             if not handler:
                 continue
-            if not hasattr(handler, "handles"):
+            if getattr(handler, "handles", None) is None:
                 continue
             for code in handler.handles:
                 if code in self._mapping:

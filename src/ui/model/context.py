@@ -7,8 +7,8 @@ class Updatable:
     _listeners: list[Callable[[Self], None]] = []
     _map: dict[str, Any] = {}
 
-    def snapshot(self) -> "Updatable":
-        return Updatable(**self._map.copy())
+    def snapshot(self) -> "Self":
+        return self.__class__(**self._map.copy())
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and self._map == other._map
@@ -20,7 +20,7 @@ class Updatable:
             else:
                 print("Snapshot changed, skipping action")
 
-        thread = threading.Thread(target=do)
+        thread = threading.Thread(target=do, args=(self.snapshot(),))
         thread.start()
 
     def __init__(self, **kwargs: Any):
