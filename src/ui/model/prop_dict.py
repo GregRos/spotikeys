@@ -265,6 +265,8 @@ class PValues(Mapping[str, "PValue | PValues"]):
         props.assert_valid_value(values)
 
     def __repr__(self) -> str:
+        # FIXME: This is terrible!!!
+        # Stringifying this object should be saner
         entries = []
         values = self.items()
         props_first = sorted(values, key=lambda x: not isinstance(x[1], PValue))
@@ -285,6 +287,7 @@ class PValues(Mapping[str, "PValue | PValues"]):
                         return format_value(s)
 
             if self.old is not None and isinstance(value, PValue):
+                # FIXME: format could use some work
                 entries += [f"{key}[{fmt(self.old[key])} ➔  {fmt(value.value)}]"]
                 continue
             repr_result = value.__repr__()

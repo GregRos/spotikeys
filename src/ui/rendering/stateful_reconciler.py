@@ -124,6 +124,7 @@ class StatefulReconciler[Node: ShadowNode]:
 
     def _do_reconcile_action(self, action: ReconcileAction, log=True):
         if action:
+            # FIXME: This should be an externalized event
             logger.info(f"⚖️  RECONCILE {action}")
         else:
             logger.debug(f"No reconcile needed")

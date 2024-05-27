@@ -8,10 +8,17 @@ from typing import Any, Callable, Self
 logger = getLogger("ui")
 
 
+# FIXME: Multiple issues, including:
+# - Weird mutability
+# - No type hints (can it be fixed?)
+# - Should have consistent ID
+# - Consider coolass API for schedule, like ctx(lambda x: x + 1, 10)
+# - Probably do away with setattr and leave getattr
+# - Improve context equality mechanism
 class Ctx:
     _listeners: list[Callable[[Self], None]] = []
     _map: dict[str, Any] = {}
-    _executor = ThreadPoolExecutor(8)
+    _executor = ThreadPoolExecutor(4)
 
     def __init__(self, **attrs: Any):
         self._map = dict[str, Any](**attrs)
@@ -41,6 +48,7 @@ class Ctx:
         name = name or action.__name__
 
         def do(x: Self):
+            # FIXME Improved handling of stale context
             logger.info("Running scheduled '%s#%d'", name, self.id)
             if x != self:
                 logger.debug(f"Skipping scheduled '{name}#{self.id}' - stale context.")
