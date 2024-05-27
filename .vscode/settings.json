@@ -1,7 +1,8 @@
 {
   "python.analysis.typeCheckingMode": "standard",
+  "python.analysis.indexing": true,
   "python.analysis.autoImportCompletions": true,
-  "python.analysis.exclude": ["**/__init__.py"],
+  "python.analysis.exclude": ["**/site-packages/**"],
   "debugpy.debugJustMyCode": true,
   "files.exclude": {
     "**/.git": true,

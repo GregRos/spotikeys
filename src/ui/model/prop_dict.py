@@ -2,8 +2,6 @@ from collections.abc import Mapping
 from copy import copy
 from dataclasses import dataclass, field
 from inspect import isfunction
-from itertools import groupby
-from types import SimpleNamespace
 from typing import (
     Any,
     Callable,

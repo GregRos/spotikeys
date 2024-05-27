@@ -1,6 +1,8 @@
 from __future__ import annotations
 import abc
 from dataclasses import dataclass, field
+import threading
+from time import sleep
 from typing import (
     TYPE_CHECKING,
     Annotated,
@@ -8,6 +10,7 @@ from typing import (
     Callable,
     ClassVar,
     Generator,
+    Iterable,
     NotRequired,
     Self,
     Tuple,
@@ -17,19 +20,22 @@ from typing import (
 )
 
 
-from src.ui.model.prop import Prop
-from src.ui.model.prop_dict import PDict
-from src.ui.model.shadow_node import (
+from .prop import Prop
+from .prop_dict import PDict
+from .shadow_node import (
     InitPropsBase,
     ShadowNode,
     ShadowProps,
 )
-from src.ui.model.context import Ctx, Updatable
+from context import Ctx, Ctx
 
 
 class ComponentProps(InitPropsBase):
     key: Annotated[NotRequired[str], Prop(no_value="")]
     children: Annotated[NotRequired[Tuple[Self, ...]], Prop(no_value=())]
+
+
+type RenderResult[Node: ShadowNode] = Component[Node] | Node
 
 
 @dataclass(kw_only=True)

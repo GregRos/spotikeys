@@ -3,10 +3,8 @@ from typing import (
     Callable,
     Iterable,
 )
-from src.ui.model.resource import (
-    ShadowedResource,
-)
-from src.ui.rendering.future_actions import (
+
+from .future_actions import (
     Create,
     Recreate,
     Replace,
@@ -14,7 +12,7 @@ from src.ui.rendering.future_actions import (
     Update,
     Place,
 )
-from src.ui.model.shadow_node import ShadowNode
+from ..model import ShadowNode, Resource
 
 
 from itertools import groupby, zip_longest
@@ -28,12 +26,12 @@ class StatefulReconciler[Node: ShadowNode]:
     type CreateAction = Create | Recreate | Update
 
     _placement: tuple[Node, ...]
-    _key_to_resource: dict[str, ShadowedResource[Node]]
+    _key_to_resource: dict[str, Resource[Node]]
 
     def __init__(
         self,
-        resource_type: type[ShadowedResource[Node]],
-        create: Callable[[Node], ShadowedResource[Node]],
+        resource_type: type[Resource[Node]],
+        create: Callable[[Node], Resource[Node]],
     ):
         self._placement = ()
         self._key_to_resource = {}

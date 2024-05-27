@@ -5,13 +5,13 @@ from typing import Any, ClassVar, Self, final, override
 from src.ui.model.prop_dict import PValues, PDict
 from src.ui.tk.font import to_tk_font
 from src.ui.tk.make_clickthrough import make_clickthrough
-from src.ui.model.resource import Compat, ShadowedResource
+from src.ui.model.resource import Compat, Resource
 from src.ui.tk.widget import Widget
 
 logger = getLogger(__name__)
 
 
-class WidgetWrapper(ShadowedResource[Widget]):
+class WidgetWrapper(Resource[Widget]):
 
     @staticmethod
     @override

@@ -1,10 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
-from pydantic import ConfigDict
 
-from src.ui.model.prop_dict import PValues
-from src.ui.model.shadow_node import ShadowNode
-from src.ui.model.resource import ShadowedResource
+from ..model import PValues, Resource, ShadowNode
 
 
 @dataclass
@@ -17,7 +14,7 @@ class Create:
 
 @dataclass
 class Update:
-    existing: ShadowedResource
+    existing: Resource
     next: ShadowNode
     diff: PValues
 
@@ -34,7 +31,7 @@ class Update:
 
 @dataclass
 class Recreate:
-    old: ShadowedResource
+    old: Resource
     next: ShadowNode
 
     @property
@@ -52,7 +49,7 @@ class Place:
 
 @dataclass
 class Replace:
-    replaces: ShadowedResource
+    replaces: Resource
     with_what: Update | Recreate | Create
 
     def __repr__(self) -> str:
@@ -61,7 +58,7 @@ class Replace:
 
 @dataclass
 class Unplace:
-    what: ShadowedResource
+    what: Resource
 
     def __repr__(self) -> str:
         return f"☝️  {self.what.key}"

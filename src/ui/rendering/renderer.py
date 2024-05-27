@@ -1,10 +1,7 @@
 from typing import Any, Callable, Generator
 
-from src.ui.model.shadow_node import ShadowNode
+from src.ui.model import ShadowNode, Ctx, Component
 from src.ui.rendering.stateful_reconciler import StatefulReconciler
-from src.ui.model.component import Component
-from src.ui.model.context import Ctx, Updatable
-from pydantic.dataclasses import dataclass
 
 
 def with_key(node: ShadowNode, key: str) -> ShadowNode:

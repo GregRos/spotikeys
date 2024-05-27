@@ -9,7 +9,7 @@ from src.ui.model.shadow_node import ShadowNode, ShadowProps
 type Compat = Literal["update", "replace", "recreate"]
 
 
-class ShadowedResource[Node: ShadowNode](ABC):
+class Resource[Node: ShadowNode](ABC):
 
     def __repr__(self) -> str:
         node_type_name = self.__class__.node_type().__name__

@@ -23,7 +23,7 @@ from src.ui.model.prop_dict import PValues, PDict
 from src.ui.model.component import Component
 from src.ui.model.resource import (
     Compat,
-    ShadowedResource,
+    Resource,
 )
 from src.ui.model.shadow_node import ShadowProps
 from src.ui.rendering.stateful_reconciler import StatefulReconciler
@@ -37,7 +37,7 @@ from src.ui.tk.window import Window
 from src.ui.tk.geometry import Geometry
 
 
-class WindowWrapper(ShadowedResource[Window]):
+class WindowWrapper(Resource[Window]):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     resource: Tk
     _component_mount: WidgetMount
