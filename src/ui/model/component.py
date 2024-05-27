@@ -35,19 +35,8 @@ class ComponentProps(InitPropsBase):
 @dataclass(kw_only=True)
 class Component[Node: ShadowNode](abc.ABC):
     key: str = field(default="")
-    children: Tuple[Component[Node], ...] = field(default=())
 
     def _copy(self, **overrides: Any) -> Self:
         return self.__class__(**{**self.__dict__, **overrides})
 
-    def render(self, yld: Callable[[Any], None], ctx: Ctx, /):
-        for x in self.children:
-            yld(x)
-
-    def __getitem__(
-        self, children: tuple[Component[Node], ...] | Component[Node]
-    ) -> Self:
-        children = children if isinstance(children, tuple) else (children,)
-        clone = self._copy()
-        clone.children = children
-        return clone
+    def render(self, yld: Callable[[Any], None], ctx: Ctx, /): ...

@@ -426,8 +426,9 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
                         result = await handler()
                     else:
                         result = await handler(command)
-
-            return result or await self.get_media()
+            result = result or await self.get_media()
+            logger.info(f"Executed {command}, received {result}")
+            return result
         finally:
             self._current = None
 
@@ -439,5 +440,6 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
         if result:
             result.volume = VolumeInfo(result.volume.volume, False)
         elapsed = time.time() - start
+
         logger.info(f"Command {command} took {elapsed:.3f} seconds")
         return result  # type: ignore

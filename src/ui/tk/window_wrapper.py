@@ -79,7 +79,7 @@ class WindowWrapper(ShadowedResource[Window]):
         thread = threading.Thread(target=ui_thread)
         thread.start()
         waiter.wait()
-        root = Component(key="WidgetRoot")[*node.children]
+        root = node._props.compute()[1]["child"]  # type: Any
 
         wrapper = WindowWrapper(node, tk, context, root=root)
 
@@ -143,16 +143,16 @@ class WindowWrapper(ShadowedResource[Window]):
         assert isinstance(computed, dict)
 
         def do():
-            if attrs := computed["attributes"]:
+            if attrs := computed.get("attributes"):
                 attributes = [
                     item for k, v in attrs.items() for item in (f"-{k}", v) if v
                 ]
                 self.resource.attributes(*attributes)
-            if configure := computed["configure"]:
+            if configure := computed.get("configure"):
                 self.resource.configure(**configure)
-            if "override_redirect" in computed:
-                self.resource.overrideredirect(computed["override_redirect"])
-            if children := self.node.children:
-                self._component_mount.remount(children)
+            if (override_redirect := computed.get("override_redirect")) is not None:
+                self.resource.overrideredirect(override_redirect)
+            if child := computed.get("child"):
+                self._component_mount.remount(child)
 
         self.schedule(do)

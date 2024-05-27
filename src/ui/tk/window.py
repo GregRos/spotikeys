@@ -5,6 +5,7 @@ from typing import (
     Any,
     NotRequired,
     Self,
+    Tuple,
     Unpack,
     override,
 )
@@ -38,6 +39,12 @@ class Geometry(InitPropsBase):
 
 
 class Window(ShadowNode, Component[Widget]):  # type: ignore
+
+    @Prop(repr="simple")
+    def child(
+        self,
+        child: Widget | Component[Widget],
+    ): ...
 
     @PSection(recurse=True)
     def __init__(self, **props: Unpack[WindowProps]): ...

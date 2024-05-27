@@ -21,9 +21,11 @@ class ClientVolumeControl:
 
     @property
     def audio_endpoint(self):
-        CoInitialize()
-
-        devices = AudioUtilities.GetAllDevices()
+        try:
+            devices = AudioUtilities.GetAllDevices()
+        except OSError:
+            CoInitialize()
+            devices = AudioUtilities.GetAllDevices()
         device = [device for device in devices if device.state.name == "Active"][0]
 
         interface = device.EndpointVolume

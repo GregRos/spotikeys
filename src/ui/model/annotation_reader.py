@@ -23,6 +23,14 @@ class AnnotationReader:
         return name in self._target.__annotations__
 
     @property
+    def prop(self) -> "Prop":
+        return self.get_annotation("prop")
+
+    @prop.setter
+    def prop(self, value: "Prop") -> None:
+        self.set_annotation("prop", value)
+
+    @property
     def section(self) -> "PSection":
         return self.get_annotation("section")
 
@@ -31,9 +39,9 @@ class AnnotationReader:
         self.set_annotation("section", value)
 
     @property
-    def props(self) -> "PSection":
-        return self.get_annotation("props")
-
-    @props.setter
-    def props(self, value: "PSection") -> None:
-        self.set_annotation("props", value)
+    def metadata(self) -> "PSection | Prop | None":
+        if "section" in self:
+            return self.section
+        if "prop" in self:
+            return self.prop
+        return None

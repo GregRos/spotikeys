@@ -45,7 +45,7 @@ class ShadowNode:
         return self.__class__.node_name()
 
     def __init_subclass__(cls) -> None:
-        props = AnnotationReader(cls).props = PSection(
+        props = AnnotationReader(cls).section = PSection(
             recurse=True, name=cls.node_name()
         ).merge_class(cls)
         original_post_init = getattr(cls, "__post_init__", None)

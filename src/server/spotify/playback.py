@@ -71,6 +71,7 @@ class Playback(SpotifyBase):
         from src.now_playing import MediaStatus
 
         if self.is_dirty:
+
             self.reload()
         return MediaStatus(
             title=self.track.name,

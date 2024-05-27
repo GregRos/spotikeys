@@ -197,6 +197,5 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
                 case _:
                     logger.error(f"Busy with {self._current}.")
                     return self.busy(command)
-
             self._current = command
             threading.Thread(target=self._exec, args=(command,)).start()

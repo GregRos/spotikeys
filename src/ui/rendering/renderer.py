@@ -11,14 +11,6 @@ def with_key(node: ShadowNode, key: str) -> ShadowNode:
     return node._copy(key=key)
 
 
-def wrap_root(children: tuple[Component, ...] | Component) -> Component:
-    return (
-        Component(key="GenericRoot", children=children)
-        if isinstance(children, tuple)
-        else children
-    )
-
-
 class ComponentMount[X: ShadowNode]:
     _reconciler: StatefulReconciler
     _mounted: Component
@@ -59,8 +51,8 @@ class ComponentMount[X: ShadowNode]:
         self._mounted.render(on_yielded_for(""), self.context)
         return rendering
 
-    def remount(self, root: tuple[Component[X], ...] | Component[X]):
-        self._mounted = wrap_root(root)
+    def remount(self, root: Component[X]):
+        self._mounted = root
         self.force_rerender()
 
     def force_rerender(self):

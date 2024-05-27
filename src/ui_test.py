@@ -27,9 +27,9 @@ class WindowComponent(Component[Window]):
         yld(
             Window(
                 topmost=True, background="black", transparent_color="black", alpha=85
-            ).Geometry(width=500, height=500, x=500, y=500)[
-                StuffComponent(text=ctx.text), StuffComponent(text=ctx.text)
-            ]
+            )
+            .Geometry(width=500, height=500, x=500, y=500)
+            .child(StuffComponent(text=ctx.text))
         )
 
 

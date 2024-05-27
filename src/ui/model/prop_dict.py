@@ -181,14 +181,18 @@ class PSection(Mapping[str, SomeProp]):
         props = PDict()
         attrs = get_attrs_downto(obj, stop_class=object)
         for k, f in attrs.items():
-            if not isfunction(f) or "section" not in AnnotationReader(f):
+            if not isfunction(f):
                 continue
-            section = AnnotationReader(f).section
-
-            if k == "__init__":
-                props = props.merge(section.props)
-            else:
-                props = props.merge({k: section})
+            match AnnotationReader(f).metadata:
+                case None:
+                    continue
+                case PSection() as section:
+                    if k == "__init__":
+                        props = props.merge(section.props)
+                    else:
+                        props = props.merge({k: section})
+                case Prop() as prop:
+                    props = props.merge({k: prop})
         props = props.merge(x for x in get_props(obj) if x[0] not in props)
         return self.merge_props(props)
 
@@ -207,7 +211,7 @@ class PSection(Mapping[str, SomeProp]):
     def __call__[**P, R](self, f: Any | None = None) -> Any:
         def get_or_init_prop_values(self):
             if not getattr(self, "_props", None):
-                self._props = AnnotationReader(self.__class__).props.with_values({})
+                self._props = AnnotationReader(self.__class__).section.with_values({})
             return self._props
 
         def apply(f):
@@ -235,7 +239,9 @@ class PValues(Mapping[str, "PValue | PValues"]):
         values = self.values()
         props_first = sorted(values, key=lambda x: not isinstance(x, PValue))
         for value in props_first:
-            entries += [value.__repr__()]
+            repr_result = value.__repr__()
+            if repr_result:
+                entries += [value.__repr__()]
         props = ", ".join(entries)
         return f"{self.section.name}({props})"
 

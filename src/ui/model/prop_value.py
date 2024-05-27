@@ -19,7 +19,15 @@ class PValue:
         self.value = value
 
     def __repr__(self) -> str:
-        return f"{self.prop.name}={format_value(self.value)}"
+        match self.prop.repr:
+            case "none":
+                return ""
+            case "simple":
+                return f"{self.prop.name}={self.value.__class__.__name__}"
+            case "recursive":
+                return f"{self.prop.name}={format_value(self.value)}"
+            case _:
+                raise ValueError(f"Invalid repr mode: {self.prop.repr}")
 
     def compute(self) -> tuple[str, Any]:
         v = self.value or self.prop.no_value

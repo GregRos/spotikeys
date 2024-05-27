@@ -14,3 +14,4 @@ class WindowMount(ComponentMount[Window]):
             WindowWrapper, lambda x: WindowWrapper.create(x, self._ctx)
         )
         super().__init__(reconciler, self._ctx, root)
+        self.context += lambda _: self.force_rerender()
