@@ -72,17 +72,30 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         logger.fatal("Exit received! Goodbye.")
         os._exit(0)
 
+    _id = 0
+
     def set_value(self, thingy: MediaStageMessage) -> None:
+        self._id += 1
         if isinstance(thingy, OkayCommand):
             self._last_status = thingy.result
             self._last_command = thingy.triggered
             self._root(
-                hidden=False, executed=thingy, last_status=self._last_status
+                hidden=False,
+                executed=thingy,
+                last_status=self._last_status,
+                refresh_id=self._id,
             ).schedule(lambda _: self._root(hidden=True), 3.0)
         elif isinstance(thingy, TriggeredCommand):
             self._last_command = thingy
+            self._root(hidden=False, executed=thingy, refresh_id=self._id)
         else:
-            print(thingy)
+            logger.warn(thingy)
+            self._root(
+                hidden=False,
+                executed=thingy,
+                last_status=self._last_status,
+                refresh_id=self._id,
+            ).schedule(lambda _: self._root(hidden=True), 3.0)
 
     @handles(MediaCommands.show_status)
     async def _show_status(self, r_command: TriggeredCommand) -> None:
@@ -120,7 +133,14 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
 
     @handles(MediaCommands.volume_mute)
     async def _volume_mute(self, r_command: TriggeredCommand) -> None:
-        self._volume_control.mute = not self._volume_control.mute
+
+        def handle_volume_mute():
+            self._volume_control.mute = not self._volume_control.mute
+            self._last_status.volume = self._volume_control.info
+            return self._last_status
+
+        exec = r_command.execute(handle_volume_mute)
+        self.set_value(exec)
 
     @handles(MediaCommands.volume_reset)
     async def _volume_reset(self, r_command: TriggeredCommand) -> None:

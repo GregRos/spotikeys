@@ -74,3 +74,7 @@ class FailedCommand:
     triggered: TriggeredCommand
     duration: float
     exception: Exception
+
+    @property
+    def command(self):
+        return self.triggered.command

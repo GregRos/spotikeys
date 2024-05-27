@@ -24,7 +24,7 @@ from src.ui.model.component import Component
 from src.ui.model.prop_dict import PSection
 from src.ui.tk.font import Font
 from src.ui.tk.make_clickthrough import make_clickthrough
-
+import tkinter as tk
 
 from src.ui.model.shadow_node import ShadowNode, ShadowProps
 
@@ -42,6 +42,7 @@ class WidgetProps(ShadowProps):
     justify: Annotated[
         NotRequired[str], Prop(no_value="center", subsection="configure")
     ]
+    wraplength: Annotated[NotRequired[int], Prop(no_value=None, subsection="configure")]
     relief: Annotated[NotRequired[str], Prop(no_value="solid", subsection="configure")]
 
 

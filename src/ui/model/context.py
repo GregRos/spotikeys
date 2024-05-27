@@ -11,8 +11,7 @@ logger = getLogger("ui")
 class Ctx:
     _listeners: list[Callable[[Self], None]] = []
     _map: dict[str, Any] = {}
-    _executor = ThreadPoolExecutor(3)
-    id = 0
+    _executor = ThreadPoolExecutor(8)
 
     def __init__(self, **attrs: Any):
         self._map = dict[str, Any](**attrs)
@@ -20,6 +19,10 @@ class Ctx:
 
     def snapshot(self) -> "Self":
         return self.__class__(**self._map.copy())
+
+    @property
+    def id(self) -> int:
+        return self._map.get("refresh_id", 0)
 
     def __eq__(self, other: Any) -> bool:
         return (
@@ -38,9 +41,14 @@ class Ctx:
         name = name or action.__name__
 
         def do(x: Self):
+            logger.info("Running scheduled '%s#%d'", name, self.id)
             if x != self:
                 logger.debug(f"Skipping scheduled '{name}#{self.id}' - stale context.")
+                return
             sleep(delay)
+            if x != self:
+                logger.debug(f"Skipping scheduled '{name}#{self.id}' - stale context.")
+                return
             action(x)
 
         self._executor.submit(do, self.snapshot())
@@ -65,7 +73,6 @@ class Ctx:
         return self.__class__(**self._map)
 
     def _notify(self) -> None:
-        self.id += 1
         for listener in self._listeners:
             listener(self)
 

@@ -32,7 +32,7 @@ class MediaDisplay(Component[Widget]):
                     size=18,
                     style="normal",
                 ),
-                text=truncate_text(status.title, 28),
+                text=truncate_text(status.title, 25),
             ).Pack(
                 ipadx=15,
                 fill="both",

@@ -8,7 +8,7 @@ from src.ui.tk.widget import Label
 from src.ui.tk.font import Font
 
 
-CommandTypes = Literal["status", "trigger", "okay"]
+CommandTypes = Literal["status", "trigger", "okay", "failed"]
 
 
 @dataclass
@@ -19,10 +19,13 @@ class CommandHeader(Component):
 
     def get_color(self):
         match self.input:
-            case FailedCommand():
+            case x if x.command.code == "show_status":
                 return self.colors["status"]
+            case FailedCommand():
+                return self.colors["failed"]
             case TriggeredCommand():
                 return self.colors["trigger"]
+
             case OkayCommand():
                 return self.colors["okay"]
 
@@ -52,7 +55,7 @@ class CommandHeader(Component):
                 foreground="#dddddd",
                 font=Font(
                     family="Segoe UI Emoji",
-                    size=12,
+                    size=11,
                     style="normal",
                 ),
             ).Pack(

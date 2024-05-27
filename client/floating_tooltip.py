@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import override
 
 
+from client.error import FailDisplay
 from client.media_types import MediaStageMessage
 from src.kb.triggered_command import (
     FailedCommand,
@@ -53,8 +54,7 @@ class ActionHUD(Component[Window]):
 
         @override
         def render(self, yld, ctx: Ctx):
-            if isinstance(self.executed, FailedCommand):
-                raise ValueError("Failed command should not be rendered")
+
             if ctx.hidden:
                 return
             yld(
@@ -62,10 +62,14 @@ class ActionHUD(Component[Window]):
                     input=self.executed,
                     justify=justify,
                     colors={
-                        "status": "red",
-                        "trigger": "grey",
+                        "status": "grey",
+                        "trigger": "blue",
                         "okay": "green",
+                        "failed": "red",
                     },
                 )
             )
-            yld(MediaDisplay(status=self.previous))
+            if isinstance(self.executed, FailedCommand):
+                yld(FailDisplay(executed=self.executed))
+            else:
+                yld(MediaDisplay(status=self.previous))
