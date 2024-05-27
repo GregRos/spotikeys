@@ -35,7 +35,7 @@ from src.annotations.get_metadata import (
 from src.annotations.get_methods import get_attrs_downto
 from src.ui.model.annotation_reader import AnnotationReader
 from src.ui.model.prop import Prop
-from src.ui.model.prop_value import PValue
+from src.ui.model.prop_value import PValue, format_value
 
 
 from src.ui.tk.geometry import Geometry
@@ -43,6 +43,27 @@ from src.ui.tk.geometry import Geometry
 
 type SomeProp = Prop | PSection
 SAME = object()
+
+
+def format_superscript(value: int) -> str:
+    superscript_map = {
+        "0": "⁰",
+        "1": "¹",
+        "2": "²",
+        "3": "³",
+        "4": "⁴",
+        "5": "⁵",
+        "6": "⁶",
+        "7": "⁷",
+        "8": "⁸",
+        "9": "⁹",
+        "-": "⁻",
+    }
+    strified = str(value)
+    result = ""
+    for c in strified:
+        result += superscript_map[c]
+    return result
 
 
 class PDict(Mapping[str, SomeProp]):
@@ -232,16 +253,50 @@ class PValues(Mapping[str, "PValue | PValues"]):
     section: "PSection"
     _vals: Mapping[str, Any]
 
+    def __init__(
+        self,
+        props: "PSection",
+        values: Mapping[str, Any] = {},
+        old: Mapping[str, Any] | None = None,
+    ):
+        self.old = old
+        self.section = props
+        self._vals = {k: v for k, v in values.items() if v is not None}
+        props.assert_valid_value(values)
+
     def __repr__(self) -> str:
         entries = []
-        values = self.values()
-        props_first = sorted(values, key=lambda x: not isinstance(x, PValue))
-        for value in props_first:
+        values = self.items()
+        props_first = sorted(values, key=lambda x: not isinstance(x[1], PValue))
+        for key, value in props_first:
+            if key == "key":
+                continue
+
+            def fmt(s: Any):
+                prop = self.section.props[key]
+                if isinstance(prop, PSection):
+                    return s.__repr__()
+                match prop.repr:
+                    case "none":
+                        return ""
+                    case "simple":
+                        return s.__class__.__name__
+                    case "recursive":
+                        return format_value(s)
+
+            if self.old is not None and isinstance(value, PValue):
+                entries += [f"{key}[{fmt(self.old[key])} ➔  {fmt(value.value)}]"]
+                continue
             repr_result = value.__repr__()
             if repr_result:
                 entries += [value.__repr__()]
         props = ", ".join(entries)
-        return f"{self.section.name}({props})"
+        name = (
+            self.old.get("key")
+            if self.old
+            else self._vals["key"] if "key" in self._vals else self.section.name
+        )
+        return f"{name}({props})"
 
     def without(self, *keys: str) -> "PValues":
         return PValues(
@@ -264,11 +319,6 @@ class PValues(Mapping[str, "PValue | PValues"]):
     @property
     def value(self) -> Mapping[str, Any]:
         return self._vals
-
-    def __init__(self, props: "PSection", values: Mapping[str, Any] = {}):
-        self.section = props
-        self._vals = {k: v for k, v in values.items() if v is not None}
-        props.assert_valid_value(values)
 
     def __len__(self) -> int:
         return len(self._vals)
@@ -308,7 +358,7 @@ class PValues(Mapping[str, "PValue | PValues"]):
                         if v != other[k]:
                             out[k] = other[k].value
 
-        return PValues(self.section, out)
+        return PValues(self.section, out, old=self._vals)
 
     def compute(self) -> tuple[str, dict[str, Any]]:
         result = {}

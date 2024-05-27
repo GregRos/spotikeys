@@ -234,9 +234,9 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
         if not playing:
             raise NoPlaybackError()
         devices = await self.root.get_devices()
-        logger.debug(f"Got devices: {", ".join(d.name for d in devices)}")
+        logger.info(f"Got devices: {", ".join(d.name for d in devices)}")
         phone = next(d for d in devices if d.type == "Smartphone")
-        logger.debug(f"Phone: {phone.name}")
+        logger.info(f"Phone: {phone.name}")
         if playing:
             self.history.push(MediaCommands.transfer_to_device(playing.device))
         await self.root.transfer_playback(phone)
@@ -248,8 +248,8 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
 
         devices = await self.root.get_devices()
         hostname = socket.gethostname()
-        logger.debug(f"Got devices: {", ".join(d.name for d in devices)}")
-        logger.debug(f"Current device: {hostname}")
+        logger.info(f"Got devices: {", ".join(d.name for d in devices)}")
+        logger.info(f"Current device: {hostname}")
         if playing:
             self.history.push(MediaCommands.transfer_to_device(playing.device))
         try:

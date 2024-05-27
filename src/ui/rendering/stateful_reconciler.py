@@ -17,7 +17,7 @@ from ..model import ShadowNode, Resource
 
 from itertools import groupby, zip_longest
 
-logger = logging.getLogger("reconciler")
+logger = logging.getLogger("ui")
 
 
 class StatefulReconciler[Node: ShadowNode]:
@@ -124,9 +124,9 @@ class StatefulReconciler[Node: ShadowNode]:
 
     def _do_reconcile_action(self, action: ReconcileAction, log=True):
         if action:
-            logger.info(f"Reconcile action: {action}")
+            logger.info(f"⚖️  RECONCILE {action}")
         else:
-            logger.info(f"No reconcile needed")
+            logger.debug(f"No reconcile needed")
             return
         match action:
             case Update(existing, next):

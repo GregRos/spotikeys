@@ -27,7 +27,7 @@ from .shadow_node import (
     ShadowNode,
     ShadowProps,
 )
-from context import Ctx, Ctx
+from .context import Ctx, Ctx
 
 
 class ComponentProps(InitPropsBase):

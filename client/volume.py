@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from comtypes import CLSCTX_ALL, CoInitialize
 
@@ -16,11 +17,16 @@ class VolumeInfo:
 
 
 class ClientVolumeControl:
+    _devices: list
+    audio_interface: IAudioEndpointVolume | None = None
+
     def __init__(self):
         pass
 
     @property
-    def audio_endpoint(self):
+    def audio_endpoint(self) -> Any:
+        if self.audio_interface:
+            return self.audio_interface
         try:
             devices = AudioUtilities.GetAllDevices()
         except OSError:
@@ -29,7 +35,9 @@ class ClientVolumeControl:
         device = [device for device in devices if device.state.name == "Active"][0]
 
         interface = device.EndpointVolume
-        audio_interface = interface.QueryInterface(IAudioEndpointVolume)
+        self.audio_interface = audio_interface = interface.QueryInterface(
+            IAudioEndpointVolume
+        )
         return audio_interface
 
     @property

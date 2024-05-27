@@ -57,9 +57,7 @@ class ShadowNode:
         setattr(cls, "__post_init__", init_props)
 
     def __repr__(self) -> str:
-        existing_key = self.key
-        props = self._props.without("key").__repr__()
-        return props.__repr__()
+        return self._props.__repr__()
 
     @property
     def key(self) -> str:

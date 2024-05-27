@@ -38,6 +38,8 @@ class CustomFormatter(logging.Formatter):
                 return "⚙️ "
             case "client":
                 return "🎮"
+            case "ui":
+                return "📱"
         return name
 
     def format(self, record):

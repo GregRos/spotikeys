@@ -80,7 +80,6 @@ class WidgetWrapper(Resource[Widget]):
         if not pack:  # pragma: no cover
             return
         self.resource.pack_configure(**d.get("Pack", {}))
-        logger.debug(f"Making {self.node} clickthrough")
 
         logger.debug(f"Ending place for {self.node}")
 

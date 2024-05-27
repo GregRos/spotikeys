@@ -1,4 +1,5 @@
 from asyncio import AbstractEventLoop, new_event_loop
+from concurrent.futures import ThreadPoolExecutor
 from logging import getLogger
 import os
 import threading
@@ -26,6 +27,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     _last_command: TriggeredCommand | None = None
     _root: WindowMount
     _last_status: MediaStatus
+    _thread_pool = ThreadPoolExecutor(1)
 
     def __init__(
         self,
@@ -198,4 +200,4 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
                     logger.error(f"Busy with {self._current}.")
                     return self.busy(command)
             self._current = command
-            threading.Thread(target=self._exec, args=(command,)).start()
+            self._thread_pool.submit(self._exec, command)

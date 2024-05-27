@@ -55,7 +55,7 @@ class Root:
                 logger.error(f"{e}")
                 raise
             else:
-                logger.debug(f"{method} {url}, got took {time.time() - start:.2f}s")
+                logger.info(f"{method} {url}, got took {time.time() - start:.2f}s")
             return result
 
         self._spotify._internal_call = _internal_call  # type: ignore

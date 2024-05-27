@@ -26,7 +26,7 @@ class Update:
         return self.existing.props(self.next._props)
 
     def __repr__(self) -> str:
-        return f"📝 {self.diff}"
+        return f"📝 {self.diff.__repr__()}"
 
 
 @dataclass
