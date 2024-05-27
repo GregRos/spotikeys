@@ -3,6 +3,7 @@ from time import sleep
 from tkinter import Label, Tk, Widget as TkWidget
 from typing import Any, ClassVar, Self, final, override
 from src.ui.model.prop_dict import PValues, PDict
+from src.ui.tk.font import to_tk_font
 from src.ui.tk.make_clickthrough import make_clickthrough
 from src.ui.model.resource import Compat, ShadowedResource
 from src.ui.tk.widget import Widget
@@ -27,7 +28,10 @@ class WidgetWrapper(ShadowedResource[Widget]):
     def create(tk: Tk, node: Widget) -> "WidgetWrapper":
         match node.type_name:
             case "Label":
-                return __class__(node, Label(tk))
+                lbl = Label(tk)
+                make_clickthrough(lbl)
+                return __class__(node, lbl)
+
             case _:
                 raise ValueError(f"Unknown type: {node.type_name}")
 
@@ -61,6 +65,8 @@ class WidgetWrapper(ShadowedResource[Widget]):
 
         _, diff = props.compute()
         configure = diff.get("configure", {})
+        if "font" in diff:
+            configure["font"] = to_tk_font(diff["font"])
         if not configure:
             return
         self.resource.configure(**diff.get("configure", {}))
@@ -68,14 +74,15 @@ class WidgetWrapper(ShadowedResource[Widget]):
 
     @override
     def place(self) -> None:
-        logger.info(f"Calling place for {self.node}")
+        logger.debug(f"Calling place for {self.node}")
         _, d = self.node._props.compute()
         pack = d.get("Pack", {})
         if not pack:  # pragma: no cover
             return
         self.resource.pack_configure(**d.get("Pack", {}))
-        make_clickthrough(self.resource)
-        logger.info(f"Ending place for {self.node}")
+        logger.debug(f"Making {self.node} clickthrough")
+
+        logger.debug(f"Ending place for {self.node}")
 
         x = 1
 
@@ -90,4 +97,3 @@ class WidgetWrapper(ShadowedResource[Widget]):
         other.resource.pack_configure(after=self.resource, **p.get("Pack", {}))
 
         self.resource.pack_forget()
-        make_clickthrough(other.resource)

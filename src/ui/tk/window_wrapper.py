@@ -47,11 +47,19 @@ class WindowWrapper(ShadowedResource[Window]):
     def node_type() -> type[Window]:
         return Window
 
-    def __init__(self, node: Window, resource: Tk, context: Ctx, root: Component):
+    def __init__(
+        self,
+        node: Window,
+        resource: Tk,
+        context: Ctx,
+        root: Component,
+        mount: WidgetMount | None = None,
+    ):
         super().__init__(node)
+        mount = mount or WidgetMount(resource, context, root)
         self.resource = resource
         self.context = context
-        self._component_mount = WidgetMount(resource, context, root)
+        self._component_mount = mount
 
     @override
     def is_same_resource(self, other: Self) -> bool:
@@ -85,7 +93,11 @@ class WindowWrapper(ShadowedResource[Window]):
     @override
     def migrate(self, node: Window) -> Self:
         return self.__class__(
-            node, self.resource, self.context, self._component_mount._mounted
+            node,
+            self.resource,
+            self.context,
+            self._component_mount._mounted,
+            self._component_mount,
         )
 
     @override

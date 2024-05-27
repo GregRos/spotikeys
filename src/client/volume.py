@@ -21,6 +21,7 @@ class ClientVolumeControl:
 
     @property
     def audio_endpoint(self):
+        CoInitialize()
 
         devices = AudioUtilities.GetAllDevices()
         device = [device for device in devices if device.state.name == "Active"][0]
@@ -31,7 +32,6 @@ class ClientVolumeControl:
 
     @property
     def info(self) -> VolumeInfo:
-        return VolumeInfo(5, False)
         return VolumeInfo(self.volume, self.mute)
 
     def _to_percent(self, volume: float):

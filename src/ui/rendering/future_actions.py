@@ -64,4 +64,4 @@ class Unplace:
     what: ShadowedResource
 
     def __repr__(self) -> str:
-        return f"❌ {self.what.key}"
+        return f"☝️  {self.what.key}"

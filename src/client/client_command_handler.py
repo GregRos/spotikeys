@@ -75,8 +75,8 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
             self._last_status = thingy.result
             self._last_command = thingy.triggered
             self._root(
-                hidden=False, executed=thingy, previous=self._last_status
-            ).schedule(lambda _: self._root(hidden=True), 1.0)
+                hidden=False, executed=thingy, last_status=self._last_status
+            ).schedule(lambda _: self._root(hidden=True), 3.0)
         if isinstance(thingy, TriggeredCommand):
             self._last_command = thingy
 
@@ -98,6 +98,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     async def _volume_up(self, r_command: TriggeredCommand) -> None:
         def handle_volume_up():
             self._last_status.volume = self._volume_control.info
+            self._volume_control.volume += 10
             return self._last_status
 
         exec = r_command.execute(handle_volume_up)
@@ -167,13 +168,14 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
             self._current = None
 
     def __call__(self, command: TriggeredCommand) -> None:
+        if (
+            self._last_command
+            and command == self._last_command
+            and command.timestamp - self._last_command.timestamp < 0.25
+        ):
+            return
         with self._lock:
-            if (
-                self._last_command
-                and command == self._last_command
-                and command.timestamp - self._last_command.timestamp < 0.25
-            ):
-                return
+
             self._last_command = command
             match self._current and self._current.command:
                 case Command(code="show_status"):

@@ -294,7 +294,7 @@ class PValues(Mapping[str, "PValue | PValues"]):
             match v:
                 case PValue():
                     if v != other[k]:
-                        out[k] = v.value
+                        out[k] = other[k].value
                 case PValues():
                     if v.section.recurse:
                         result = PValues._diff(v, other._vals[k])
@@ -302,7 +302,7 @@ class PValues(Mapping[str, "PValue | PValues"]):
                             out[k] = result.value
                     else:
                         if v != other[k]:
-                            out[k] = v.value
+                            out[k] = other[k].value
 
         return PValues(self.section, out)
 

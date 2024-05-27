@@ -129,6 +129,7 @@ class StatefulReconciler[Node: ShadowNode]:
             logger.info(f"Reconcile action: {action}")
         else:
             logger.info(f"No reconcile needed")
+            return
         match action:
             case Update(existing, next):
                 self._do_create_action(action)

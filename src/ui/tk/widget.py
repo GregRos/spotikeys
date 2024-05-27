@@ -31,7 +31,7 @@ from src.ui.model.shadow_node import ShadowNode, ShadowProps
 
 class WidgetProps(ShadowProps):
     text: Annotated[NotRequired[str], Prop(no_value=" ", subsection="configure")]
-    font: Annotated[NotRequired[Font], PSection(recurse=False, name="Font")]
+    font: Annotated[NotRequired[Font], PSection(recurse=False, name="font")]
     borderwidth: Annotated[NotRequired[int], Prop(no_value=0, subsection="configure")]
     background: Annotated[
         NotRequired[str], Prop(no_value="#000001", subsection="configure")

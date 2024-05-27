@@ -13,7 +13,7 @@ from .keys import *
 from src.now_playing import MediaStatus
 from src.commands import *
 from src.kb.layout import Layout
-
+from .spotify_secret import spotify_creds
 from src.log_config import setup_logging
 
 setup_logging()
@@ -68,12 +68,7 @@ def create_client(send: AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
 logger = logging.getLogger("server")
 logger.info("Starting up...")
 handler = MediaCommandHandler(
-    {
-        "client_id": "b996e2c82b574509bec24fbd11eda035",
-        # This client secret is obsolete.
-        "client_secret": "2370df9b5a7840a183f44bbd795483fa",
-        "redirect_uri": "http://localhost:12000",
-    },
+    spotify_creds,
     Path("./history.state"),
 )
 
