@@ -1,11 +1,11 @@
 from logging import getLogger
-from src.server.spotify.asyncify import asyncify
-from src.server.spotify.base import SpotifyBacked
-from src.server.spotify.current_user import CurrentUser
-from src.server.spotify.playlist import Playlist
+from src.spotify.asyncify import asyncify
+from src.spotify.base import SpotifyBacked
+from src.spotify.current_user import CurrentUser
+from src.spotify.playlist import Playlist
 from spotipy import Spotify
 
-from src.server.spotify.utils import not_none
+from src.spotify.utils import not_none
 
 logger = getLogger("server")
 

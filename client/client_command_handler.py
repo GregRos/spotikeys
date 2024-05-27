@@ -6,13 +6,13 @@ import time
 import traceback
 from typing import Any, Awaitable, Callable
 
-from src.client.media_types import MediaStageMessage
+from client.media_types import MediaStageMessage
 from src.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
-from src.client.floating_tooltip import ActionHUD
+from client.floating_tooltip import ActionHUD
 from src.ui.model.context import Ctx
 from src.ui import WindowMount
-from src.client.volume import ClientVolumeControl, VolumeInfo
-from src.now_playing import MediaStatus
+from client.volume import ClientVolumeControl, VolumeInfo
+from src.spotify.now_playing import MediaStatus
 from src.commanding.commands import Command, ParamterizedCommand
 from src.commanding.handler import AsyncCommandHandler, handles
 from src.commands.media_commands import MediaCommands

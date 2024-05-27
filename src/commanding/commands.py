@@ -23,6 +23,9 @@ class Command:
     def local(self, is_local: bool = True):
         return Command(self.code, self.label)
 
+    def __repr__(self):
+        return f"COMMAND {self.code} {self.label}"
+
     def is_command(self, command: Command | str):
         return (
             self.code == command.code

@@ -5,16 +5,16 @@ from typing import Awaitable
 from venv import logger
 
 
-from src.client.client_command_handler import ClientCommandHandler
+from client.client_command_handler import ClientCommandHandler
 from src.commanding.commands import Command
 from src.commanding.handler import AsyncCommandHandler
-from src.server.command_handler import MediaCommandHandler
+from server.command_handler import MediaCommandHandler
 from .keys import *
-from src.now_playing import MediaStatus
+from src.spotify.now_playing import MediaStatus
 from src.commands import *
 from src.kb.layout import Layout
 from .spotify_secret import spotify_creds
-from src.log_config import setup_logging
+from src.setup_logging import setup_logging
 
 setup_logging()
 
@@ -69,7 +69,7 @@ logger = logging.getLogger("server")
 logger.info("Starting up...")
 handler = MediaCommandHandler(
     spotify_creds,
-    Path("./history.state"),
+    Path("./.store/history.state"),
 )
 
 create_client(handler).__enter__()

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import override
 
 
-from src.client.media_types import MediaStageMessage
+from client.media_types import MediaStageMessage
 from src.kb.triggered_command import (
     FailedCommand,
     OkayCommand,
@@ -12,10 +12,10 @@ from src.kb.triggered_command import (
 )
 
 
-from src.client.command_header import CommandHeader
+from client.command_header import CommandHeader
 from src.ui import Window, Ctx, Component, Widget
-from src.client.media_display import MediaDisplay
-from src.now_playing import MediaStatus
+from client.media_display import MediaDisplay
+from src.spotify.now_playing import MediaStatus
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 

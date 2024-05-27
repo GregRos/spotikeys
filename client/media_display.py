@@ -4,11 +4,11 @@ from src.kb.triggered_command import OkayCommand
 from src.ui.model.component import (
     Component,
 )
-from src.client.progress_label import ProgressLabel
+from client.progress_label import ProgressLabel
 from src.ui import Label, Component, Font, Widget
-from src.client.volume_label import VolumeLabel
-from src.client.volume import VolumeInfo
-from src.now_playing import MediaStatus
+from client.volume_label import VolumeLabel
+from client.volume import VolumeInfo
+from src.spotify.now_playing import MediaStatus
 
 
 def truncate_text(text: str, max_length: int) -> str:

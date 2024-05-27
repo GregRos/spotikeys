@@ -1,7 +1,7 @@
 from spotipy import Spotify
 
-from src.server.spotify.asyncify import asyncify
-from src.server.spotify.resource import SpotifyResource
+from src.spotify.asyncify import asyncify
+from src.spotify.resource import SpotifyResource
 
 
 class Artist(SpotifyResource):

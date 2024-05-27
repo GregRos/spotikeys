@@ -1,6 +1,6 @@
 from spotipy import Spotify
 
-from src.server.spotify.resource import SpotifyResource
+from src.spotify.resource import SpotifyResource
 
 
 class CurrentUser(SpotifyResource):
@@ -12,7 +12,7 @@ class CurrentUser(SpotifyResource):
 
     @property
     def playlists(self):
-        from src.server.spotify.playlists import Playlists
+        from src.spotify.playlists import Playlists
 
         return Playlists(self._spotify, self)
 

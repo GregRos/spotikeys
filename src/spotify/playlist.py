@@ -4,12 +4,12 @@ from typing import List, cast
 from benedict import benedict
 from spotipy import Spotify
 
-from src.server.spotify.asyncify import asyncify
-from src.server.spotify.track import Track
-from src.server.spotify.resource import SpotifyResource
-from src.server.spotify.artist import Artist
+from src.spotify.asyncify import asyncify
+from src.spotify.track import Track
+from src.spotify.resource import SpotifyResource
+from src.spotify.artist import Artist
 
-from src.server.spotify.utils import not_none
+from src.spotify.utils import not_none
 
 logger = getLogger("server")
 

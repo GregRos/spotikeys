@@ -1,5 +1,5 @@
 from src.commanding import Command
-from src.server.history.command_history import PersistentCommandHistory
+from server.history.command_history import PersistentCommandHistory
 
 
 class UndoWaiter:

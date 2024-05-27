@@ -1,14 +1,14 @@
 from typing import Literal
 
 
-from src.client.volume import VolumeInfo
-from src.server.spotify.album import Album
-from src.server.spotify.artist import Artist
-from src.server.spotify.asyncify import asyncify
-from src.server.spotify.base import SpotifyBase
-from src.server.spotify.device import Device
-from src.server.spotify.playlist import Playlist
-from src.server.spotify.track import Track
+from client.volume import VolumeInfo
+from src.spotify.album import Album
+from src.spotify.artist import Artist
+from src.spotify.asyncify import asyncify
+from src.spotify.base import SpotifyBase
+from src.spotify.device import Device
+from src.spotify.playlist import Playlist
+from src.spotify.track import Track
 
 Repeat = Literal["track", "context", "off", None, False]
 allowable_actions = (
@@ -68,7 +68,7 @@ class Playback(SpotifyBase):
         self._spotify.start_playback(context_uri=uri)
 
     def get_status(self):
-        from src.now_playing import MediaStatus
+        from src.spotify.now_playing import MediaStatus
 
         if self.is_dirty:
 

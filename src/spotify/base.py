@@ -5,7 +5,7 @@ from typing import Callable
 from benedict import benedict
 from spotipy import Spotify
 
-from src.server.spotify.asyncify import asyncify
+from src.spotify.asyncify import asyncify
 
 type Reload = Callable[[], dict]
 

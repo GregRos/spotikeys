@@ -2,7 +2,7 @@ from typing import Callable
 
 from spotipy import Spotify
 
-from src.server.spotify.base import SpotifyBase
+from src.spotify.base import SpotifyBase
 
 
 class SpotifyResource(SpotifyBase):

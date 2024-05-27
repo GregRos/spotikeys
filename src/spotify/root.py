@@ -4,10 +4,10 @@ from typing import TypedDict
 from spotipy import Spotify, SpotifyOAuth
 
 
-from src.server.spotify import Playback, Artist, Track, Playlist, Album, CurrentUser
-from src.server.spotify.asyncify import asyncify
-from src.server.spotify.device import Device
-from src.server.spotify.utils import not_none
+from src.spotify import Playback, Artist, Track, Playlist, Album, CurrentUser
+from src.spotify.asyncify import asyncify
+from src.spotify.device import Device
+from src.spotify.utils import not_none
 
 
 class SpotifyAuth(TypedDict):

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal, TypedDict, override
 
-from src.client.media_types import MediaStageMessage
+from client.media_types import MediaStageMessage
 from src.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
 from src.ui.model.component import Component
 from src.ui.tk.widget import Label

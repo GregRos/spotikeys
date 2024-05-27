@@ -2,7 +2,7 @@ from typing import Literal, Protocol, TypedDict
 
 
 from src.commanding.commands import command, parameterized_command
-from src.server.spotify.device import Device
+from src.spotify.device import Device
 
 
 class LoveStateArgs(TypedDict):

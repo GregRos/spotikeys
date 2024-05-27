@@ -3,7 +3,7 @@ from time import sleep
 from src.ui.model.context import Ctx
 from src.ui.model.component import Component
 from src.ui import Label, Widget, Window, WindowMount
-from src.log_config import setup_logging
+from src.setup_logging import setup_logging
 
 setup_logging()
 

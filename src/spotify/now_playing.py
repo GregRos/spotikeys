@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from src.client.volume import VolumeInfo
-from src.server.spotify.device import Device
+from client.volume import VolumeInfo
+from src.spotify.device import Device
 
 
 @dataclass

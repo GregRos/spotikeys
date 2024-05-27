@@ -8,18 +8,18 @@ from threading import Event
 import time
 from typing import Any, Awaitable, override
 from src.commanding.handler import AsyncCommandHandler, handles
-from src.client.volume import VolumeInfo
+from client.volume import VolumeInfo
 from src.commanding.commands import ParamterizedCommand
-from src.now_playing import MediaStatus
+from src.spotify.now_playing import MediaStatus
 from src.commanding import Command
-from src.server.errors import NoHandlerError
-from src.server.history import PersistentCommandHistory
+from server.errors import NoHandlerError
+from server.history import PersistentCommandHistory
 
 from src.commands import *
-from src.server.launcher import is_spotify_running, start_spotify
-from src.server.spotify import Root, playback
-from src.server.spotify.root import SpotifyAuth
-from src.server.history.undo import UndoWaiter
+from server.launcher import is_spotify_running, start_spotify
+from src.spotify import Root, playback
+from src.spotify.root import SpotifyAuth
+from server.history.undo import UndoWaiter
 
 
 logger = getLogger("server")
