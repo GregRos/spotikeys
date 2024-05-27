@@ -29,32 +29,35 @@ class ComponentMount[X: ShadowNode]:
         self._reconciler = reconciler
         self.context = context
         self._mounted = root
-        self.context += lambda _: self.force_rerender()
 
     def __call__(self, **ctx_args: Any):
         self.context(**ctx_args)
         return self.context
 
     def _compute_render(self):
+        rendering = ()
 
-        def _render(
-            cur_prefix: str, root: Component[X] | tuple[Component[X], ...]
-        ) -> Generator[ShadowNode, None, None]:
-            node_type = self._reconciler.node_type
-            root = root if isinstance(root, Component) else wrap_root(root)
-            cur_prefix = ".".join([cur_prefix, root.__class__.__name__])
-            for i, child in enumerate(root.render(self.context)):
-                cur_prefix = ":".join([cur_prefix, child.key or str(i)])
-                if isinstance(child, node_type):  # type: ignore
-                    yield with_key(child, cur_prefix)
-                elif isinstance(child, Component):
-                    yield from _render(cur_prefix, child)
+        def on_yielded_for(root_prefix: str):
+            i = 0
+
+            def on_yielded(node: Component[X] | X):
+                node_type = self._reconciler.node_type
+                nonlocal rendering, i
+                cur_prefix = ":".join([root_prefix, node.key or str(i)])
+                i += 1
+                if isinstance(node, node_type):  # type: ignore
+                    rendering += (with_key(node, cur_prefix),)
+                elif isinstance(node, Component):
+                    node.render(on_yielded_for(cur_prefix), self.context)
                 else:
                     raise TypeError(
-                        f"Expected render method to return {node_type} or Component, but got {type(child)}"
+                        f"Expected render method to return {node_type} or Component, but got {type(node)}"
                     )
 
-        return (*_render("", self._mounted),)
+            return on_yielded
+
+        self._mounted.render(on_yielded_for(""), self.context)
+        return rendering
 
     def remount(self, root: tuple[Component[X], ...] | Component[X]):
         self._mounted = wrap_root(root)

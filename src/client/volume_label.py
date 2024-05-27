@@ -22,18 +22,20 @@ class VolumeLabel(Component[Widget]):
         return f"🔊 {full * full_boxes}{empty * (16 - full_boxes)}"
 
     @override
-    def render(self, _):
-        yield Label(
-            text=self.get_volume_line(),
-            background="#000001",
-            foreground="#00ff00",
-            font=Font(
-                family="Segoe UI Emoji",
-                size=13,
-                style="normal",
-            ),
-        ).Pack(
-            ipadx=40,
-            ipady=13,
-            fill="both",
+    def render(self, yld, _):
+        yld(
+            Label(
+                text=self.get_volume_line(),
+                background="#000001",
+                foreground="#00ff00",
+                font=Font(
+                    family="Segoe UI Emoji",
+                    size=13,
+                    style="normal",
+                ),
+            ).Pack(
+                ipadx=40,
+                ipady=13,
+                fill="both",
+            )
         )

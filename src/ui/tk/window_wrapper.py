@@ -82,6 +82,7 @@ class WindowWrapper(ShadowedResource[Window]):
         root = Component(key="WidgetRoot")[*node.children]
 
         wrapper = WindowWrapper(node, tk, context, root=root)
+
         return wrapper
 
     def schedule(

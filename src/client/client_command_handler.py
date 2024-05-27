@@ -77,8 +77,10 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
             self._root(
                 hidden=False, executed=thingy, last_status=self._last_status
             ).schedule(lambda _: self._root(hidden=True), 3.0)
-        if isinstance(thingy, TriggeredCommand):
+        elif isinstance(thingy, TriggeredCommand):
             self._last_command = thingy
+        else:
+            print(thingy)
 
     @handles(MediaCommands.show_status)
     async def _show_status(self, r_command: TriggeredCommand) -> None:

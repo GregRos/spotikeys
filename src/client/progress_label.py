@@ -19,20 +19,22 @@ class ProgressLabel(Component[Widget]):
         return round(100 * self.position / self.duration)
 
     @override
-    def render(self, _):
-        yield Label(
-            text=self.get_progress_line(),
-            background="#000001",
-            foreground="#ffffff",
-            font=Font(
-                family="Segoe UI Emoji",
-                size=14,
-                style="normal",
-            ),
-        ).Pack(
-            ipadx=20,
-            ipady=15,
-            fill="both",
+    def render(self, yld, _):
+        yld(
+            Label(
+                text=self.get_progress_line(),
+                background="#000001",
+                foreground="#ffffff",
+                font=Font(
+                    family="Segoe UI Emoji",
+                    size=14,
+                    style="normal",
+                ),
+            ).Pack(
+                ipadx=20,
+                ipady=15,
+                fill="both",
+            )
         )
 
     def get_progress_line(self):

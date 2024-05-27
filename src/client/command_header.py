@@ -44,18 +44,20 @@ class CommandHeader(Component):
                 )
 
     @override
-    def render(self, _):
-        yield Label(
-            text=self.get_text(),
-            background=self.get_color(),
-            foreground="#dddddd",
-            font=Font(
-                family="Segoe UI Emoji",
-                size=12,
-                style="normal",
-            ),
-        ).Pack(
-            ipadx=20,
-            ipady=5,
-            fill="both",
+    def render(self, yld, _):
+        yld(
+            Label(
+                text=self.get_text(),
+                background=self.get_color(),
+                foreground="#dddddd",
+                font=Font(
+                    family="Segoe UI Emoji",
+                    size=12,
+                    style="normal",
+                ),
+            ).Pack(
+                ipadx=20,
+                ipady=5,
+                fill="both",
+            )
         )

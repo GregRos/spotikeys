@@ -12,21 +12,25 @@ setup_logging()
 class StuffComponent(Component[Widget]):
     text: str
 
-    def render(self, _):
-        yield Label(text=self.text, background="#000001", foreground="#ffffff").Pack(
-            ipadx=20, ipady=15, fill="both"
+    def render(self, yld, _):
+        yld(
+            Label(text=self.text, background="#000001", foreground="#ffffff").Pack(
+                ipadx=20, ipady=15, fill="both"
+            )
         )
 
 
 @dataclass(kw_only=True)
 class WindowComponent(Component[Window]):
 
-    def render(self, ctx: Ctx):
-        yield Window(
-            topmost=True, background="black", transparent_color="black", alpha=85
-        ).Geometry(width=500, height=500, x=500, y=500)[
-            StuffComponent(text=ctx.text), StuffComponent(text=ctx.text)
-        ]
+    def render(self, yld, ctx: Ctx):
+        yld(
+            Window(
+                topmost=True, background="black", transparent_color="black", alpha=85
+            ).Geometry(width=500, height=500, x=500, y=500)[
+                StuffComponent(text=ctx.text), StuffComponent(text=ctx.text)
+            ]
+        )
 
 
 MyTK = WindowMount(WindowComponent())

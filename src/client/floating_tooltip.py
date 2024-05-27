@@ -26,23 +26,25 @@ justify = 24
 @dataclass
 class ActionHUD(Component[Window]):
 
-    def render(self, ctx):
+    def render(self, yld, ctx):
         if ctx.hidden == True:
             return
-        yield Window(
-            background="#000001",
-            topmost=True,
-            transparent_color="black",
-            override_redirect=True,
-            alpha=85 if isinstance(ctx.executed, TriggeredCommand) else 100,
-        ).Geometry(
-            width=420,
-            height=250,
-            x=-450,
-            y=-350,
-        )[
-            self.Inner(executed=ctx.executed, previous=ctx.last_status)
-        ]
+        yld(
+            Window(
+                background="#000001",
+                topmost=True,
+                transparent_color="black",
+                override_redirect=True,
+                alpha=85 if isinstance(ctx.executed, TriggeredCommand) else 100,
+            ).Geometry(
+                width=420,
+                height=250,
+                x=-450,
+                y=-350,
+            )[
+                self.Inner(executed=ctx.executed, previous=ctx.last_status)
+            ]
+        )
 
     @dataclass
     class Inner(Component[Widget]):
@@ -50,18 +52,20 @@ class ActionHUD(Component[Window]):
         previous: MediaStatus
 
         @override
-        def render(self, ctx: Ctx):
+        def render(self, yld, ctx: Ctx):
             if isinstance(self.executed, FailedCommand):
                 raise ValueError("Failed command should not be rendered")
             if ctx.hidden:
                 return
-            yield CommandHeader(
-                input=self.executed,
-                justify=justify,
-                colors={
-                    "status": "red",
-                    "trigger": "grey",
-                    "okay": "green",
-                },
+            yld(
+                CommandHeader(
+                    input=self.executed,
+                    justify=justify,
+                    colors={
+                        "status": "red",
+                        "trigger": "grey",
+                        "okay": "green",
+                    },
+                )
             )
-            yield MediaDisplay(status=self.previous)
+            yld(MediaDisplay(status=self.previous))

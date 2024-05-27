@@ -21,37 +21,43 @@ def truncate_text(text: str, max_length: int) -> str:
 class MediaDisplay(Component[Widget]):
     status: MediaStatus
 
-    def render(self, _):
+    def render(self, yld, _):
         status = self.status
-        yield Label(
-            background="#000001",
-            foreground="#ffffff",
-            font=Font(
-                family="Segoe UI Emoji",
-                size=18,
-                style="normal",
-            ),
-            text=truncate_text(status.title, 28),
-        ).Pack(
-            ipadx=15,
-            fill="both",
+        yld(
+            Label(
+                background="#000001",
+                foreground="#ffffff",
+                font=Font(
+                    family="Segoe UI Emoji",
+                    size=18,
+                    style="normal",
+                ),
+                text=truncate_text(status.title, 28),
+            ).Pack(
+                ipadx=15,
+                fill="both",
+            )
         )
-        yield Label(
-            background="#000001",
-            foreground="#aaaafb",
-            font=Font(
-                family="Segoe UI Emoji",
-                size=15,
-                style="normal",
-            ),
-            text=truncate_text(status.artist, 28),
-        ).Pack(
-            ipadx=15,
-            fill="both",
+        yld(
+            Label(
+                background="#000001",
+                foreground="#aaaafb",
+                font=Font(
+                    family="Segoe UI Emoji",
+                    size=15,
+                    style="normal",
+                ),
+                text=truncate_text(status.artist, 28),
+            ).Pack(
+                ipadx=15,
+                fill="both",
+            )
         )
-        yield ProgressLabel(
-            duration=status.duration,
-            position=status.position,
-            is_playing=status.is_playing,
+        yld(
+            ProgressLabel(
+                duration=status.duration,
+                position=status.position,
+                is_playing=status.is_playing,
+            )
         )
-        yield VolumeLabel(volume=status.volume)
+        yld(VolumeLabel(volume=status.volume))

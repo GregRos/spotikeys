@@ -40,8 +40,9 @@ class Component[Node: ShadowNode](abc.ABC):
     def _copy(self, **overrides: Any) -> Self:
         return self.__class__(**{**self.__dict__, **overrides})
 
-    def render(self, ctx: Ctx, /) -> Generator[Node | Component[Node], None, None]:
-        yield from self.children
+    def render(self, yld: Callable[[Any], None], ctx: Ctx, /):
+        for x in self.children:
+            yld(x)
 
     def __getitem__(
         self, children: tuple[Component[Node], ...] | Component[Node]
