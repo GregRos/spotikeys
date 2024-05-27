@@ -27,9 +27,9 @@ class TriggeredCommand:
         return self.command.code
 
     @property
-    def label(self):
+    def emoji(self):
         modifiers = f"[{self.modifiers}]" if self.modifiers else ""
-        return f"{self.trigger.label}{modifiers} ➜  {self.command.label}"
+        return f"{self.trigger.label}{modifiers} ➜  {self.command.emoji}"
 
     async def execute_async[T](self, executor: Callable[[], Awaitable[T]]):
         start = time.time()
@@ -53,7 +53,7 @@ class TriggeredCommand:
             return FailedCommand(self, end - start, e)
 
     def __str__(self):
-        return self.label
+        return self.emoji
 
 
 @dataclass()

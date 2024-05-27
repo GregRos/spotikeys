@@ -93,20 +93,36 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
         playlist = await self.root.playlist(playlist_id)
         await playlist.delete()
 
-    @handles(MediaCommands.seek_fwd)
+    @handles(MediaCommands.seek_fwd_small)
     async def _seek_fwd(self):
         playing = await self.playing
         cur_progress = playing.progress
         with self.undoable(MediaCommands.seek_to(cur_progress)):
-            await playing.set_progress(cur_progress + 30)
+            await playing.set_progress(cur_progress + 10)
             return playing.get_status()
 
-    @handles(MediaCommands.seek_bwd)
+    @handles(MediaCommands.seek_bwd_small)
     async def _seek_bwd(self):
         playing = await self.playing
         cur_progress = playing.progress
         with self.undoable(MediaCommands.seek_to(cur_progress)):
+            await playing.set_progress(cur_progress - 10)
+            return playing.get_status()
+
+    @handles(MediaCommands.seek_bwd_big)
+    async def _seek_bwd_big(self):
+        playing = await self.playing
+        cur_progress = playing.progress
+        with self.undoable(MediaCommands.seek_to(cur_progress)):
             await playing.set_progress(cur_progress - 30)
+            return playing.get_status()
+
+    @handles(MediaCommands.seek_fwd_big)
+    async def _seek_fwd_big(self):
+        playing = await self.playing
+        cur_progress = playing.progress
+        with self.undoable(MediaCommands.seek_to(cur_progress)):
+            await playing.set_progress(cur_progress + 30)
             return playing.get_status()
 
     @handles(MediaCommands.play)
@@ -186,7 +202,13 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
         ]
         await asyncio.gather(*[c for c in coroutines if c])
 
-    @handles(MediaCommands.love)
+    @handles(MediaCommands.like_track)
+    async def _like_track(self):
+        playing = await self.playing
+        track = playing.track
+        await track.save()
+
+    @handles(MediaCommands.like_all)
     async def _love(self):
         async def maybe_love_album(album):
             if album:

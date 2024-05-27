@@ -6,7 +6,7 @@ from src.commanding import Command
 
 
 def unknown_command(describe: str):
-    return Command("unknown", describe)
+    return Command("unknown", describe, "Unknown Command")
 
 
 expected_version = 1

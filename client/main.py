@@ -29,11 +29,15 @@ def create_client(send: AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
     layout.add_bindings(
         num_dot.bind.when(num_0, MediaCommands.show_status),
         num_0.bind.default(MediaCommands.show_status, MediaCommands.hide_status),
-        num_1.bind.default(MediaCommands.seek_bwd),
+        num_1.bind.default(MediaCommands.seek_bwd_small).when(
+            num_0, MediaCommands.seek_bwd_big
+        ),
         num_2.bind.default(MediaCommands.loop_track).when(
             num_0, MediaCommands.rewind_this
         ),
-        num_3.bind.default(MediaCommands.seek_fwd),
+        num_3.bind.default(MediaCommands.seek_fwd_small).when(
+            num_0, MediaCommands.seek_fwd_big
+        ),
         num_4.bind.default(MediaCommands.prev_track).when(
             num_0, MediaCommands.prev_multi
         ),
@@ -41,21 +45,19 @@ def create_client(send: AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
         num_6.bind.default(MediaCommands.next_track).when(
             num_0, MediaCommands.next_multi
         ),
-        num_7.bind.default(MediaCommands.love).when(
+        num_7.bind.default(MediaCommands.like_all).when(
             num_0, MediaCommands.transfer_to_current
         ),
         num_8.bind.default(MediaCommands.spin_this_in_last),
         num_plus.bind.default(MediaCommands.volume_up).when(
-            num_0, MediaCommands.spin_this_in_new
+            num_dot, MediaCommands.spin_this_in_new
         ),
-        num_9.bind.default(MediaCommands.delete_current_playlist).when(
-            num_0, MediaCommands.transfer_to_phone
-        ),
+        num_9.bind.default(MediaCommands.transfer_to_phone),
         num_minus.bind.default(MediaCommands.volume_down).when(
-            num_0, MediaCommands.delete_current_playlist
+            num_dot, MediaCommands.delete_current_playlist
         ),
         num_enter.bind.default(MediaCommands.cancel).when(
-            num_0, MediaCommands.spin_this_in_last
+            num_dot, MediaCommands.spin_this_in_last
         ),
         num_asterisk.bind.default(MediaCommands.volume_mute).when(
             num_0, MediaCommands.exit

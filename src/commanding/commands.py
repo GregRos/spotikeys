@@ -9,22 +9,19 @@ class CommandLike(Protocol):
     def code(self) -> str: ...
 
     @property
-    def label(self) -> str: ...
+    def emoji(self) -> str: ...
 
 
 class Command:
     code: str
 
-    def __init__(self, command: str, label: str, describe: str | None = None):
+    def __init__(self, command: str, emoji: str, title: str):
         self.code = command
-        self.label = label
-        self.describe = describe
-
-    def local(self, is_local: bool = True):
-        return Command(self.code, self.label)
+        self.emoji = emoji
+        self.title = title
 
     def __repr__(self):
-        return f"COMMAND {self.code} {self.label}"
+        return f"{self.emoji} {self.title}"
 
     def is_command(self, command: Command | str):
         return (
@@ -48,19 +45,19 @@ class Command:
 class ParamterizedCommand[T](Command):
     __match_args__ = ("arg",)
 
-    def __init__(self, command: str, label: str, arg: T):
-        super().__init__(command, label)
+    def __init__(self, command: str, emoji: str, title: str, arg: T):
+        super().__init__(command, emoji, title)
         self.arg = arg
-        self.label = f"{label}({arg})"
+        self.label = f"{emoji}({arg})"
 
     def __str__(self):
         return f"{self.code}({self.arg})"
 
 
-def command(label: str):
+def command(emoji: str, title: str):
 
     def decorator(func: Callable[[Any], None]):
-        return Command(func.__name__, label)
+        return Command(func.__name__, emoji, title)
 
     return decorator
 
@@ -69,13 +66,18 @@ Returns = TypeVar("Returns")
 Arg = TypeVar("Arg")
 
 
-def parameterized_command(label: str | Callable[[Arg], str]):
+def parameterized_command(
+    title: str | Callable[[Arg], str], label: str | Callable[[Arg], str]
+):
 
     def decorator(
         func: Callable[[Any, Arg], Returns]
     ) -> Callable[[Arg], ParamterizedCommand[Arg]]:
         return lambda arg: ParamterizedCommand(
-            func.__name__, label if isinstance(label, str) else label(arg), arg
+            func.__name__,
+            label if isinstance(label, str) else label(arg),
+            title if isinstance(title, str) else title(arg),
+            arg,
         )
 
     return decorator
