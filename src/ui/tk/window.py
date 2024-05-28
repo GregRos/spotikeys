@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import (
     Annotated,
     Any,
+    Literal,
     NotRequired,
     Self,
     Tuple,
@@ -19,6 +20,7 @@ from src.ui.model.shadow_node import (
     ShadowNode,
 )
 from src.ui.tk.widget import Widget
+from src.ui.tk.geometry import Geometry
 
 
 class WindowProps(InitPropsBase):
@@ -29,13 +31,6 @@ class WindowProps(InitPropsBase):
     ]
     override_redirect: Annotated[NotRequired[bool], Prop()]
     alpha: Annotated[NotRequired[float], Prop(subsection="attributes")]
-
-
-class Geometry(InitPropsBase):
-    x: int
-    y: int
-    width: int
-    height: int
 
 
 class Window(ShadowNode, Component[Widget]):  # type: ignore

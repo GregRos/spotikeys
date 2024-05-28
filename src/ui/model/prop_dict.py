@@ -38,9 +38,6 @@ from src.ui.model.prop import Prop
 from src.ui.model.prop_value import PValue, format_value
 
 
-from src.ui.tk.geometry import Geometry
-
-
 type SomeProp = Prop | PSection
 SAME = object()
 
@@ -181,7 +178,7 @@ class PSection(Mapping[str, SomeProp]):
             value = section.get(k, None)
             if is_empty(value):
                 raise ValueError(f"Key {k} doesn't exist in section {section}")
-            value.assert_valid_value(v or value.no_value)  # type: ignore
+            value.assert_valid_value(v if v is not None else value.no_value)  # type: ignore
 
     @staticmethod
     def get_section_meta(f: Callable) -> "PSection | None":
@@ -309,7 +306,7 @@ class PValues(Mapping[str, "PValue | PValues"]):
     def __getitem__(self, key: str) -> "PValue | PValues":
         value = self._vals.get(key)
         prop = self.section.props[key]
-        if not value:
+        if value is None:
             if isinstance(prop, PSection):
                 raise KeyError(f"Key {key} is a section, but doesn't exist in values")
             if prop.has_default:

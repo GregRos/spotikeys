@@ -4,10 +4,10 @@ from src.kb.triggered_command import OkayCommand
 from src.ui.model.component import (
     Component,
 )
-from client.progress_label import ProgressLabel
+from client.media.progress_label import ProgressLabel
 from src.ui import Label, Component, Font, Widget
-from client.volume_label import VolumeLabel
-from client.volume import VolumeInfo
+from client.media.volume_label import VolumeLabel
+from client.media.volume import VolumeInfo
 from src.spotify.now_playing import MediaStatus
 
 

@@ -85,11 +85,21 @@ class WindowWrapper(Resource[Window]):
 
         return wrapper
 
-    def schedule(
+    def schedule_now(
         self,
         action: Callable[[], Any],
     ):
-        self.resource.after(0, action)
+        if threading.current_thread().name == "ui_thread":
+            action()
+            return
+        e = threading.Event()
+
+        def wrap_action():
+            action()
+            e.set()
+
+        self.resource.after(0, wrap_action)
+        e.wait()
 
     @override
     def migrate(self, node: Window) -> Self:
@@ -103,34 +113,48 @@ class WindowWrapper(Resource[Window]):
 
     @override
     def destroy(self) -> None:
-        self.schedule(self.resource.destroy)
+        self.schedule_now(self.resource.destroy)
 
     @override
     def replace(self, other: "WindowWrapper") -> None:
-        self.schedule(self.resource.deiconify)
-        other.unplace()
+        def do_replace():
+            self.resource.withdraw()
+            other.resource.deiconify()
+
+        self.schedule_now(do_replace)
 
     @override
     def unplace(self) -> None:
-        self.schedule(self.resource.withdraw)
+        self.schedule_now(self.resource.withdraw)
 
-    def normalize_geo(self, geo: Mapping[str, Any]) -> str:
+    def normalize_geo(self, geo: Geometry) -> str:
         x, y, width, height = (geo[k] for k in ("x", "y", "width", "height"))
         if x < 0:
             x = self.resource.winfo_screenwidth() + x
         if y < 0:
             y = self.resource.winfo_screenheight() + y
+        match geo["anchor_point"]:
+            case "lt":
+                pass
+            case "rt":
+                x -= width
+            case "lb":
+                y -= height
+            case "rb":
+                x -= width
+                y -= height
+
         return f"{width}x{height}+{x}+{y}"
 
     @override
     def place(self) -> None:
         def do():
-            geo = self.node._props["Geometry"].value
-            geo = self.normalize_geo(geo)
-            self.resource.wm_geometry(geo)
+            geo = self.node._props["Geometry"].value  # type: Geometry # type: ignore
+            normed = self.normalize_geo(geo)
+            self.resource.wm_geometry(normed)
             self.resource.deiconify()
 
-        self.schedule(do)
+        self.schedule_now(do)
 
     @override
     def get_compatibility(self, other: Window) -> Compat:
@@ -155,4 +179,4 @@ class WindowWrapper(Resource[Window]):
             if child := computed.get("child"):
                 self._component_mount.remount(child)
 
-        self.schedule(do)
+        self.schedule_now(do)

@@ -28,7 +28,7 @@ class WindowComponent(Component[Window]):
             Window(
                 topmost=True, background="black", transparent_color="black", alpha=85
             )
-            .Geometry(width=500, height=500, x=500, y=500)
+            .Geometry(width=500, height=500, x=500, y=500, anchor_point="lt")
             .child(StuffComponent(text=ctx.text))
         )
 

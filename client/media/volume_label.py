@@ -5,7 +5,7 @@ from src.ui.model.component import Component
 from src.ui.model.shadow_node import ShadowProps
 from src.ui import Label, Widget, Component, Window
 from src.ui.tk.font import Font
-from client.volume import VolumeInfo
+from client.media.volume import VolumeInfo
 
 
 @dataclass

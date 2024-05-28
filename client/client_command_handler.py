@@ -9,13 +9,15 @@ from typing import Any, Awaitable, Callable
 from flask.cli import F
 from pyvda import AppView, VirtualDesktop, get_virtual_desktops
 
-from client.media_types import MediaStageMessage
+from client.desktop.desktop_status import DesktopExec, Pan, Shove
+from client.hud import HUD
+from client.media.media_types import MediaStageMessage
 from src.commands.desktop_commands import DesktopCommands
 from src.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
-from client.floating_tooltip import ActionHUD
+from client.media.media_hud import MediaHUD
 from src.ui.model.context import Ctx
 from src.ui import WindowMount
-from client.volume import ClientVolumeControl, VolumeInfo
+from client.media.volume import ClientVolumeControl, VolumeInfo
 from src.spotify.now_playing import MediaStatus
 from src.commanding.commands import Command, ParamterizedCommand
 from src.commanding.handler import AsyncCommandHandler, handles
@@ -27,9 +29,8 @@ logger = getLogger("client")
 class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     _current: TriggeredCommand | None = None
     _lock = threading.Lock()
-    _last_command: TriggeredCommand | None = None
     _root: WindowMount
-    _last_status: MediaStatus
+    _last_media_status: MediaStatus
     _thread_pool = ThreadPoolExecutor(1)
 
     def __init__(
@@ -39,7 +40,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     ) -> None:
 
         super().__init__()
-        self._last_status = MediaStatus(
+        self._last_media_status = MediaStatus(
             artist="No one",
             title="Nothing",
             album="N/A",
@@ -49,10 +50,10 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
             is_playing=False,
             device=None,  # type: ignore
         )
-        self._root = WindowMount(ActionHUD())
+        self._root = WindowMount(HUD())
         self._root(
             executed=None,
-            last_status=self._last_status,
+            last_status=self._last_media_status,
             hidden=True,
         )
         self._loop = loop
@@ -77,26 +78,23 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
 
     _id = 0
 
-    def set_value(self, thingy: MediaStageMessage) -> None:
+    def set_value(self, thingy: MediaStageMessage | DesktopExec) -> None:
         self._id += 1
         if isinstance(thingy, OkayCommand):
-            self._last_status = thingy.result
-            self._last_command = thingy.triggered
             self._root(
                 hidden=False,
                 executed=thingy,
-                last_status=self._last_status,
+                last_status=thingy.result,
                 refresh_id=self._id,
             ).schedule(lambda _: self._root(hidden=True), 3.0)
         elif isinstance(thingy, TriggeredCommand):
-            self._last_command = thingy
             self._root(hidden=False, executed=thingy, refresh_id=self._id)
         else:
             logger.warn(thingy)
             self._root(
                 hidden=False,
                 executed=thingy,
-                last_status=self._last_status,
+                last_status=self._last_media_status,
                 refresh_id=self._id,
             ).schedule(lambda _: self._root(hidden=True), 3.0)
 
@@ -117,9 +115,9 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     @handles(MediaCommands.volume_up)
     async def _volume_up(self, r_command: TriggeredCommand) -> None:
         def handle_volume_up():
-            self._last_status.volume = self._volume_control.info
+            self._last_media_status.volume = self._volume_control.info
             self._volume_control.volume += 10
-            return self._last_status
+            return self._last_media_status
 
         exec = r_command.execute(handle_volume_up)
         self.set_value(exec)
@@ -128,8 +126,8 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     async def _volume_down(self, r_command: TriggeredCommand) -> None:
         def handle_volume_down():
             self._volume_control.volume -= 10
-            self._last_status.volume = self._volume_control.info
-            return self._last_status
+            self._last_media_status.volume = self._volume_control.info
+            return self._last_media_status
 
         exec = r_command.execute(handle_volume_down)
         self.set_value(exec)
@@ -139,8 +137,8 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
 
         def handle_volume_mute():
             self._volume_control.mute = not self._volume_control.mute
-            self._last_status.volume = self._volume_control.info
-            return self._last_status
+            self._last_media_status.volume = self._volume_control.info
+            return self._last_media_status
 
         exec = r_command.execute(handle_volume_mute)
         self.set_value(exec)
@@ -166,7 +164,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         self.set_value(received)
         result = await received.execute_async(lambda: self._downstream(command))
         if isinstance(result, OkayCommand):
-            self._last_status = result.result
+            self._last_media_status = result.result
         self.set_value(result)
 
     def _get_handler(self, command: TriggeredCommand) -> Awaitable[None] | None:
@@ -215,7 +213,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
             current_vd = self.current_vd
             next = self.get_desktop_at(current_vd.number + 1, loop=True)
             next.go()
-            return None
+            return Pan(current_vd, next).from_command(r_command)
 
         exec = r_command.execute(do_pan_right)
         self.set_value(exec)
@@ -226,7 +224,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
             current_vd = self.current_vd
             next = self.get_desktop_at(current_vd.number - 1, loop=True)
             next.go()
-            return None
+            return Pan(current_vd, next).from_command(r_command)
 
         exec = r_command.execute(do_pan_left)
         self.set_value(exec)
@@ -234,30 +232,21 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     @handles(DesktopCommands.pan_to)
     async def _pan_to(self, to: int, r_command: TriggeredCommand) -> None:
         def do_pan_to():
+            current_vd = self.current_vd
             target_vd = self.get_desktop_at(to)
             target_vd.go()
-            return None
+            return Pan(current_vd, target_vd).from_command(r_command)
 
         exec = r_command.execute(do_pan_to)
-        self.set_value(exec)
-
-    @handles(DesktopCommands.drag_to)
-    async def _drag_to(self, to: int, r_command: TriggeredCommand) -> None:
-        def do_drag_to():
-            target_vd = self.get_desktop_at(to)
-            AppView.current().move(target_vd)
-            target_vd.go()
-            return None
-
-        exec = r_command.execute(do_drag_to)
         self.set_value(exec)
 
     @handles(DesktopCommands.shove_to)
     async def _shove_to(self, to: int, r_command: TriggeredCommand) -> None:
         def do_shove_to():
             target_vd = self.get_desktop_at(to)
-            AppView.current().move(target_vd)
-            return None
+            current = AppView.current()
+            current.move(target_vd)
+            return Shove(current, self.current_vd, target_vd).from_command(r_command)
 
         exec = r_command.execute(do_shove_to)
         self.set_value(exec)
@@ -267,8 +256,10 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         def do_shove_right():
             current_vd = self.current_vd
             next = self.get_desktop_at(current_vd.number + 1, loop=True)
-            AppView.current().move(next)
-            return None
+            current = AppView.current()
+            current.move(next)
+
+            return Shove(current, current_vd, next).from_command(r_command)
 
         exec = r_command.execute(do_shove_right)
         self.set_value(exec)
@@ -278,8 +269,9 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         def do_shove_left():
             current_vd = self.current_vd
             next = self.get_desktop_at(current_vd.number - 1, loop=True)
-            AppView.current().move(next)
-            return None
+            current = AppView.current()
+            current.move(next)
+            return Shove(current, current_vd, next).from_command(r_command)
 
         exec = r_command.execute(do_shove_left)
         self.set_value(exec)
@@ -289,9 +281,12 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         def do_drag_right():
             current_vd = self.current_vd
             next = self.get_desktop_at(current_vd.number + 1, loop=True)
-            AppView.current().move(next)
+            current = AppView.current()
+            current.move(next)
             next.go()
-            return None
+            return Pan(current_vd, next).from_command(
+                r_command, Shove(current, current_vd, next)
+            )
 
         exec = r_command.execute(do_drag_right)
         self.set_value(exec)
@@ -301,23 +296,39 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         def do_drag_left():
             current_vd = self.current_vd
             next = self.get_desktop_at(current_vd.number - 1, loop=True)
-            AppView.current().move(next)
+            current = AppView.current()
+            current.move(next)
             next.go()
-            return None
+            return Pan(current_vd, next).from_command(
+                r_command, Shove(current, current_vd, next)
+            )
 
         exec = r_command.execute(do_drag_left)
         self.set_value(exec)
 
+    @handles(DesktopCommands.drag_to)
+    async def _drag_to(self, to: int, r_command: TriggeredCommand) -> None:
+        def do_drag_to():
+            current_vd = self.current_vd
+            target_vd = self.get_desktop_at(to)
+            current = AppView.current()
+            current.move(target_vd)
+            target_vd.go()
+            return Shove(current, current_vd, target_vd).from_command(
+                r_command, Pan(current_vd, target_vd)
+            )
+
+        exec = r_command.execute(do_drag_to)
+        self.set_value(exec)
+
     def __call__(self, command: TriggeredCommand) -> None:
         if (
-            self._last_command
-            and command == self._last_command
-            and command.timestamp - self._last_command.timestamp < 0.25
+            self._current
+            and command == self._current
+            and command.timestamp - self._current.timestamp < 0.25
         ):
             return
         with self._lock:
-
-            self._last_command = command
             match self._current and self._current.command:
                 case Command(code="show_status"):
                     match command.command:

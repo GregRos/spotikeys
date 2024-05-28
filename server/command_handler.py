@@ -8,7 +8,7 @@ from threading import Event
 import time
 from typing import Any, Awaitable, override
 from src.commanding.handler import AsyncCommandHandler, handles
-from client.volume import VolumeInfo
+from client.media.volume import VolumeInfo
 from src.commanding.commands import ParamterizedCommand
 from src.spotify.now_playing import MediaStatus
 from src.commanding import Command

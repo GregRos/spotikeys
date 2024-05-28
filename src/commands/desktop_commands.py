@@ -1,6 +1,7 @@
 from typing import Protocol
 
 
+from src.commanding.command_class import CommandClass
 from src.commanding.commands import Command, command, parameterized_command
 
 
@@ -28,12 +29,7 @@ def number_to_emoji(number: int):
     return emoji_number
 
 
-class DesktopCommands:
-    def __getattr__(self, key: str):
-        result = super().__getattribute__(key)
-        if isinstance(result, Command):
-            return result.with_group("Desktop")
-        return result
+class DesktopCommands(metaclass=CommandClass, group_name="Desktop"):
 
     @command("📅🫷", "Shove Left")
     def shove_left(self) -> None: ...

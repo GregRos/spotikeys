@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from client.volume import VolumeInfo
+from client.media.volume import VolumeInfo
 from src.spotify.device import Device
 
 

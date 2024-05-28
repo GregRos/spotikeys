@@ -60,10 +60,11 @@ class Prop:
 
     def is_valid(self, input: Any):
         try:
-            if self.value_type:
+            if self.value_type is not None:
                 if self.value_type is float:
                     return isinstance(input, int) or isinstance(input, float)
-                return check_type(input, self.value_type)
+                x = check_type(input, self.value_type)
+                return x is input
             return True
         except TypeCheckError as e:
             raise ValueError(f"Typecheck failed in {self.name}: {e.args[0]}") from e

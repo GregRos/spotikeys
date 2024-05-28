@@ -1,7 +1,7 @@
 from typing import Literal
 
 
-from client.volume import VolumeInfo
+from client.media.volume import VolumeInfo
 from src.spotify.album import Album
 from src.spotify.artist import Artist
 from src.spotify.asyncify import asyncify

@@ -49,13 +49,18 @@ class Command:
 class ParamterizedCommand[T](Command):
     __match_args__ = ("arg",)
 
-    def __init__(self, command: str, emoji: str, title: str, arg: T):
+    def __init__(
+        self, command: str, emoji: str, title: str, arg: T, group: str | None = None
+    ):
         super().__init__(command, emoji, title)
         self.arg = arg
-        self.label = f"{emoji}({arg})"
+        self.group = group
 
     def __str__(self):
         return f"{self.code}({self.arg})"
+
+    def with_group(self, group: str):
+        return ParamterizedCommand(self.code, self.emoji, self.title, self.arg, group)
 
 
 def command(emoji: str, title: str):
@@ -68,7 +73,10 @@ def command(emoji: str, title: str):
 
 class parameterized_command[Arg]:
     def __new__(
-        cls, emoji: str | Callable[[Arg], str], title: str | Callable[[Arg], str]
+        cls,
+        emoji: str | Callable[[Arg], str],
+        title: str | Callable[[Arg], str],
+        group: str | None = None,
     ):
         def decorator(func: Callable[[Any, Arg], Any]):
             return lambda arg: ParamterizedCommand(
@@ -76,6 +84,7 @@ class parameterized_command[Arg]:
                 emoji.format(arg) if isinstance(emoji, str) else emoji(arg),
                 title.format(arg) if isinstance(title, str) else title(arg),
                 arg,
+                group,
             )
 
         return decorator

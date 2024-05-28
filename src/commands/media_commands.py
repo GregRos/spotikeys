@@ -1,6 +1,7 @@
 from typing import Literal, Protocol, TypedDict
 
 
+from src.commanding.command_class import CommandClass
 from src.commanding.commands import Command, command, parameterized_command
 from src.spotify.device import Device
 
@@ -22,13 +23,7 @@ class SetPlaylistArgs(TypedDict):
 RepeatMode = Literal["track", "context", "off", False]
 
 
-class MediaCommands:
-
-    def __getattr__(self, key: str):
-        result = super().__getattribute__(key)
-        if isinstance(result, Command):
-            return result.with_group("Desktop")
-        return result
+class MediaCommands(metaclass=CommandClass, group_name="Media"):
 
     @command("📴", "Bye!")
     def exit(self) -> None: ...

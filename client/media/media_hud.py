@@ -4,8 +4,9 @@ from dataclasses import dataclass
 from typing import override
 
 
+from client.desktop.desktop_status import DesktopExec
 from client.error import FailDisplay
-from client.media_types import MediaStageMessage
+from client.media.media_types import MediaStageMessage
 from src.kb.triggered_command import (
     FailedCommand,
     OkayCommand,
@@ -13,9 +14,9 @@ from src.kb.triggered_command import (
 )
 
 
-from client.command_header import CommandHeader
+from client.media.command_header import MediaCommandHeader
 from src.ui import Window, Ctx, Component, Widget
-from client.media_display import MediaDisplay
+from client.media.media_display import MediaDisplay
 from src.spotify.now_playing import MediaStatus
 
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -25,7 +26,7 @@ justify = 24
 
 
 @dataclass
-class ActionHUD(Component[Window]):
+class MediaHUD(Component[Window]):
 
     def render(self, yld, ctx):
         if ctx.hidden == True:
@@ -38,12 +39,7 @@ class ActionHUD(Component[Window]):
                 override_redirect=True,
                 alpha=85 if isinstance(ctx.executed, TriggeredCommand) else 100,
             )
-            .Geometry(
-                width=420,
-                height=250,
-                x=-450,
-                y=-350,
-            )
+            .Geometry(width=420, height=250, x=-5, y=-85, anchor_point="rb")
             .child(self.Inner(executed=ctx.executed, previous=ctx.last_status))
         )
 
@@ -58,7 +54,7 @@ class ActionHUD(Component[Window]):
             if ctx.hidden:
                 return
             yld(
-                CommandHeader(
+                MediaCommandHeader(
                     input=self.executed,
                     justify=justify,
                     colors={
