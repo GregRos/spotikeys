@@ -1,7 +1,7 @@
 from typing import Literal, Protocol, TypedDict
 
 
-from src.commanding.commands import command, parameterized_command
+from src.commanding.commands import Command, command, parameterized_command
 from src.spotify.device import Device
 
 
@@ -19,122 +19,133 @@ class SetPlaylistArgs(TypedDict):
     description: str
 
 
-class MediaCommands(Protocol):
+RepeatMode = Literal["track", "context", "off", False]
+
+
+class MediaCommands:
+
+    def __getattr__(self, key: str):
+        result = super().__getattribute__(key)
+        if isinstance(result, Command):
+            return result.with_group("Desktop")
+        return result
 
     @command("📴", "Bye!")
     def exit(self) -> None: ...
 
-    @parameterized_command("🔊", "Volume Up")
+    @parameterized_command("🔊", "Vol To")
     def volume_to(self, volume: int) -> None: ...
 
-    @parameterized_command("🎚️", lambda x: f"Seek {f'+{x}' if x > 0 else x}")
+    @parameterized_command[int]("🎚️", lambda x: f"Seek {f'+{x}' if x > 0 else x}")
     def seek_to(self, position: float) -> None: ...
 
-    @parameterized_command("🔂")
-    def repeat_to(self, repeat: Literal["track", "context", "off", False]) -> None: ...
+    @parameterized_command[RepeatMode]("🔂", "Set Repeat {}")
+    def repeat_to(self, repeat: RepeatMode) -> None: ...
 
-    @parameterized_command("🗑️")
+    @parameterized_command[str]("🗑️", "Del {}")
     def delete_playlist(self, playlist_id: str) -> None: ...
 
-    @parameterized_command("📝")
+    @parameterized_command[SetPlaylistArgs]("📝", "Set %O")
     def set_playlist(self, tracks: SetPlaylistArgs) -> None: ...
 
-    @parameterized_command("💔")
+    @parameterized_command[LoveStateArgs]("💔", lambda x: f"Love ...")
     def set_love_state(self, args: LoveStateArgs) -> None: ...
 
-    @command("▶️")
+    @command("▶️", "Play")
     def play(self) -> None: ...
 
-    @command("⏸️")
+    @command("⏸️", "Pause")
     def pause(self) -> None: ...
 
-    @command("🔊")
+    @command("🔊➕", "Vol+ Local")
     def volume_up(self) -> None: ...
 
-    @command("🔈?")
+    @command("🔈?", "Get Vol Local")
     def get_volume(self) -> None: ...
 
-    @command("🔈")
+    @command("🔈➖", "Vol- Local")
     def volume_down(self) -> None: ...
 
-    @command("🔇")
+    @command("🔇", "Mute Local")
     def volume_mute(self) -> None: ...
 
-    @command("⬅️")
+    @command("⬅️", "Seek -10s")
     def seek_bwd_small(self) -> None: ...
 
-    @command("🔂")
+    @command("🔂", "Loop Track")
     def loop_track(self) -> None: ...
 
-    @command("➡️")
+    @command("➡️", "Seek +10s")
     def seek_fwd_small(self) -> None: ...
 
-    @command("➡️➡️")
+    @command("➡️➡️", "Seek +30s")
     def seek_fwd_big(self) -> None: ...
 
-    @command("⬅️⬅️")
+    @command("⬅️⬅️", "Seek -30s")
     def seek_bwd_big(self) -> None: ...
 
-    @command("⏪")
+    @command("⏪", "Prev Track")
     def prev_track(self) -> None: ...
 
-    @command("⏯️")
+    @command("⏯️", "Play/Pause")
     def play_pause(self) -> None: ...
 
-    @command("⏩")
+    @command("⏩", "Next Track")
     def next_track(self) -> None: ...
 
-    @command("❤️T")
+    @command("❤️", "Love Track")
     def like_track(self) -> None: ...
 
-    @command("❤️⋆")
+    @command("💞", "Follow")
     def like_all(self) -> None: ...
 
-    @command("💔")
+    @command("💔", "Unlove")
     def unlike(self) -> None: ...
 
-    @command("🔄")
+    @command("♻️", "Spin in Last PL")
     def spin_this_in_last(self) -> None: ...
 
-    @command("🚮")
+    @command("🚮", "Delete PL")
     def delete_current_playlist(self) -> None: ...
 
-    @command("🎮")
+    @command("🎮", "Play to Local")
     def transfer_to_current(self) -> None: ...
 
-    @parameterized_command("🎮")
+    @parameterized_command[str]("🎮", "Play to {}")
     def transfer_to_device(self, device: str | Device) -> None: ...
-    @command("📱")
+
+    @command("📱", "Play to Phone")
     def transfer_to_phone(self) -> None: ...
 
-    @command("🔄*")
+    @command("🔄", "Spin in New PL")
     def spin_this_in_new(self) -> None: ...
 
-    @command("↩️")
+    @command("↩️", "Undo")
     def undo(self) -> None: ...
 
-    @command("↪️")
+    @command("↪️", "Redo")
     def redo(self) -> None: ...
 
-    @command("🔊 reset")
+    @command("🔊🎚️", "Vol Reset")
     def volume_reset(self) -> None: ...
-    @command("❌️")
+
+    @command("❌️", "Cancel")
     def cancel(self) -> None: ...
 
-    @command("🔄")
+    @command("🔄", "Rewind")
     def rewind_this(self) -> None: ...
 
-    @command("⏭️")
+    @command("⏭️", "Next ++Track")
     def next_multi(self) -> None: ...
 
-    @command("⏮️")
+    @command("⏮️", "Prev ++Track")
     def prev_multi(self) -> None: ...
 
-    @command("📊")
+    @command("📊", "Show Status")
     def show_status(self) -> None: ...
 
-    @command("📊")
+    @command("📊", "Get Status")
     def get_status(self) -> None: ...
 
-    @command("📊")
+    @command("📊", "Hide Status")
     def hide_status(self) -> None: ...

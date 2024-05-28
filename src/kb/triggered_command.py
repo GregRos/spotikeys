@@ -53,7 +53,7 @@ class TriggeredCommand:
             return FailedCommand(self, end - start, e)
 
     def __str__(self):
-        return self.emoji
+        return f"{self.trigger} {self.modifiers} ➤ {self.command}"
 
 
 @dataclass()

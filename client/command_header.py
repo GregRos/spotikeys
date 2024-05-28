@@ -32,18 +32,18 @@ class CommandHeader(Component):
     def get_text(self):
         match self.input:
             case FailedCommand(triggered):
-                return f"❌ {str(triggered).ljust(self.justify)} {self.input.duration * 1000:.0f}ms"
+                return f"{str(triggered.command).ljust(self.justify)} {self.input.duration * 1000.:.0f}ms"
             case TriggeredCommand(code):
                 return (
-                    f"⌛ {str(code).ljust(self.justify)} ⌛⌛"
+                    f"{str(code).ljust(self.justify)} ⌛⌛"
                     if code != "show_status"
-                    else f"💡 {str(code).ljust(self.justify)} ⌛⌛"
+                    else f"{str(code).ljust(self.justify)} ⌛⌛"
                 )
             case OkayCommand(triggered) as c:
                 return (
-                    f"💡 {str(triggered).ljust(self.justify)} ⌛⌛"
+                    f"{str(triggered.command).ljust(self.justify)} ⌛⌛"
                     if triggered.command.code == "show_status"
-                    else f"✅ {triggered.__str__().ljust(self.justify)} {c.duration * 1000:.0f}ms"
+                    else f"{triggered.command.__str__().ljust(self.justify)} {c.duration * 1000:.0f}ms"
                 )
 
     @override
@@ -55,8 +55,8 @@ class CommandHeader(Component):
                 foreground="#dddddd",
                 font=Font(
                     family="Segoe UI Emoji",
-                    size=11,
-                    style="normal",
+                    size=13,
+                    style="bold",
                 ),
             ).Pack(
                 ipadx=20,

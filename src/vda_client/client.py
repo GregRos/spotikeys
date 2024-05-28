@@ -38,54 +38,54 @@ class VdaClient(AsyncCommandHandler[TriggeredCommand, None]):
 
         return VirtualDesktop(pos)
 
-    @handles(DesktopCommands.move_next)
+    @handles(DesktopCommands.pan_right)
     def _move_next(self) -> None:
         current_vd = self.current_vd
         next = self.get_desktop_at(current_vd.number + 1, loop=True)
         next.go()
 
-    @handles(DesktopCommands.move_prev)
+    @handles(DesktopCommands.pan_left)
     async def _move_prev(self) -> None:
         current_vd = self.current_vd
         next = self.get_desktop_at(current_vd.number - 1, loop=True)
         next.go()
 
-    @handles(DesktopCommands.move_to)
+    @handles(DesktopCommands.pan_to)
     async def _move_to(self, to: int) -> None:
         target_vd = self.get_desktop_at(to)
         target_vd.go()
 
-    @handles(DesktopCommands.fg_move_to_follow)
+    @handles(DesktopCommands.drag_to)
     async def _fg_move_to_follow(self, to: int) -> None:
         target_vd = self.get_desktop_at(to)
         AppView.current().move(target_vd)
         target_vd.go()
 
-    @handles(DesktopCommands.fg_move_to)
+    @handles(DesktopCommands.shove_to)
     async def _fg_move_to(self, to: int) -> None:
         target_vd = self.get_desktop_at(to)
         AppView.current().move(target_vd)
 
-    @handles(DesktopCommands.fg_move_next)
+    @handles(DesktopCommands.shove_right)
     async def _fg_move_next(self) -> None:
         current_vd = self.current_vd
         next = self.get_desktop_at(current_vd.number + 1, loop=True)
         AppView.current().move(next)
 
-    @handles(DesktopCommands.fg_move_prev)
+    @handles(DesktopCommands.shove_left)
     async def _fg_move_prev(self) -> None:
         current_vd = self.current_vd
         next = self.get_desktop_at(current_vd.number - 1, loop=True)
         AppView.current().move(next)
 
-    @handles(DesktopCommands.fg_move_next_follow)
+    @handles(DesktopCommands.drag_right)
     async def _fg_move_next_follow(self) -> None:
         current_vd = self.current_vd
         next = self.get_desktop_at(current_vd.number + 1, loop=True)
         AppView.current().move(next)
         next.go()
 
-    @handles(DesktopCommands.fg_move_prev_follow)
+    @handles(DesktopCommands.drag_left)
     async def _fg_move_prev_follow(self) -> None:
         current_vd = self.current_vd
         next = self.get_desktop_at(current_vd.number - 1, loop=True)

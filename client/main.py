@@ -27,7 +27,7 @@ def create_client(send: AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
     cmd = ClientCommandHandler(client_loop, send)
     layout = Layout("media_keys", cmd)
     layout.add_bindings(
-        num_dot.bind.when(num_0, MediaCommands.show_status),
+        num_dot.bind.default(None).when(num_0, MediaCommands.show_status),
         num_0.bind.default(MediaCommands.show_status, MediaCommands.hide_status),
         num_1.bind.default(MediaCommands.seek_bwd_small).when(
             num_0, MediaCommands.seek_bwd_big
@@ -45,14 +45,16 @@ def create_client(send: AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
         num_6.bind.default(MediaCommands.next_track).when(
             num_0, MediaCommands.next_multi
         ),
-        num_7.bind.default(MediaCommands.like_all).when(
+        num_7.bind.default(MediaCommands.unlike).when(
             num_0, MediaCommands.transfer_to_current
         ),
-        num_8.bind.default(MediaCommands.spin_this_in_last),
+        num_8.bind.default(MediaCommands.like_track),
         num_plus.bind.default(MediaCommands.volume_up).when(
             num_dot, MediaCommands.spin_this_in_new
         ),
-        num_9.bind.default(MediaCommands.transfer_to_phone),
+        num_9.bind.default(MediaCommands.like_all).when(
+            num_0, MediaCommands.transfer_to_current
+        ),
         num_minus.bind.default(MediaCommands.volume_down).when(
             num_dot, MediaCommands.delete_current_playlist
         ),
@@ -63,7 +65,85 @@ def create_client(send: AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
             num_0, MediaCommands.exit
         ),
         num_slash.bind.default(MediaCommands.volume_reset),
+        key_1.bind.whens(
+            {
+                caps: DesktopCommands.pan_to(1),
+                caps + mouse1: DesktopCommands.drag_to(1),
+                caps + mouse2: DesktopCommands.shove_to(1),
+            }
+        ),
+        key_2.bind.whens(
+            {
+                caps: DesktopCommands.pan_to(2),
+                caps + mouse1: DesktopCommands.drag_to(2),
+                caps + mouse2: DesktopCommands.shove_to(2),
+            }
+        ),
+        key_3.bind.whens(
+            {
+                caps: DesktopCommands.pan_to(3),
+                caps + mouse1: DesktopCommands.drag_to(3),
+                caps + mouse2: DesktopCommands.shove_to(3),
+            }
+        ),
+        key_4.bind.whens(
+            {
+                caps: DesktopCommands.pan_to(4),
+                caps + mouse1: DesktopCommands.drag_to(4),
+                caps + mouse2: DesktopCommands.shove_to(4),
+            }
+        ),
+        key_5.bind.whens(
+            {
+                caps: DesktopCommands.pan_to(5),
+                caps + mouse1: DesktopCommands.drag_to(5),
+                caps + mouse2: DesktopCommands.shove_to(5),
+            }
+        ),
+        key_6.bind.whens(
+            {
+                caps: DesktopCommands.pan_to(6),
+                caps + mouse1: DesktopCommands.drag_to(6),
+                caps + mouse2: DesktopCommands.shove_to(6),
+            }
+        ),
+        key_7.bind.whens(
+            {
+                caps: DesktopCommands.pan_to(7),
+                caps + mouse1: DesktopCommands.drag_to(7),
+                caps + mouse2: DesktopCommands.shove_to(7),
+            }
+        ),
+        key_8.bind.whens(
+            {
+                caps: DesktopCommands.pan_to(8),
+                caps + mouse1: DesktopCommands.drag_to(8),
+                caps + mouse2: DesktopCommands.shove_to(8),
+            }
+        ),
+        key_9.bind.whens(
+            {
+                caps: DesktopCommands.pan_to(9),
+                caps + mouse1: DesktopCommands.drag_to(9),
+                caps + mouse2: DesktopCommands.shove_to(9),
+            }
+        ),
+        key_a.bind.whens(
+            {
+                caps: DesktopCommands.pan_left,
+                caps + mouse1: DesktopCommands.drag_left,
+                caps + mouse2: DesktopCommands.shove_left,
+            }
+        ),
+        key_d.bind.whens(
+            {
+                caps: DesktopCommands.pan_right,
+                caps + mouse1: DesktopCommands.drag_right,
+                caps + mouse2: DesktopCommands.shove_right,
+            }
+        ),
     )
+
     return layout
 
 

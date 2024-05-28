@@ -65,7 +65,6 @@ class CompoundBinding:
             with self._lock:
                 if not self.trigger.match_event(e):
                     return True
-
                 p = max(
                     (
                         (combo, triggers)
@@ -73,6 +72,7 @@ class CompoundBinding:
                         if combo.is_pressed()
                     ),
                     key=lambda x: x[0],
+                    default=None,
                 )
                 if not p:
                     return True

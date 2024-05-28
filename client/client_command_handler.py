@@ -6,8 +6,11 @@ import threading
 import time
 import traceback
 from typing import Any, Awaitable, Callable
+from flask.cli import F
+from pyvda import AppView, VirtualDesktop, get_virtual_desktops
 
 from client.media_types import MediaStageMessage
+from src.commands.desktop_commands import DesktopCommands
 from src.kb.triggered_command import FailedCommand, OkayCommand, TriggeredCommand
 from client.floating_tooltip import ActionHUD
 from src.ui.model.context import Ctx
@@ -188,8 +191,122 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
                 return
 
             raise
+        except Exception as e:
+            traceback.print_exc()
         else:
             self._current = None
+
+    @property
+    def current_vd(self):
+        return VirtualDesktop.current()
+
+    def get_desktop_at(self, pos: int, loop=False) -> VirtualDesktop:
+        total = len(get_virtual_desktops())
+        if loop:
+            pos = ((pos - 1) % total) + 1
+        if pos < 0 or pos > total:
+            raise ValueError(f"Invalid desktop number {pos}")
+
+        return VirtualDesktop(pos)
+
+    @handles(DesktopCommands.pan_right)
+    async def _pan_right(self, r_command: TriggeredCommand) -> None:
+        def do_pan_right():
+            current_vd = self.current_vd
+            next = self.get_desktop_at(current_vd.number + 1, loop=True)
+            next.go()
+            return None
+
+        exec = r_command.execute(do_pan_right)
+        self.set_value(exec)
+
+    @handles(DesktopCommands.pan_left)
+    async def _pan_left(self, r_command: TriggeredCommand) -> None:
+        def do_pan_left():
+            current_vd = self.current_vd
+            next = self.get_desktop_at(current_vd.number - 1, loop=True)
+            next.go()
+            return None
+
+        exec = r_command.execute(do_pan_left)
+        self.set_value(exec)
+
+    @handles(DesktopCommands.pan_to)
+    async def _pan_to(self, to: int, r_command: TriggeredCommand) -> None:
+        def do_pan_to():
+            target_vd = self.get_desktop_at(to)
+            target_vd.go()
+            return None
+
+        exec = r_command.execute(do_pan_to)
+        self.set_value(exec)
+
+    @handles(DesktopCommands.drag_to)
+    async def _drag_to(self, to: int, r_command: TriggeredCommand) -> None:
+        def do_drag_to():
+            target_vd = self.get_desktop_at(to)
+            AppView.current().move(target_vd)
+            target_vd.go()
+            return None
+
+        exec = r_command.execute(do_drag_to)
+        self.set_value(exec)
+
+    @handles(DesktopCommands.shove_to)
+    async def _shove_to(self, to: int, r_command: TriggeredCommand) -> None:
+        def do_shove_to():
+            target_vd = self.get_desktop_at(to)
+            AppView.current().move(target_vd)
+            return None
+
+        exec = r_command.execute(do_shove_to)
+        self.set_value(exec)
+
+    @handles(DesktopCommands.shove_right)
+    async def _shove_right(self, r_command: TriggeredCommand) -> None:
+        def do_shove_right():
+            current_vd = self.current_vd
+            next = self.get_desktop_at(current_vd.number + 1, loop=True)
+            AppView.current().move(next)
+            return None
+
+        exec = r_command.execute(do_shove_right)
+        self.set_value(exec)
+
+    @handles(DesktopCommands.shove_left)
+    async def _shove_left(self, r_command: TriggeredCommand) -> None:
+        def do_shove_left():
+            current_vd = self.current_vd
+            next = self.get_desktop_at(current_vd.number - 1, loop=True)
+            AppView.current().move(next)
+            return None
+
+        exec = r_command.execute(do_shove_left)
+        self.set_value(exec)
+
+    @handles(DesktopCommands.drag_right)
+    async def _drag_right(self, r_command: TriggeredCommand) -> None:
+        def do_drag_right():
+            current_vd = self.current_vd
+            next = self.get_desktop_at(current_vd.number + 1, loop=True)
+            AppView.current().move(next)
+            next.go()
+            return None
+
+        exec = r_command.execute(do_drag_right)
+        self.set_value(exec)
+
+    @handles(DesktopCommands.drag_left)
+    async def _drag_left(self, r_command: TriggeredCommand) -> None:
+        def do_drag_left():
+            current_vd = self.current_vd
+            next = self.get_desktop_at(current_vd.number - 1, loop=True)
+            AppView.current().move(next)
+            next.go()
+            return None
+
+        exec = r_command.execute(do_drag_left)
+        self.set_value(exec)
 
     def __call__(self, command: TriggeredCommand) -> None:
         if (

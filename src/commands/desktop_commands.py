@@ -1,10 +1,10 @@
 from typing import Protocol
 
 
-from src.commanding.commands import command, parameterized_command
+from src.commanding.commands import Command, command, parameterized_command
 
 
-def number_to_emoji(number):
+def number_to_emoji(number: int):
     emoji_digits = {
         "0": "0️⃣",
         "1": "1️⃣",
@@ -28,31 +28,36 @@ def number_to_emoji(number):
     return emoji_number
 
 
-class DesktopCommands(Protocol):
+class DesktopCommands:
+    def __getattr__(self, key: str):
+        result = super().__getattribute__(key)
+        if isinstance(result, Command):
+            return result.with_group("Desktop")
+        return result
 
-    @command("📅👈⏹️")
-    def fg_move_prev(self) -> None: ...
+    @command("📅🫷", "Shove Left")
+    def shove_left(self) -> None: ...
 
-    @command("⏹️👉📅")
-    def fg_move_next(self) -> None: ...
+    @command("🫸📅", "Shove Right")
+    def shove_right(self) -> None: ...
 
-    @parameterized_command(lambda x: f"📅👉{number_to_emoji(x)}")
-    def fg_move_to(self, desktop_number: int) -> None: ...
+    @parameterized_command[int](lambda x: f"🫸📅{number_to_emoji(x)}", "Shove To {:d}")
+    def shove_to(self, desktop_number: int) -> None: ...
 
-    @parameterized_command(lambda x: f"👉📅{number_to_emoji(x)}")
-    def fg_move_to_follow(self, desktop_number: int) -> None: ...
+    @parameterized_command[int](lambda x: f"📅🫱{number_to_emoji(x)}", "Drag To {:d}")
+    def drag_to(self, desktop_number: int) -> None: ...
 
-    @command("📅👈")
-    def fg_move_prev_follow(self) -> None: ...
+    @command("🫲📅", "Drag Left")
+    def drag_left(self) -> None: ...
 
-    @command("👉📅")
-    def fg_move_next_follow(self) -> None: ...
+    @command("📅🫱", "Drag Right")
+    def drag_right(self) -> None: ...
 
-    @command("▶️▶️")
-    def move_next(self) -> None: ...
+    @command("⬅️👁️", "Pan Right")
+    def pan_right(self) -> None: ...
 
-    @command("◀️◀️")
-    def move_prev(self) -> None: ...
+    @command("👁️➡️", "Pan Left")
+    def pan_left(self) -> None: ...
 
-    @parameterized_command(number_to_emoji)
-    def move_to(self, desktop_number: int) -> None: ...
+    @parameterized_command[int](lambda d: f"👁️➡️{number_to_emoji(d)}", "Pan To {:d}")
+    def pan_to(self, desktop_number: int) -> None: ...

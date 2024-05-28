@@ -20,4 +20,5 @@ key_labels: dict[str, str] = {
     "mouse:3": "🖱️3️⃣ ",
     "mouse:4": "🖱️4️⃣ ",
     "mouse:5": "🖱️5️⃣ ",
+    "capslock": "⇪",
 }

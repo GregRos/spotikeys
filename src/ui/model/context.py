@@ -49,7 +49,7 @@ class Ctx:
 
         def do(x: Self):
             # FIXME Improved handling of stale context
-            logger.info("Running scheduled '%s#%d'", name, self.id)
+            logger.info("Running scheduled '{}#{:d}'", name, self.id)
             if x != self:
                 logger.debug(f"Skipping scheduled '{name}#{self.id}' - stale context.")
                 return

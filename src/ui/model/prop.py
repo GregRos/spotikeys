@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typeguard import check_type
+from typeguard import TypeCheckError, check_type
 from copy import copy
 from typing import (
     TYPE_CHECKING,
@@ -59,11 +59,14 @@ class Prop:
         return self.value_type is PDict
 
     def is_valid(self, input: Any):
-        if self.value_type:
-            if self.value_type is float:
-                return isinstance(input, int) or isinstance(input, float)
-            return check_type(input, self.value_type)
-        return True
+        try:
+            if self.value_type:
+                if self.value_type is float:
+                    return isinstance(input, int) or isinstance(input, float)
+                return check_type(input, self.value_type)
+            return True
+        except TypeCheckError as e:
+            raise ValueError(f"Typecheck failed in {self.name}: {e.args[0]}") from e
 
     def assert_valid_value(self, value: Any):
         if not self.is_valid(value):
