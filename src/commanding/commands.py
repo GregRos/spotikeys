@@ -15,14 +15,22 @@ class CommandLike(Protocol):
 class Command:
     code: str
 
-    def __init__(self, command: str, emoji: str, title: str, group: str | None = None):
+    def __init__(
+        self,
+        command: str,
+        emoji: str,
+        title: str,
+        group: str | None = None,
+        log: bool = True,
+    ):
         self.code = command
         self.emoji = emoji
         self.title = title
         self.group = group
+        self.log = log
 
     def with_group(self, group: str):
-        return Command(self.code, self.emoji, self.title, group)
+        return Command(self.code, self.emoji, self.title, group, self.log)
 
     def is_command(self, command: Command | str):
         return (
@@ -63,10 +71,10 @@ class ParamterizedCommand[T](Command):
         return ParamterizedCommand(self.code, self.emoji, self.title, self.arg, group)
 
 
-def command(emoji: str, title: str):
+def command(emoji: str, title: str, log: bool = True):
 
     def decorator(func: Callable[[Any], None]):
-        return Command(func.__name__, emoji, title)
+        return Command(func.__name__, emoji, title, log=log)
 
     return decorator
 

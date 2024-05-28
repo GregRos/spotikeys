@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from functools import total_ordering
+from time import sleep
 from typing import TYPE_CHECKING, Literal, Optional, overload
 import mouse
 from keyboard import KeyboardEvent
 import keyboard
-
+from win32api import GetAsyncKeyState
 from src.commanding.commands import CommandLike
 
 
@@ -59,7 +60,8 @@ class Key:
 
     def is_pressed(self):
         if self.type == "mouse":
-            return mouse.is_pressed(self.hook_id)
+            pr = GetAsyncKeyState(int(self.id)) & 0x8000
+            return pr
         else:
             return keyboard.is_pressed(self.hook_id)
 

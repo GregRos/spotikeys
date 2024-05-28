@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from src.kb.triggered_command import TriggeredCommand
 from pyvda import VirtualDesktop, AppView
+from win32gui import GetWindowText
 
 
 class DesktopAction:
@@ -14,7 +15,7 @@ class Desk:
 
     def __init__(self, vd: VirtualDesktop):
         self.pos = vd.number
-        self.name = vd.name
+        self.name = vd.name or f"Desktop {vd.number}"
 
 
 class App:
@@ -22,7 +23,7 @@ class App:
     hwnd: int
 
     def __init__(self, app_view: AppView):
-        self.title = app_view.Title  # type: ignore
+        self.title = GetWindowText(app_view.hwnd)  # type: ignore
         self.hwnd = app_view.hwnd
 
 

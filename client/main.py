@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Awaitable
 from venv import logger
 
+import keyboard
+
 
 from client.client_command_handler import ClientCommandHandler
 from src.commanding.commands import Command
@@ -15,6 +17,7 @@ from src.commands import *
 from src.kb.layout import Layout
 from .spotify_secret import spotify_creds
 from src.setup_logging import setup_logging
+
 
 setup_logging()
 
@@ -65,6 +68,7 @@ def create_client(send: AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
             num_0, MediaCommands.exit
         ),
         num_slash.bind.default(MediaCommands.volume_reset),
+        caps.bind.default(DesktopCommands.no_caps),
         key_1.bind.whens(
             {
                 caps: DesktopCommands.pan_to(1),

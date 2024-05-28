@@ -60,6 +60,8 @@ class Prop:
 
     def is_valid(self, input: Any):
         try:
+            if input is None:
+                return True
             if self.value_type is not None:
                 if self.value_type is float:
                     return isinstance(input, int) or isinstance(input, float)
@@ -75,8 +77,7 @@ class Prop:
 
     @property
     def value(self) -> Any:
-        if self.no_value is None:
-            raise ValueError("No default value set")
+
         return self.no_value
 
     def update(self, source_prop: "Prop") -> "Prop":

@@ -33,7 +33,8 @@
       "request": "launch",
       "program": "main.pyw",
       "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}"
+      "cwd": "${workspaceFolder}",
+      "justMyCode": false
     }
   ]
 }

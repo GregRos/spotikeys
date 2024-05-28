@@ -309,8 +309,7 @@ class PValues(Mapping[str, "PValue | PValues"]):
         if value is None:
             if isinstance(prop, PSection):
                 raise KeyError(f"Key {key} is a section, but doesn't exist in values")
-            if prop.has_default:
-                return PValue(prop, prop.value)
+            return PValue(prop, prop.value)
             raise KeyError(f"Key {key} doesn't exist in values")
         if isinstance(prop, PSection):
             return PValues(prop, value)

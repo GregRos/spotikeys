@@ -85,7 +85,7 @@ class WindowWrapper(Resource[Window]):
 
         return wrapper
 
-    def schedule_now(
+    def run_in_owner(
         self,
         action: Callable[[], Any],
     ):
@@ -93,13 +93,21 @@ class WindowWrapper(Resource[Window]):
             action()
             return
         e = threading.Event()
+        err = None  # type: Any
 
         def wrap_action():
-            action()
-            e.set()
+            nonlocal err
+            try:
+                action()
+            except Exception as ex:
+                err = ex
+            finally:
+                e.set()
 
         self.resource.after(0, wrap_action)
         e.wait()
+        if err:
+            raise Exception("Error during scheduled action") from err
 
     @override
     def migrate(self, node: Window) -> Self:
@@ -113,19 +121,21 @@ class WindowWrapper(Resource[Window]):
 
     @override
     def destroy(self) -> None:
-        self.schedule_now(self.resource.destroy)
+        self.run_in_owner(self.resource.destroy)
 
     @override
     def replace(self, other: "WindowWrapper") -> None:
         def do_replace():
+
             self.resource.withdraw()
+            other.place()
             other.resource.deiconify()
 
-        self.schedule_now(do_replace)
+        self.run_in_owner(do_replace)
 
     @override
     def unplace(self) -> None:
-        self.schedule_now(self.resource.withdraw)
+        self.run_in_owner(self.resource.withdraw)
 
     def normalize_geo(self, geo: Geometry) -> str:
         x, y, width, height = (geo[k] for k in ("x", "y", "width", "height"))
@@ -151,10 +161,11 @@ class WindowWrapper(Resource[Window]):
         def do():
             geo = self.node._props["Geometry"].value  # type: Geometry # type: ignore
             normed = self.normalize_geo(geo)
+            print(f"Setting {self.key} geometry to {normed}")
             self.resource.wm_geometry(normed)
             self.resource.deiconify()
 
-        self.schedule_now(do)
+        self.run_in_owner(do)
 
     @override
     def get_compatibility(self, other: Window) -> Compat:
@@ -179,4 +190,4 @@ class WindowWrapper(Resource[Window]):
             if child := computed.get("child"):
                 self._component_mount.remount(child)
 
-        self.schedule_now(do)
+        self.run_in_owner(do)

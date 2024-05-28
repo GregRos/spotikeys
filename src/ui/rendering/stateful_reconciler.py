@@ -127,7 +127,7 @@ class StatefulReconciler[Node: ShadowNode]:
             # FIXME: This should be an externalized event
             logger.info(f"⚖️  RECONCILE {action}")
         else:
-            logger.debug(f"No reconcile needed")
+            logger.info(f"🚫 RECONCILE {action.key} ")
             return
         match action:
             case Update(existing, next):

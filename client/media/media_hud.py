@@ -33,7 +33,7 @@ class MediaHUD(Component[Window]):
             return
         yld(
             Window(
-                background="#000001",
+                background="#000000",
                 topmost=True,
                 transparent_color="black",
                 override_redirect=True,

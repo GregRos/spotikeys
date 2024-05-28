@@ -33,6 +33,7 @@ class WidgetProps(ShadowProps):
     text: Annotated[NotRequired[str], Prop(no_value=" ", subsection="configure")]
     font: Annotated[NotRequired[Font], PSection(recurse=False, name="font")]
     borderwidth: Annotated[NotRequired[int], Prop(no_value=0, subsection="configure")]
+    border: Annotated[NotRequired[int], Prop(no_value=0, subsection="configure")]
     background: Annotated[
         NotRequired[str], Prop(no_value="#000001", subsection="configure")
     ]
@@ -51,6 +52,14 @@ class PackProps(ShadowProps):
     ipady: Annotated[NotRequired[int], Prop(no_value=0)]
     fill: Annotated[
         NotRequired[Literal["both", "x", "y", "none"]], Prop(no_value="none")
+    ]
+    side: Annotated[
+        NotRequired[Literal["top", "bottom", "left", "right"]], Prop(no_value="top")
+    ]
+    expand: Annotated[NotRequired[bool], Prop(no_value=False)]
+    anchor: Annotated[
+        NotRequired[Literal["n", "s", "e", "w", "ne", "nw", "se", "sw"]],
+        Prop(no_value="n"),
     ]
 
 

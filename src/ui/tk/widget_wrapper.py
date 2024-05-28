@@ -21,11 +21,13 @@ class WidgetWrapper(Resource[Widget]):
     @final
     @override
     def migrate(self, node: Widget) -> Self:
+
         x = WidgetWrapper(node, self.resource)
         return x  # type: ignore
 
     @staticmethod
     def create(tk: Tk, node: Widget) -> "WidgetWrapper":
+
         match node.type_name:
             case "Label":
                 lbl = Label(tk)

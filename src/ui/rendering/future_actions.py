@@ -11,6 +11,10 @@ class Create:
     def __repr__(self) -> str:
         return f"🆕 {self.next}"
 
+    @property
+    def key(self) -> Any:
+        return self.next.key
+
 
 @dataclass
 class Update:
@@ -28,6 +32,10 @@ class Update:
     def __repr__(self) -> str:
         return f"📝 {self.diff.__repr__()}"
 
+    @property
+    def key(self) -> Any:
+        return self.next.key
+
 
 @dataclass
 class Recreate:
@@ -38,6 +46,10 @@ class Recreate:
     def props(self):
         return f"{self.old.key} ♻️ {self.next._props}"
 
+    @property
+    def key(self) -> Any:
+        return self.next.key
+
 
 @dataclass
 class Place:
@@ -45,6 +57,10 @@ class Place:
 
     def __repr__(self) -> str:
         return f"👇 {self.what.__repr__()}"
+
+    @property
+    def key(self) -> Any:
+        return self.what.key
 
 
 @dataclass
@@ -55,6 +71,10 @@ class Replace:
     def __repr__(self) -> str:
         return f"{self.replaces.key} ↔️ {self.with_what.__repr__()}"
 
+    @property
+    def key(self) -> Any:
+        return self.replaces.key
+
 
 @dataclass
 class Unplace:
@@ -62,3 +82,7 @@ class Unplace:
 
     def __repr__(self) -> str:
         return f"🙈  {self.what.key}"
+
+    @property
+    def key(self) -> Any:
+        return self.what.key

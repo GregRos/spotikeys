@@ -1,3 +1,4 @@
+from ast import ParamSpec
 from functools import partial
 from typing import Any, Awaitable, Callable, Generic, Protocol, TypeVar
 from src.commanding.commands import CommandLike, Command, ParamterizedCommand
@@ -9,9 +10,7 @@ ReturnType = TypeVar("ReturnType")
 class AsyncCommandHandler(Generic[CommandType, ReturnType]):
     _mapping: dict[str, Callable[[CommandType], ReturnType]]
 
-    def get_handler(
-        self, command: CommandType
-    ) -> Callable[[CommandType], ReturnType] | None:
+    def get_handler(self, command: CommandType) -> Callable[..., ReturnType] | None:
         local_handler = self._mapping.get(command.code, None)
         return local_handler
 

@@ -31,6 +31,9 @@ def number_to_emoji(number: int):
 
 class DesktopCommands(metaclass=CommandClass, group_name="Desktop"):
 
+    @command("🚫", "No Caps", False)
+    def no_caps(self) -> None: ...
+
     @command("📅🫷", "Shove Left")
     def shove_left(self) -> None: ...
 

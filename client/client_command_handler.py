@@ -7,8 +7,10 @@ import time
 import traceback
 from typing import Any, Awaitable, Callable
 from flask.cli import F
+import keyboard
 from pyvda import AppView, VirtualDesktop, get_virtual_desktops
-
+from win32api import GetKeyState
+from win32con import VK_CAPITAL
 from client.desktop.desktop_status import DesktopExec, Pan, Shove
 from client.hud import HUD
 from client.media.media_types import MediaStageMessage
@@ -84,9 +86,13 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
             self._root(
                 hidden=False,
                 executed=thingy,
-                last_status=thingy.result,
+                last_status=(
+                    thingy.result if isinstance(thingy.result, MediaStatus) else None
+                ),
                 refresh_id=self._id,
             ).schedule(lambda _: self._root(hidden=True), 3.0)
+        elif isinstance(thingy, DesktopExec):
+            self._root(hidden=False, executed=thingy, refresh_id=self._id)
         elif isinstance(thingy, TriggeredCommand):
             self._root(hidden=False, executed=thingy, refresh_id=self._id)
         else:
@@ -170,7 +176,10 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     def _get_handler(self, command: TriggeredCommand) -> Awaitable[None] | None:
         local_handler = self.get_handler(command)
         if local_handler:
-            logger.info(f"Handling {command} locally.")
+            if command.command.log:
+                logger.info(f"Handling {command} locally.")
+            if isinstance(command.command, ParamterizedCommand):
+                return local_handler(command.command.arg, command)
             return local_handler(command)
         logger.info(f"Passing {command} downstream.")
         return self._wrap_downstream(command)
@@ -291,6 +300,11 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         exec = r_command.execute(do_drag_right)
         self.set_value(exec)
 
+    @handles(DesktopCommands.no_caps)
+    async def _no_caps(self, r_command: TriggeredCommand) -> None:
+        if GetKeyState(VK_CAPITAL):
+            keyboard.press_and_release("capslock")
+
     @handles(DesktopCommands.drag_left)
     async def _drag_left(self, r_command: TriggeredCommand) -> None:
         def do_drag_left():
@@ -322,14 +336,10 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         self.set_value(exec)
 
     def __call__(self, command: TriggeredCommand) -> None:
-        if (
-            self._current
-            and command == self._current
-            and command.timestamp - self._current.timestamp < 0.25
-        ):
+        if self._current and command.timestamp - self._current.timestamp < 0.25:
             return
         with self._lock:
-            match self._current and self._current.command:
+            match self._current:
                 case Command(code="show_status"):
                     match command.command:
                         case Command(code="show_status"):
