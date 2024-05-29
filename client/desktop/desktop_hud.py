@@ -1,13 +1,14 @@
 from asyncio import sleep
 import ctypes
 from dataclasses import dataclass
+import itertools
 from typing import Any, Literal, override
 
 from click import BOOL
 
 
 from client.desktop.command_header import DesktopCommandHeader
-from client.desktop.desktop_status import DesktopExec
+from client.desktop.desktop_status import App, DesktopExec
 from client.error import FailDisplay
 from client.media.media_display import MediaDisplay, truncate_text
 from client.media.media_types import MediaStageMessage
@@ -49,14 +50,30 @@ class DestkopHUD(Component[Window]):
     class Inner(Component[Widget]):
         executed: OkayCommand[DesktopExec]
 
-        def _win_title(self, title: str):
-            return Label(
-                text=f"{truncate_text(title, 50)}",
-                wraplength=300,
+        def _win_title(self, apps: tuple[App, ...]):
+
+            titles = list(map(lambda x: f"📅 {x.title}", apps))
+            elipsis = None
+            if len(titles) > 3:
+                titles = titles[:3]
+                elipsis = f"⋯ ({len(apps) - 3}) more ⋯"
+            titles = map(lambda x: truncate_text(x, 31), titles)
+            titles = "\n".join(titles)
+            yield Label(
+                text=f"{titles}",
                 background=green_c,
+                justify="left",
                 foreground="#ffffff",
-                font=Font(family="Segoe UI Emoji", size=12),
-            ).Pack(ipadx=5, fill="both")
+                font=Font(family="Segoe UI Emoji", size=10, style="bold"),
+            ).Pack(ipadx=0, anchor="w")
+            if elipsis:
+                yield Label(
+                    text=elipsis,
+                    background=green_c,
+                    justify="center",
+                    foreground="#ffffff",
+                    font=Font(family="Segoe UI Emoji", size=10),
+                ).Pack(ipadx=0, fill="x")
 
         @override
         def render(self, yld, _):
@@ -79,17 +96,18 @@ class DestkopHUD(Component[Window]):
                 ).Pack(ipadx=15, fill="both")
             )
             if executed.shove:
-                yld(self._win_title(executed.shove.app.title))
+                yld(self._win_title(executed.shove.apps))
 
             yld(
                 Label(
-                    text=f"🖥️ {orig_desktop.name}",
+                    text=f"↩️ {orig_desktop.name}",
                     background=old_desktop_c,
                     foreground="#ffffff",
+                    justify="center",
                     font=Font(
                         family="Segoe UI Emoji",
                         size=11,
                         style="normal",
                     ),
-                ).Pack(ipadx=15, fill="both")
+                ).Pack(ipadx=15, fill="x")
             )

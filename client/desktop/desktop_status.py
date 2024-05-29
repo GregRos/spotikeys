@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from src.kb.triggered_command import TriggeredCommand
 from pyvda import VirtualDesktop, AppView
 from win32gui import GetWindowText
+from pywinauto.win32_element_info import HwndElementInfo
 
 
 class DesktopAction:
@@ -22,9 +23,9 @@ class App:
     title: str
     hwnd: int
 
-    def __init__(self, app_view: AppView):
-        self.title = GetWindowText(app_view.hwnd)  # type: ignore
-        self.hwnd = app_view.hwnd
+    def __init__(self, hwnd_info: HwndElementInfo):
+        self.hwnd = hwnd_info.handle
+        self.title = hwnd_info.name
 
 
 class Pan(DesktopAction):
@@ -40,8 +41,17 @@ class Pan(DesktopAction):
 
 
 class Shove(DesktopAction):
-    def __init__(self, app_view: AppView, start: VirtualDesktop, end: VirtualDesktop):
-        self.app = App(app_view)
+
+    def __init__(
+        self,
+        app_view: HwndElementInfo | tuple[HwndElementInfo, ...],
+        start: VirtualDesktop,
+        end: VirtualDesktop,
+    ):
+        self.apps = tuple(
+            App(app)
+            for app in (app_view if isinstance(app_view, tuple) else [app_view])
+        )
         self.start = Desk(start)
         self.end = Desk(end)
 

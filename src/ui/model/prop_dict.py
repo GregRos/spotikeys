@@ -285,7 +285,9 @@ class PValues(Mapping[str, "PValue | PValues"]):
 
             if self.old is not None and isinstance(value, PValue):
                 # FIXME: format could use some work
-                entries += [f"{key}[{fmt(self.old[key])} ➔  {fmt(value.value)}]"]
+                entries += [
+                    f"{key}[{fmt(self.old[key]) if key in self.old else "∅"} ➔  {fmt(value.value)}]"
+                ]
                 continue
             repr_result = value.__repr__()
             if repr_result:
@@ -343,7 +345,12 @@ class PValues(Mapping[str, "PValue | PValues"]):
     def diff(self, other: "PValues") -> "PValues":
         self.section.assert_valid_value(other._vals)
         out = {}
-        for k, v in self.items():
+        for k in self.keys() | other.keys():
+            if k not in self:
+                out[k] = other[k].value
+            elif k not in other:
+                continue
+            v = self[k]
             match v:
                 case PValue():
                     if v != other[k]:

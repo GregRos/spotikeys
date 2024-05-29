@@ -1,12 +1,13 @@
-from typing import Any, Callable, Generator
+from typing import Any, Callable, Generator, Iterable
 
 from src.ui.model import ShadowNode, Ctx, Component
 from src.ui.rendering.stateful_reconciler import StatefulReconciler
 from src.ui.model.prop_dict import format_superscript
+from ui.model.render_trace import RenderFrame, RenderTrace
 
 
-def with_key(node: ShadowNode, key: str) -> ShadowNode:
-    return node._copy(key=key)
+def with_trace(node: ShadowNode, trace: RenderTrace) -> ShadowNode:
+    return node._copy(trace=trace)
 
 
 class ComponentMount[X: ShadowNode]:
@@ -26,27 +27,30 @@ class ComponentMount[X: ShadowNode]:
 
     def _compute_render(self):
         rendering = ()
+        trace = RenderTrace()
 
-        def on_yielded_for(root_prefix: str):
+        def on_yielded_for(base_trace: RenderTrace):
             i = 1
 
-            def on_yielded(node: Component[X] | X):
+            def on_yielded(
+                node: Component[X] | X | Iterable[X] | Iterable[Component[X]],
+            ):
+                if isinstance(node, Iterable):
+                    for n in node:
+                        on_yielded(n)
+                    return
+
                 node_type = self._reconciler.node_type
                 nonlocal rendering, i
-                cur_prefix = "".join(
-                    [
-                        root_prefix,
-                        f":{node.key}." if node.key else format_superscript(i),
-                        node.__class__.__name__,
-                        " ",
-                    ]
+                my_trace = base_trace + RenderFrame(
+                    pos=i, type=node.__class__, key=node.key
                 )
 
                 i += 1
                 if isinstance(node, node_type):  # type: ignore
-                    rendering += (with_key(node, cur_prefix),)
+                    rendering += (with_trace(node, my_trace),)
                 elif isinstance(node, Component):
-                    node.render(on_yielded_for(cur_prefix), self.context)
+                    node.render(on_yielded_for(my_trace), self.context)
                 else:
                     raise TypeError(
                         f"Expected render method to return {node_type} or Component, but got {type(node)}"
@@ -54,7 +58,7 @@ class ComponentMount[X: ShadowNode]:
 
             return on_yielded
 
-        yield_ = on_yielded_for("")
+        yield_ = on_yielded_for(trace)
         yield_(self._mounted)
         return rendering
 

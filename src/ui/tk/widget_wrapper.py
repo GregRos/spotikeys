@@ -30,7 +30,7 @@ class WidgetWrapper(Resource[Widget]):
 
         match node.type_name:
             case "Label":
-                lbl = Label(tk)
+                lbl = Label(tk, name=node.key)
                 make_clickthrough(lbl)
                 return __class__(node, lbl)
 
@@ -94,7 +94,6 @@ class WidgetWrapper(Resource[Widget]):
     @override
     def replace(self, other: Self) -> None:
         _, p = other.node._props.compute()
-
-        other.resource.pack_configure(after=self.resource, **p.get("Pack", {}))
+        other.resource.pack(after=self.resource, **p.get("Pack", {}))
 
         self.resource.pack_forget()

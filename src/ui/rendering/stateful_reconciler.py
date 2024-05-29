@@ -46,10 +46,10 @@ class StatefulReconciler[Node: ShadowNode]:
 
         if not next:
             assert prev, "Neither prev nor next exists"
-            record = self._key_to_resource[prev.key]
+            record = self._key_to_resource[prev.uid]
             return Unplace(record)
 
-        old_next_placement = self._key_to_resource.get(next.key)
+        old_next_placement = self._key_to_resource.get(next.uid)
 
         if not prev:
             if not old_next_placement:
@@ -64,9 +64,9 @@ class StatefulReconciler[Node: ShadowNode]:
                 )
             )
 
-        old_prev_placement = self._key_to_resource[prev.key]
+        old_prev_placement = self._key_to_resource[prev.uid]
 
-        if prev.key != next.key:
+        if prev.uid != next.uid:
             if not old_next_placement:
                 return Replace(old_prev_placement, Create(next))
             if old_next_placement.get_compatibility(next) == "recreate":
@@ -81,9 +81,16 @@ class StatefulReconciler[Node: ShadowNode]:
             )
 
         assert old_next_placement
-        if old_next_placement.get_compatibility(next) == "recreate":
-            return Replace(old_prev_placement, Recreate(old_next_placement, next))
-        return Update(old_next_placement, next, diff=prev._props.diff(next._props))
+        upd = Update(old_next_placement, next, diff=prev._props.diff(next._props))
+        match old_prev_placement.get_compatibility(next):
+            case "update":
+                return upd
+            case "replace":
+                return Replace(old_prev_placement, upd)
+            case "recreate":
+                return Replace(old_prev_placement, Recreate(old_next_placement, next))
+            case compat:
+                raise ValueError(f"Unknown compatibility: {compat}")
 
     @staticmethod
     def _check_duplicates(rendering: Iterable[ShadowNode]):

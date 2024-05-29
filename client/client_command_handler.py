@@ -2,10 +2,11 @@ from asyncio import AbstractEventLoop, new_event_loop
 from concurrent.futures import ThreadPoolExecutor
 from logging import getLogger
 import os
+import re
 import threading
 import time
 import traceback
-from typing import Any, Awaitable, Callable
+from typing import Any, Awaitable, Callable, Iterable
 from flask.cli import F
 import keyboard
 from pyvda import AppView, VirtualDesktop, get_virtual_desktops
@@ -24,8 +25,46 @@ from src.spotify.now_playing import MediaStatus
 from src.commanding.commands import Command, ParamterizedCommand
 from src.commanding.handler import AsyncCommandHandler, handles
 from src.commands.media_commands import MediaCommands
+from pywinauto import WindowSpecification, Application
+from pywinauto.win32_element_info import HwndElementInfo
+
 
 logger = getLogger("client")
+
+pat = re.compile("(\\S*) - Visual Studio Code")
+
+
+def get_window_substr(hinfo: HwndElementInfo):
+    txt = hinfo.name
+    if "Visual Studio Code" in txt:
+        if proj := pat.search(txt):
+            return proj[0]
+    return None
+
+
+def get_info(av: AppView):
+    return HwndElementInfo
+
+
+def get_related_windows(
+    av: AppView,
+) -> tuple[tuple[HwndElementInfo, ...], tuple[AppView, ...]]:
+    def f():
+        hinfo = HwndElementInfo(av.hwnd)
+        yield hinfo, av
+        substr = get_window_substr(hinfo)
+        if not substr:
+            return []
+        proc = hinfo.process_id
+        app = Application().connect(process=proc)
+        ws = app.windows(title_re=".*" + substr + ".*")
+        for i, x in enumerate(ws):
+            wrapper = HwndElementInfo(x.handle)
+            print(f"Got {i}) {wrapper.rich_text}")
+            yield wrapper, AppView(x.handle)
+
+    r = list(f())
+    return tuple(map(lambda x: x[0], r)), tuple(map(lambda x: x[1], r))
 
 
 class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
@@ -253,9 +292,10 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     async def _shove_to(self, to: int, r_command: TriggeredCommand) -> None:
         def do_shove_to():
             target_vd = self.get_desktop_at(to)
-            current = AppView.current()
-            current.move(target_vd)
-            return Shove(current, self.current_vd, target_vd).from_command(r_command)
+            infos, avs = get_related_windows(AppView.current())
+            for av in avs:
+                av.move(target_vd)
+            return Shove(infos, self.current_vd, target_vd).from_command(r_command)
 
         exec = r_command.execute(do_shove_to)
         self.set_value(exec)
@@ -265,10 +305,11 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         def do_shove_right():
             current_vd = self.current_vd
             next = self.get_desktop_at(current_vd.number + 1, loop=True)
-            current = AppView.current()
-            current.move(next)
+            infos, avs = get_related_windows(AppView.current())
+            for current in avs:
+                current.move(next)
 
-            return Shove(current, current_vd, next).from_command(r_command)
+            return Shove(infos, current_vd, next).from_command(r_command)
 
         exec = r_command.execute(do_shove_right)
         self.set_value(exec)
@@ -278,9 +319,10 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         def do_shove_left():
             current_vd = self.current_vd
             next = self.get_desktop_at(current_vd.number - 1, loop=True)
-            current = AppView.current()
-            current.move(next)
-            return Shove(current, current_vd, next).from_command(r_command)
+            infos, avs = get_related_windows(AppView.current())
+            for current in avs:
+                current.move(next)
+            return Shove(infos, current_vd, next).from_command(r_command)
 
         exec = r_command.execute(do_shove_left)
         self.set_value(exec)
@@ -290,11 +332,13 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         def do_drag_right():
             current_vd = self.current_vd
             next = self.get_desktop_at(current_vd.number + 1, loop=True)
-            current = AppView.current()
-            current.move(next)
+
+            infos, avs = get_related_windows(AppView.current())
+            for current in avs:
+                current.move(next)
             next.go()
             return Pan(current_vd, next).from_command(
-                r_command, Shove(current, current_vd, next)
+                r_command, Shove(infos, current_vd, next)
             )
 
         exec = r_command.execute(do_drag_right)
@@ -310,11 +354,12 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         def do_drag_left():
             current_vd = self.current_vd
             next = self.get_desktop_at(current_vd.number - 1, loop=True)
-            current = AppView.current()
-            current.move(next)
+            infos, avs = get_related_windows(AppView.current())
+            for current in avs:
+                current.move(next)
             next.go()
             return Pan(current_vd, next).from_command(
-                r_command, Shove(current, current_vd, next)
+                r_command, Shove(infos, current_vd, next)
             )
 
         exec = r_command.execute(do_drag_left)
@@ -325,10 +370,11 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         def do_drag_to():
             current_vd = self.current_vd
             target_vd = self.get_desktop_at(to)
-            current = AppView.current()
-            current.move(target_vd)
+            infos, avs = get_related_windows(AppView.current())
+            for current in avs:
+                current.move(target_vd)
             target_vd.go()
-            return Shove(current, current_vd, target_vd).from_command(
+            return Shove(infos, current_vd, target_vd).from_command(
                 r_command, Pan(current_vd, target_vd)
             )
 

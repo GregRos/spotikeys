@@ -23,10 +23,11 @@ from src.ui.model.prop_dict import (
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.ui.model.prop_value import PValue
+from ui.model.render_trace import RenderTrace
 
 
 class InitPropsBase(TypedDict):
-    key: Annotated[NotRequired[str], Prop(no_value="")]
+    key: Annotated[NotRequired[str], Prop(no_value=None)]
 
 
 class ShadowProps(InitPropsBase):
@@ -35,6 +36,7 @@ class ShadowProps(InitPropsBase):
 
 class ShadowNode:
     _props: PValues
+    trace: RenderTrace
 
     @classmethod
     def node_name(cls) -> str:
@@ -60,10 +62,15 @@ class ShadowNode:
         return self._props.__repr__()
 
     @property
-    def key(self) -> str:
+    def key(self) -> str | None:
         x = self._props.get("key")
-        assert isinstance(x, PValue)
-        return x.value
+        assert not isinstance(x, PValues), "Key should not be a PValues."
+        return x.value if x else None
+
+    @property
+    def uid(self) -> str:
+        assert self.trace, "Trace must exist before calling u_key."
+        return self.trace.to_uid()
 
     @abstractmethod
     def _copy(self, **overrides: Any) -> Self: ...
