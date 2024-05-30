@@ -4,7 +4,7 @@ from typing import override
 from client.desktop.desktop_status import DesktopExec
 from src.ui import Component, Widget, Font, Label
 
-header_c = "blue"  # "#20328F"
+header_c = "#2E620C"  # "blue"  # "#20328F"
 
 
 @dataclass

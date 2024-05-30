@@ -42,6 +42,7 @@ class Root:
                     "playlist-modify-public",
                     # 'app-remote-control'
                 ],
+                requests_timeout=5000,
             )
         )
 
