@@ -95,7 +95,7 @@ class StatefulReconciler[Node: ShadowNode]:
     @staticmethod
     def _check_duplicates(rendering: Iterable[ShadowNode]):
         key_to_nodes = {
-            key: list(group) for key, group in groupby(rendering, key=lambda x: x.key)
+            key: list(group) for key, group in groupby(rendering, key=lambda x: x.uid)
         }
         messages = {
             key: f"Duplicates for {key} found: {group} "
@@ -109,10 +109,10 @@ class StatefulReconciler[Node: ShadowNode]:
         self._check_duplicates(rendering)
         placed = set[str]()
         for prev, next in zip_longest(self._placement, rendering, fillvalue=None):
-            if not next and prev and prev.key in placed:
+            if not next and prev and prev.uid in placed:
                 continue
             if next:
-                placed.add(next.key)
+                placed.add(next.uid)
             yield self._get_reconcile_action(prev, next)
 
     def _do_create_action(self, action: Update | Create):
@@ -120,7 +120,7 @@ class StatefulReconciler[Node: ShadowNode]:
             case Create(next):
                 new_resource = self.create(next)  # type: ignore
                 new_resource.update(next._props)
-                self._key_to_resource[next.key] = new_resource
+                self._key_to_resource[next.uid] = new_resource
                 return new_resource
             case Update(existing, next, diff):
                 if diff:

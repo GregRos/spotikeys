@@ -67,6 +67,7 @@ def get_related_windows(
     return tuple(map(lambda x: x[0], r)), tuple(map(lambda x: x[1], r))
 
 
+# FIXME: This should be separated into an abstract API
 class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
     _current: TriggeredCommand | None = None
     _lock = threading.Lock()
@@ -101,7 +102,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         self._volume_control = ClientVolumeControl()
 
         async def with_logging(x):
-            logger.info(f"Sending {x} to server")
+            logger.info(f"Sending « {x} » to server")
             result = await downstream(x)
             if x.code != "get_volume":
                 result.volume = self._volume_control.info
@@ -126,7 +127,9 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
                 hidden=False,
                 executed=thingy,
                 last_status=(
-                    thingy.result if isinstance(thingy.result, MediaStatus) else None
+                    thingy.result
+                    if isinstance(thingy.result, MediaStatus)
+                    else self._last_media_status
                 ),
                 refresh_id=self._id,
             ).schedule(lambda _: self._root(hidden=True), 3.0)
@@ -135,7 +138,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         elif isinstance(thingy, TriggeredCommand):
             self._root(hidden=False, executed=thingy, refresh_id=self._id)
         else:
-            logger.warn(thingy)
+            logger.error(thingy)
             self._root(
                 hidden=False,
                 executed=thingy,
@@ -208,7 +211,7 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         command = received.command
         self.set_value(received)
         result = await received.execute_async(lambda: self._downstream(command))
-        if isinstance(result, OkayCommand):
+        if isinstance(result, OkayCommand) and isinstance(result.result, MediaStatus):
             self._last_media_status = result.result
         self.set_value(result)
 
@@ -216,11 +219,11 @@ class ClientCommandHandler(AsyncCommandHandler[TriggeredCommand, None]):
         local_handler = self.get_handler(command)
         if local_handler:
             if command.command.log:
-                logger.info(f"Handling {command} locally.")
+                logger.info(f"Handling « {command} » locally.")
             if isinstance(command.command, ParamterizedCommand):
                 return local_handler(command.command.arg, command)
             return local_handler(command)
-        logger.info(f"Passing {command} downstream.")
+        logger.info(f"Passing « {command} » downstream.")
         return self._wrap_downstream(command)
 
     def _exec(self, command: TriggeredCommand) -> None:

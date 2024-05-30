@@ -38,8 +38,14 @@ class Key:
         return 1
 
     @property
+    def id2(self):
+        if self.type == "kb":
+            return self.id
+        return f"{self.type}:{self.id}"
+
+    @property
     def label(self):
-        return key_labels.get(self.id, self.id)
+        return key_labels.get(self.id2) or self.id
 
     def match_event(self, e: KeyboardEvent):
         if (e.is_keypad) != ("num" in self.id):
@@ -85,7 +91,7 @@ class Key:
             case "mouse", "2":
                 return "right"
             case "mouse", "3":
-                return "middleouse"
+                return "middlemouse"
             case "mouse", "4":
                 return "x"
             case "mouse", "5":
@@ -94,7 +100,10 @@ class Key:
                 return self.id
 
     def __str__(self):
-        return f"{self.label}"
+        return f"[{self.label}]"
+
+    def __repr__(self):
+        return f"Key({self.label})"
 
     @property
     def hotkey_id(self):

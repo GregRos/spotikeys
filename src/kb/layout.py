@@ -48,7 +48,7 @@ class Layout:
             return [
                 f"{str(binding.trigger)} ➤",
                 str(default),
-                *[f"{k} ➜  {v}" for k, v in no_default],
+                *[f"{k}➜ {v}" for k, v in no_default],
             ]
 
         rows = [*map(binding_to_row, self._bindings.values())]

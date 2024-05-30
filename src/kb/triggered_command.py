@@ -28,8 +28,8 @@ class TriggeredCommand:
 
     @property
     def emoji(self):
-        modifiers = f"[{self.modifiers}]" if self.modifiers else ""
-        return f"{self.trigger.label}{modifiers} ➜  {self.command.emoji}"
+        modifiers = f"{self.modifiers}" if self.modifiers else ""
+        return f"{self.trigger.label}{modifiers}➜ {self.command.emoji}"
 
     async def execute_async[T](self, executor: Callable[[], Awaitable[T]]):
         start = time.time()
@@ -55,6 +55,9 @@ class TriggeredCommand:
     def __str__(self):
         return f"{self.trigger} {self.modifiers} ➤ {self.command}"
 
+    def __repr__(self):
+        return f"TriggeredCommand({self.__str__()})"
+
 
 @dataclass()
 class OkayCommand[T]:
@@ -68,12 +71,18 @@ class OkayCommand[T]:
         self.command = self.triggered.command
 
 
-@dataclass
+@dataclass(repr=False)
 class FailedCommand:
     success: Literal[False] = field(default=False, init=False)
     triggered: TriggeredCommand
     duration: float
     exception: Exception
+
+    def __repr__(self):
+        formatted = "".join(
+            map(lambda x: f"∙ {x}", traceback.format_exception(self.exception))
+        )
+        return f"❌ {self.triggered} {self.duration:.2f}s\n{formatted}"
 
     @property
     def command(self):

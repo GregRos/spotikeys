@@ -13,7 +13,7 @@ class Create:
 
     @property
     def key(self) -> Any:
-        return self.next.key
+        return self.next.uid
 
 
 @dataclass
@@ -34,7 +34,7 @@ class Update:
 
     @property
     def key(self) -> Any:
-        return self.next.key
+        return self.next.uid
 
 
 @dataclass
@@ -44,11 +44,11 @@ class Recreate:
 
     @property
     def props(self):
-        return f"{self.old.key} ♻️ {self.next._props}"
+        return f"{self.old.uid} ♻️ {self.next._props}"
 
     @property
     def key(self) -> Any:
-        return self.next.key
+        return self.next.uid
 
 
 @dataclass
@@ -59,7 +59,7 @@ class Place:
         return f"👇 {self.what.__repr__()}"
 
     @property
-    def key(self) -> Any:
+    def uid(self) -> Any:
         return self.what.key
 
 
@@ -69,11 +69,11 @@ class Replace:
     with_what: Update | Recreate | Create
 
     def __repr__(self) -> str:
-        return f"{self.replaces.key} ↔️ {self.with_what.__repr__()}"
+        return f"{self.replaces.uid} ↔️ {self.with_what.__repr__()}"
 
     @property
-    def key(self) -> Any:
-        return self.replaces.key
+    def uid(self) -> Any:
+        return self.replaces.uid
 
 
 @dataclass
@@ -81,8 +81,8 @@ class Unplace:
     what: Resource
 
     def __repr__(self) -> str:
-        return f"🙈  {self.what.key}"
+        return f"🙈  {self.what.uid}"
 
     @property
-    def key(self) -> Any:
-        return self.what.key
+    def uid(self) -> Any:
+        return self.what.uid

@@ -50,14 +50,13 @@ class DestkopHUD(Component[Window]):
     class Inner(Component[Widget]):
         executed: OkayCommand[DesktopExec]
 
-        def _win_title(self, apps: tuple[App, ...]):
-
-            titles = list(map(lambda x: f"📅 {x.title}", apps))
+        def _win_title(self, cmd: OkayCommand, apps: tuple[App, ...]):
+            titles = list(map(lambda x: f"{cmd.command.emoji} {x.title}", apps))
             elipsis = None
             if len(titles) > 3:
                 titles = titles[:3]
                 elipsis = f"⋯ ({len(apps) - 3}) more ⋯"
-            titles = map(lambda x: truncate_text(x, 31), titles)
+            titles = map(lambda x: truncate_text(x, 34), titles)
             titles = "\n".join(titles)
             yield Label(
                 text=f"{titles}",
@@ -65,27 +64,27 @@ class DestkopHUD(Component[Window]):
                 justify="left",
                 foreground="#ffffff",
                 font=Font(family="Segoe UI Emoji", size=10, style="bold"),
-            ).Pack(ipadx=0, anchor="w")
+            ).Pack(ipadx=0, anchor="w", fill="both")
             if elipsis:
                 yield Label(
                     text=elipsis,
                     background=green_c,
                     justify="center",
                     foreground="#ffffff",
-                    font=Font(family="Segoe UI Emoji", size=10),
+                    font=Font(family="Segoe UI Emoji", size=8),
                 ).Pack(ipadx=0, fill="x")
 
         @override
         def render(self, yld, _):
-            executed = self.executed.result
-            yld(DesktopCommandHeader(input=executed))
+            result = self.executed.result
+            yld(DesktopCommandHeader(input=result))
             orig_desktop = (
-                executed.shove.start if executed.shove else executed.pan.start  # type: ignore
+                result.shove.start if result.shove else result.pan.start  # type: ignore
             )
-            new_desktop = executed.shove.end if executed.shove else executed.pan.end  # type: ignore
+            new_desktop = result.shove.end if result.shove else result.pan.end  # type: ignore
             yld(
                 Label(
-                    text=f"🖥️ {new_desktop.name}{" 👁️" if executed.pan else ""}",
+                    text=f"🖥️ {new_desktop.name}{" 👁️" if result.pan else ""}",
                     background=green_c,
                     foreground="#ffffff",
                     font=Font(
@@ -95,8 +94,8 @@ class DestkopHUD(Component[Window]):
                     ),
                 ).Pack(ipadx=15, fill="both")
             )
-            if executed.shove:
-                yld(self._win_title(executed.shove.apps))
+            if result.shove:
+                yld(self._win_title(self.executed, result.shove.apps))
 
             yld(
                 Label(

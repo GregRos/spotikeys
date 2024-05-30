@@ -36,31 +36,11 @@ from src.annotations.get_methods import get_attrs_downto
 from src.ui.model.annotation_reader import AnnotationReader
 from src.ui.model.prop import Prop
 from src.ui.model.prop_value import PValue, format_value
+from src.ui.model.render_trace import Display, RenderTrace
 
 
 type SomeProp = Prop | PSection
 SAME = object()
-
-
-def format_superscript(value: int) -> str:
-    superscript_map = {
-        "0": "⁰",
-        "1": "¹",
-        "2": "²",
-        "3": "³",
-        "4": "⁴",
-        "5": "⁵",
-        "6": "⁶",
-        "7": "⁷",
-        "8": "⁸",
-        "9": "⁹",
-        "-": "⁻",
-    }
-    strified = str(value)
-    result = ""
-    for c in strified:
-        result += superscript_map[c]
-    return result
 
 
 class PDict(Mapping[str, SomeProp]):
@@ -254,12 +234,17 @@ class PValues(Mapping[str, "PValue | PValues"]):
         self,
         props: "PSection",
         values: Mapping[str, Any] = {},
-        old: Mapping[str, Any] | None = None,
+        old: "PValues | None" = None,
     ):
         self.old = old
         self.section = props
         self._vals = {k: v for k, v in values.items() if v is not None}
         props.assert_valid_value(values)
+
+    def get_trace_name(self, display: Display) -> str:
+        trace = self["trace"].value
+        assert isinstance(trace, RenderTrace), "Trace must be RenderTrace object"
+        return trace.to_string(display)
 
     def __repr__(self) -> str:
         # FIXME: This is terrible!!!
@@ -268,7 +253,7 @@ class PValues(Mapping[str, "PValue | PValues"]):
         values = self.items()
         props_first = sorted(values, key=lambda x: not isinstance(x[1], PValue))
         for key, value in props_first:
-            if key == "key":
+            if key == "key" or key == "trace":
                 continue
 
             def fmt(s: Any):
@@ -286,7 +271,7 @@ class PValues(Mapping[str, "PValue | PValues"]):
             if self.old is not None and isinstance(value, PValue):
                 # FIXME: format could use some work
                 entries += [
-                    f"{key}[{fmt(self.old[key]) if key in self.old else "∅"} ➔  {fmt(value.value)}]"
+                    f"{key}[{fmt(self.old[key].value) if key in self.old else "∅"} ➔  {fmt(value.value)}]"
                 ]
                 continue
             repr_result = value.__repr__()
@@ -294,7 +279,7 @@ class PValues(Mapping[str, "PValue | PValues"]):
                 entries += [value.__repr__()]
         props = ", ".join(entries)
         name = (
-            self.old.get("key")
+            self.old.get_trace_name("log")
             if self.old
             else self._vals["key"] if "key" in self._vals else self.section.name
         )
@@ -364,7 +349,7 @@ class PValues(Mapping[str, "PValue | PValues"]):
                         if v != other[k]:
                             out[k] = other[k].value
 
-        return PValues(self.section, out, old=self._vals)
+        return PValues(self.section, out, old=self)
 
     def compute(self) -> tuple[str, dict[str, Any]]:
         result = {}

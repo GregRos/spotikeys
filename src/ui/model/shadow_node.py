@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from copy import copy
 from typing import (
     TYPE_CHECKING,
     Annotated,
@@ -8,6 +9,7 @@ from typing import (
     NotRequired,
     Self,
     TypedDict,
+    override,
 )
 
 from pydantic.dataclasses import dataclass
@@ -23,7 +25,7 @@ from src.ui.model.prop_dict import (
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.ui.model.prop_value import PValue
-from ui.model.render_trace import RenderTrace
+from src.ui.model.render_trace import Display, RenderTrace
 
 
 class InitPropsBase(TypedDict):
@@ -32,11 +34,19 @@ class InitPropsBase(TypedDict):
 
 class ShadowProps(InitPropsBase):
     children: Annotated[NotRequired[tuple[Self, ...]], Prop(no_value=())]
+    trace: Annotated[NotRequired[RenderTrace], Prop(no_value=None)]
 
 
 class ShadowNode:
     _props: PValues
-    trace: RenderTrace
+
+    @property
+    def trace(self) -> RenderTrace:
+        x = self._props.get("trace")
+        assert x, "Trace must exist before calling trace."
+        v = x.value
+        assert isinstance(v, RenderTrace), "Trace must be RenderTrace object"
+        return v
 
     @classmethod
     def node_name(cls) -> str:
@@ -67,10 +77,18 @@ class ShadowNode:
         assert not isinstance(x, PValues), "Key should not be a PValues."
         return x.value if x else None
 
+    def to_string_marker(self, display: Display) -> str:
+        return self.trace.to_string(display)
+
     @property
     def uid(self) -> str:
         assert self.trace, "Trace must exist before calling u_key."
-        return self.trace.to_uid()
+        return self.trace.to_string("id")
 
-    @abstractmethod
-    def _copy(self, **overrides: Any) -> Self: ...
+    def _copy(self, **overrides: Any) -> Self:
+        clone = copy(self)
+        # FIXME: This is a hack that shouldn't exist.
+        # trace and key should not be props at all
+        clone._props = self._props.merge(overrides)
+
+        return clone

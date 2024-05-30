@@ -72,11 +72,6 @@ class Widget(ShadowNode):
     def Pack(self, **props: Unpack[PackProps]) -> None:
         pass
 
-    def _copy(self, **overrides: Any) -> Self:
-        clone = copy(self)
-        clone._props = self._props.merge(overrides)
-        return clone
-
 
 class Label(Widget):
 

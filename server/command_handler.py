@@ -292,6 +292,8 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
                 )
         await self.root.transfer_playback(current_device)
         playing = await self.root.playback
+        if not playing:
+            raise Exception("Probably no audio output found.")
         return playing.get_status()  # type: ignore
 
     @handles(MediaCommands.next_track)
@@ -455,7 +457,7 @@ class MediaCommandHandler(AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
             self._current = None
 
     async def __call__(self, command: Command) -> MediaStatus:
-        logger.info(f"Received command: {command}")
+        logger.info(f"Received « {command} »")
 
         start = time.time()
         result = await self.handle(command)

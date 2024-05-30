@@ -1,9 +1,12 @@
+from collections import defaultdict
+from inspect import FrameInfo
+import sys
 from typing import Any, Callable, Generator, Iterable
 
 from src.ui.model import ShadowNode, Ctx, Component
 from src.ui.rendering.stateful_reconciler import StatefulReconciler
-from src.ui.model.prop_dict import format_superscript
-from ui.model.render_trace import RenderFrame, RenderTrace
+from src.ui.model.format_superscript import format_superscript
+from src.ui.model.render_trace import RenderFrame, RenderTrace
 
 
 def with_trace(node: ShadowNode, trace: RenderTrace) -> ShadowNode:
@@ -30,31 +33,30 @@ class ComponentMount[X: ShadowNode]:
         trace = RenderTrace()
 
         def on_yielded_for(base_trace: RenderTrace):
-            i = 1
+            occurence_by_line = defaultdict(lambda: 1)
 
             def on_yielded(
                 node: Component[X] | X | Iterable[X] | Iterable[Component[X]],
             ):
-                if isinstance(node, Iterable):
-                    for n in node:
-                        on_yielded(n)
-                    return
-
-                node_type = self._reconciler.node_type
-                nonlocal rendering, i
-                my_trace = base_trace + RenderFrame(
-                    pos=i, type=node.__class__, key=node.key
-                )
-
-                i += 1
-                if isinstance(node, node_type):  # type: ignore
-                    rendering += (with_trace(node, my_trace),)
-                elif isinstance(node, Component):
-                    node.render(on_yielded_for(my_trace), self.context)
-                else:
-                    raise TypeError(
-                        f"Expected render method to return {node_type} or Component, but got {type(node)}"
+                caller = sys._getframe(1)
+                line_no = caller.f_lineno
+                nodes = list(node) if isinstance(node, Iterable) else [node]
+                for node in nodes:
+                    node_type = self._reconciler.node_type
+                    nonlocal rendering
+                    my_trace = base_trace + RenderFrame(
+                        node, line_no, occurence_by_line[line_no]
                     )
+                    occurence_by_line[line_no] += 1
+
+                    if isinstance(node, node_type):  # type: ignore
+                        rendering += (with_trace(node, my_trace),)
+                    elif isinstance(node, Component):
+                        node.render(on_yielded_for(my_trace), self.context)
+                    else:
+                        raise TypeError(
+                            f"Expected render method to return {node_type} or Component, but got {type(node)}"
+                        )
 
             return on_yielded
 

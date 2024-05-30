@@ -35,8 +35,11 @@ from src.ui.tk.widget import Widget
 from src.ui.tk.widget_wrapper import WidgetWrapper
 from src.ui.tk.window import Window
 from src.ui.tk.geometry import Geometry
+from src.ui.model.render_trace import Display
 
 
+# FIXME: Window/Widget wrappers should be unified
+# into a single tree
 class WindowWrapper(Resource[Window]):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     resource: Tk
@@ -64,6 +67,9 @@ class WindowWrapper(Resource[Window]):
     @override
     def is_same_resource(self, other: Self) -> bool:
         return self.resource is other.resource
+
+    def to_string_marker(self, display: Display) -> str:
+        return self.node.to_string_marker(display)
 
     @staticmethod
     def create(node: Window, context: Ctx) -> "WindowWrapper":
@@ -161,7 +167,7 @@ class WindowWrapper(Resource[Window]):
         def do():
             geo = self.node._props["Geometry"].value  # type: Geometry # type: ignore
             normed = self.normalize_geo(geo)
-            print(f"Setting {self.key} geometry to {normed}")
+            print(f"Setting {self.to_string_marker("log")} geometry to {normed}")
             self.resource.wm_geometry(normed)
             self.resource.deiconify()
 

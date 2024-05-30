@@ -25,7 +25,6 @@ class DesktopCommandHeader(Component[Widget]):
                     style="bold",
                 ),
             ).Pack(
-                anchor="w",
                 ipadx=20,
                 ipady=5,
                 fill="both",

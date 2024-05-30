@@ -30,7 +30,7 @@ class WidgetWrapper(Resource[Widget]):
 
         match node.type_name:
             case "Label":
-                lbl = Label(tk, name=node.key)
+                lbl = Label(tk, name=node.to_string_marker("safe"))
                 make_clickthrough(lbl)
                 return __class__(node, lbl)
 

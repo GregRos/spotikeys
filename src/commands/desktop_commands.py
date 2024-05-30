@@ -34,7 +34,7 @@ class DesktopCommands(metaclass=CommandClass, group_name="Desktop"):
     @command("🚫", "No Caps", False)
     def no_caps(self) -> None: ...
 
-    @command("📅🫷", "Shove Left")
+    @command("🫷📅", "Shove Left")
     def shove_left(self) -> None: ...
 
     @command("🫸📅", "Shove Right")
@@ -49,10 +49,10 @@ class DesktopCommands(metaclass=CommandClass, group_name="Desktop"):
     @command("🫲📅", "Drag Left")
     def drag_left(self) -> None: ...
 
-    @command("📅🫱", "Drag Right")
+    @command("🫱📅", "Drag Right")
     def drag_right(self) -> None: ...
 
-    @command("⬅️👁️", "Pan Right")
+    @command("👁️⬅️", "Pan Right")
     def pan_right(self) -> None: ...
 
     @command("👁️➡️", "Pan Left")

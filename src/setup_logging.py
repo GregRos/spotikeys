@@ -19,7 +19,7 @@ class CustomFormatter(logging.Formatter):
     def get_formatter(string: str):
         return logging.Formatter(
             string,
-            datefmt="%H:%M:{}",
+            datefmt="%H:%M:%S",
         )
 
     formatters: dict[int, logging.Formatter] = {

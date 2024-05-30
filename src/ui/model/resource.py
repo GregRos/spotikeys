@@ -44,8 +44,8 @@ class Resource[Node: ShadowNode](ABC):
     def destroy(self) -> None: ...
 
     @property
-    def key(self) -> str:
-        return self.node.key
+    def uid(self) -> str:
+        return self.node.to_string_marker("id")
 
     @abstractmethod
     def update(self, props: PValues) -> None: ...

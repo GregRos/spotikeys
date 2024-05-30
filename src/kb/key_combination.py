@@ -53,4 +53,7 @@ class KeyCombination:
     def __str__(self):
         if not self.keys:
             return "∅"
-        return "  ".join(str(key) for key in sorted(self.keys))
+        return "+".join(str(key) for key in sorted(self.keys))
+
+    def __repr__(self):
+        return f"KeyCombination({self.__str__()})"

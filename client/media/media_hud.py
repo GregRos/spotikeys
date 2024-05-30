@@ -58,10 +58,10 @@ class MediaHUD(Component[Window]):
                     input=self.executed,
                     justify=justify,
                     colors={
-                        "status": "grey",
-                        "trigger": "blue",
-                        "okay": "green",
-                        "failed": "red",
+                        "status": "#484D49",
+                        "trigger": "#161670",
+                        "okay": "#2E620C",
+                        "failed": "#980E0E",
                     },
                 )
             )

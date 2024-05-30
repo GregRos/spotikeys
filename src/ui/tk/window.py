@@ -18,12 +18,13 @@ from src.ui.model.component import Component
 from src.ui.model.shadow_node import (
     InitPropsBase,
     ShadowNode,
+    ShadowProps,
 )
 from src.ui.tk.widget import Widget
 from src.ui.tk.geometry import Geometry
 
 
-class WindowProps(InitPropsBase):
+class WindowProps(ShadowProps):
     topmost: Annotated[NotRequired[bool], Prop(subsection="attributes")]
     background: Annotated[NotRequired[str], Prop(subsection="configure")]
     transparent_color: Annotated[
@@ -43,12 +44,6 @@ class Window(ShadowNode, Component[Widget]):  # type: ignore
 
     @PSection(recurse=True)
     def __init__(self, **props: Unpack[WindowProps]): ...
-
-    @override
-    def _copy(self, **overrides: Any) -> Self:
-        clone = copy(self)
-        clone._props = self._props.merge(overrides)
-        return clone
 
     @PSection(recurse=False)
     def Geometry(self, **props: Unpack[Geometry]): ...

@@ -23,12 +23,7 @@
     "**/__pycache__": true,
     "**/dist": true,
     "**/dist_aux": true,
-    "dfdf": true,
-    "[!s]*/**": true,
-    "s[!r]*/**": true,
-    "sr[!c]*/**": true,
-    "src/[!u]*/**": true,
-    "src/u[!i]*/**": true
+    "dfdf": true
   },
   "python.REPL.enableREPLSmartSend": false
 }
