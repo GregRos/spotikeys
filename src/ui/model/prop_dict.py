@@ -23,8 +23,6 @@ from typing import (
     runtime_checkable,
 )
 
-from pyrsistent import v
-
 
 from src.annotations.defaults import defaults, is_empty, update
 from src.annotations.get_metadata import (

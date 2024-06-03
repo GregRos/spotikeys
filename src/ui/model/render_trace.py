@@ -4,8 +4,6 @@ from types import FrameType
 from typing import TYPE_CHECKING, Literal
 from inspect import getframeinfo, stack, FrameInfo, currentframe
 
-from yarg import get
-
 if TYPE_CHECKING:
     from src.ui.model.component import Component
     from src.ui.model.shadow_node import ShadowNode
