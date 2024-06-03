@@ -4,8 +4,6 @@ from dataclasses import dataclass
 import itertools
 from typing import Any, Literal, override
 
-from click import BOOL
-
 
 from client.desktop.command_header import DesktopCommandHeader
 from client.desktop.desktop_status import App, DesktopExec

@@ -2,7 +2,6 @@ from logging import getLogger
 from typing import Any, Awaitable, Callable
 
 import keyboard
-from referencing import Anchor
 
 
 from src.kb.key_combination import KeyCombination

@@ -7,7 +7,6 @@ import threading
 import time
 import traceback
 from typing import Any, Awaitable, Callable, Iterable
-from flask.cli import F
 import keyboard
 from pyvda import AppView, VirtualDesktop, get_virtual_desktops
 from win32api import GetKeyState
@@ -31,14 +30,14 @@ from pywinauto.win32_element_info import HwndElementInfo
 
 logger = getLogger("client")
 
-pat = re.compile("(\\S*) - Visual Studio Code")
+pat = re.compile("(\\S*) - (Visual Studio Code|Obsidian)")
 
 
 def get_window_substr(hinfo: HwndElementInfo):
     txt = hinfo.name
-    if "Visual Studio Code" in txt:
-        if proj := pat.search(txt):
-            return proj[0]
+    m = pat.search(txt)
+    if m:
+        return m.group(1)
     return None
 
 

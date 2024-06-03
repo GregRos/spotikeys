@@ -146,6 +146,9 @@ def create_client(send: AsyncCommandHandler[Command, Awaitable[MediaStatus]]):
                 caps + mouse2: DesktopCommands.shove_right,
             }
         ),
+        # TODO: Undo and redo
+        # TODO: Spotify navigate back and forward
+        # TODO: Something playlist?
     )
 
     return layout

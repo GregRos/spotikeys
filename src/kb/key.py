@@ -3,7 +3,6 @@ from __future__ import annotations
 from functools import total_ordering
 from time import sleep
 from typing import TYPE_CHECKING, Literal, Optional, overload
-import mouse
 from keyboard import KeyboardEvent
 import keyboard
 from win32api import GetAsyncKeyState
